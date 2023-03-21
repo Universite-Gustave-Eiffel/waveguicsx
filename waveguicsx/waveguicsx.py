@@ -9,8 +9,8 @@ import time
 # TODO: test and debugging for: multiple domains, Dirichlet BC, PML
 #
 # TO KEEP IN MIND:
-#- if necessary, store eigenvectors[i] as a whole in a PETSC matrix, instead of a list of PETSC vectors (-> please modify _get_eigenvectors)
-#- memory usage (-> check with A is B, with import sys; sys.getsizeof(eigenvectors), or with memory profiler, etc.)
+# - eigenvectors are now stored as a PETSc matrix, which will allow fast matrix multiplications (e.g. self.M * eigenvectors[ik])
+# - memory usage (-> check with A is B, with import sys; sys.getsizeof(eigenvectors), or with memory profiler, etc.)
 
 class Waveguide:
     """
@@ -42,12 +42,13 @@ class Waveguide:
         the parameter range specified by the user (see method setParameters)
     evp : PEP or EPS instance (SLEPc object)
         eigensolver parameters (EPS if pb_type is "wavenumber", PEP otherwise)
-    eigenvalues : list
+    eigenvalues : list of numpy arrays
         list of wavenumbers or angular frequencies
         access to components with eigenvalues[ip][imode] (ip: parameter index, imode: mode index)
-    eigenvectors : list
+    eigenvectors : list of PETSc matrices
         list of mode shapes
-        access to components with eigenvectors[ik][imode][idof] (ip: parameter index, imode: mode index, idof: dof index)
+        access to components with eigenvectors[ik][idof,imode] (ip: parameter index, imode: mode index, idof: dof index)
+        or eigenvectors[ik].getColumnVector(imode)
     
     Methods
     -------
@@ -236,17 +237,23 @@ class Waveguide:
         #Future works
 
     def _get_eigenvalues(self):
-        """ Return all converged eigenvalues of the current EVP object (for internal use, for SLEPc) """
+        """ Return all converged eigenvalues of the current EVP object (for internal use with SLEPc) """
         eigenvalues = np.array([self.evp.getEigenpair(i) for i in range(self.evp.getConverged())])
         if self.pb_type=="wavenumber":
             eigenvalues = np.sqrt(eigenvalues)
         return eigenvalues
 
     def _get_eigenvectors(self):
-        """ Return all converged eigenvectors of the current EVP object  in a list (for internal use, for SLEPc) """
-        eigenvectors = list()
+        """ Return all converged eigenvectors of the current EVP object in a PETSc dense matrix (for internal use with SLEPc) """
+        nconv = self.evp.getConverged()
         v = self.evp.getOperators()[0].createVecRight()
-        for i in range(self.evp.getConverged()):
-            self.evp.getEigenpair(i, v) #To get left eigenvectors: evp.getLeftEigenvector(i, vr.vector)
-            eigenvectors.append(v.copy())
+        eigenvectors = PETSc.Mat().create(comm=self.comm)
+        eigenvectors.setType("dense")
+        eigenvectors.setSizes([v.getSize(), nconv])
+        eigenvectors.setFromOptions()
+        eigenvectors.setUp()
+        for i in range(nconv):
+            self.evp.getEigenpair(i, v) #To get left eigenvectors: self.evp.getLeftEigenvector(i, v)
+            eigenvectors.setValues(range(v.getSize()), i, v)
+        eigenvectors.assemble()
         return eigenvectors

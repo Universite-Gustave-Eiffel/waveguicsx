@@ -7,7 +7,7 @@
 # - the parameter loop (here, the wavenumber loop) is distributed on all processes
 # - FE mesh and matrices are (therefore) built on each local process
 # Reminder for an execution in parallel mode (e.g. 4 processes):
-#  mpiexec -n 4 python3 Elastic_Waveguide_Bar3D_parallelizedLoop.py
+#  mpiexec -n 4 python3 Elastic_Waveguide_Bar3D_ParallelizedLoop.py
 
 import dolfinx
 import ufl

@@ -80,12 +80,12 @@ K3 = dolfinx.fem.petsc.assemble_matrix(k3_form, bcs=bcs)
 K3.assemble()
 
 ##################################
-# Solve the eigenproblem with PETSc\
+# Solve the eigenproblem with SLEPc\
 # The parameter is k, the eigenvalue is omega**2
 import waveguicsx
 wg = waveguicsx.Waveguide(MPI.COMM_WORLD, M, K1, K2, K3)
 wg.set_parameters(wavenumber=np.arange(0.1, 2, 0.1))
-wg.solve(nev,2j) #access to components with: wg.eigenvalues[ik][imode], wg.eigenvectors[ik][imode][idof]
+wg.solve(nev) #access to components with: wg.eigenvalues[ik][imode], wg.eigenvectors[ik][imode][idof]
 wg.plot_dispersion()
 plt.show()
 
@@ -110,7 +110,7 @@ plotter.show()
 
 ##################################
 # Mode shape visualization
-ik, imode = 0, 3 #parameter index, mode index to visualize
+ik, imode = 0, 5 #parameter index, mode index to visualize
 u_grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(V))
 u_grid["u"] = np.array(wg.eigenvectors[ik][imode]).real.reshape(int(np.array(wg.eigenvectors[ik][imode]).size/V.element.value_shape), int(V.element.value_shape)) #V.element.value_shape is equal to 3
 u_plotter = pyvista.Plotter()
@@ -120,7 +120,7 @@ u_plotter.show_axes()
 u_plotter.show()
 
 ##################################
-# Solve the eigenproblem with PETSc\
+# Solve the eigenproblem with SLEPc\
 # The parameter is omega, the eigenvalue is k
 wg = waveguicsx.Waveguide(MPI.COMM_WORLD, M, K1, K2, K3)
 wg.set_parameters(omega=np.arange(0.2, 8, 0.2))

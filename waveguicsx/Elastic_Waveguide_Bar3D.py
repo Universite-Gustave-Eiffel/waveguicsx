@@ -82,7 +82,7 @@ K3.assemble()
 ##################################
 # Solve the eigenproblem with SLEPc\
 # The parameter is k, the eigenvalue is omega**2
-from Waveguide import Waveguide
+from waveguicsx.waveguide import Waveguide
 wg = Waveguide(MPI.COMM_WORLD, M, K1, K2, K3)
 wg.set_parameters(wavenumber=np.arange(0.1, 2, 0.1))
 wg.solve(nev) #access to components with: wg.eigenvalues[ik][imode], wg.eigenvectors[ik][idof,imode]

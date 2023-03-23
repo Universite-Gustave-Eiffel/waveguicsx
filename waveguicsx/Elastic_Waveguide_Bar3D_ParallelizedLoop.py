@@ -81,7 +81,7 @@ K3.assemble()
 # Solve the eigenproblem with SLEPc\
 # The parameter is k, the eigenvalue is omega**2
 # The parameter loop is parallelized
-import waveguicsx
+from waveguicsx.waveguide import Waveguide
 # Parallelization
 comm = MPI.COMM_WORLD #use all processes for the loop
 size = comm.Get_size()  #number of processors
@@ -93,7 +93,7 @@ else:
     param_split = None
 param_local = comm.scatter(param_split, root=0) #scatter 1 block per process
 # Solve
-wg = waveguicsx.Waveguide(MPI.COMM_SELF, M, K1, K2, K3) #MPI.COMM_SELF = SLEPc will used FE matrices on each local process
+wg = Waveguide(MPI.COMM_SELF, M, K1, K2, K3) #MPI.COMM_SELF = SLEPc will used FE matrices on each local process
 wg.set_parameters(wavenumber=param_local)
 wg.solve(nev)
 # Gather

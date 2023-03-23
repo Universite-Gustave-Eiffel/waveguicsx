@@ -6,13 +6,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
-# TODO:
-#- parallelization: loop! (+SLEPc?)
-#- test and debugging for: Dirichlet BC, multiple domains, PML
-
-# TODISCUSS:
-#- memory usage (-> play with A is B, play with import sys; sys.getsizeof(eigenvectors), memory profiler...
-#      eigenvalues[i] as numpy array? (low gain seemingly), eigenvectors[i] as PETSC matrix? 
+# TODO: test and debugging for: multiple domains, Dirichlet BC, PML
+#
+# TO KEEP IN MIND:
+# - eigenvectors are now stored as a PETSc matrix, which will allow fast matrix multiplications (e.g. self.M * eigenvectors[ik])
+# - memory usage (-> check with A is B, with import sys; sys.getsizeof(eigenvectors), or with memory profiler, etc.)
 
 class Waveguide:
     """
@@ -44,12 +42,13 @@ class Waveguide:
         the parameter range specified by the user (see method setParameters)
     evp : PEP or EPS instance (SLEPc object)
         eigensolver parameters (EPS if pb_type is "wavenumber", PEP otherwise)
-    eigenvalues : list
+    eigenvalues : list of numpy arrays
         list of wavenumbers or angular frequencies
         access to components with eigenvalues[ip][imode] (ip: parameter index, imode: mode index)
-    eigenvectors : list
+    eigenvectors : list of PETSc matrices
         list of mode shapes
-        access to components with eigenvectors[ik][imode][idof] (ip: parameter index, imode: mode index, idof: dof index)
+        access to components with eigenvectors[ik][idof,imode] (ip: parameter index, imode: mode index, idof: dof index)
+        or eigenvectors[ik].getColumnVector(imode)
     
     Methods
     -------
@@ -110,7 +109,7 @@ class Waveguide:
             # Setup the SLEPc solver for the quadratic eigenvalue problem
             self.evp = SLEPc.PEP()
             self.evp.create(comm=self.comm)
-            self.evp.setProblemType(SLEPc.PEP.ProblemType.GENERAL) #note: in the undamped case, HERMITIAN is currently not possible (matrices are not Hermitian due to round-off)
+            self.evp.setProblemType(SLEPc.PEP.ProblemType.GENERAL) #note: for the undamped case, HERMITIAN is possible with QARNOLDI and TOAR but surprisingly not faster
             self.evp.setType(SLEPc.PEP.Type.QARNOLDI) #note: the computational speed of LINEAR, QARNOLDI and TOAR seems to be almost identical
             self.evp.setWhichEigenpairs(SLEPc.PEP.Which.TARGET_IMAGINARY)
 
@@ -121,16 +120,18 @@ class Waveguide:
             # Setup the SLEPc solver for the generalized eigenvalue problem
             self.evp = SLEPc.EPS()
             self.evp.create(comm=self.comm)
-            self.evp.setProblemType(SLEPc.EPS.ProblemType.GNHEP) #note: GHEP (generalized Hermitian) is slower, is it because Hermitian matrices are enforced internally?
+            self.evp.setProblemType(SLEPc.EPS.ProblemType.GNHEP) #note: GHEP (generalized Hermitian) is surprinsingly a little bit slower...
             self.evp.setType(SLEPc.EPS.Type.KRYLOVSCHUR) #note: ARNOLDI also works although slightly slower
             self.evp.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_MAGNITUDE)
-
+        
         # Setup common to EPS and PEP
         self.evp.setTolerances(tol=1e-6, max_it=20)
         ST = self.evp.getST()
         ST.setType(SLEPc.ST.Type.SINVERT)
-        ST.setShift(0)
+        ST.setShift(1e-6) #note: a small shift might prevent errors (e.g. zero pivot with dirichlet bc)
         self.evp.setST(ST)
+        #self.evp.st.ksp.setType('preonly') #'preonly' is the default, other choice could be 'gmres', 'bcgs'...
+        #self.evp.st.ksp.pc.setType('lu') #'lu' is the default, other choice could be 'bjacobi'...
         self.evp.setFromOptions()
 
     def solve(self, nev=1, target=0):
@@ -160,7 +161,7 @@ class Waveguide:
         for i, parameter_value in enumerate(parameters):
             start = time.perf_counter()
             if self.pb_type=="wavenumber":
-                self.evp.setOperators(self.K1 + PETSc.ScalarType(1j*parameter_value)*self.K2 + PETSc.ScalarType(parameter_value**2)*self.K3, self.M)
+                 self.evp.setOperators(self.K1 + PETSc.ScalarType(1j*parameter_value)*self.K2 + PETSc.ScalarType(parameter_value**2)*self.K3, self.M)
             elif self.pb_type == "omega":
                 self.evp.setOperators([self.K1-PETSc.ScalarType(parameter_value)**2*self.M, PETSc.ScalarType(1j)*self.K2, self.K3])
             self.evp.solve()
@@ -185,7 +186,7 @@ class Waveguide:
         -------
         axs: the multiple subplot axe used for display
         """
-        if axs is None: #!!!!!!!!!!Max. : est-ce pertinent d'avoir ax en input avec subplot????
+        if axs is None:
             fig, axs = plt.subplots(2, 2)
         
         if self.pb_type == "wavenumber":
@@ -236,17 +237,23 @@ class Waveguide:
         #Future works
 
     def _get_eigenvalues(self):
-        """ Return all converged eigenvalues of the current EVP object (for internal use, for SLEPc) """
-        eigenvalues = [self.evp.getEigenpair(i) for i in range(self.evp.getConverged())]
+        """ Return all converged eigenvalues of the current EVP object (for internal use with SLEPc) """
+        eigenvalues = np.array([self.evp.getEigenpair(i) for i in range(self.evp.getConverged())])
         if self.pb_type=="wavenumber":
             eigenvalues = np.sqrt(eigenvalues)
         return eigenvalues
 
     def _get_eigenvectors(self):
-        """ Return all converged eigenvectors of the current EVP object  in a list (for internal use, for SELPc) """
-        eigenvectors = list()
+        """ Return all converged eigenvectors of the current EVP object in a PETSc dense matrix (for internal use with SLEPc) """
+        nconv = self.evp.getConverged()
         v = self.evp.getOperators()[0].createVecRight()
-        for i in range(self.evp.getConverged()):
-            self.evp.getEigenpair(i, v) #To get left eigenvectors: evp.getLeftEigenvector(i, vr.vector)
-            eigenvectors.append(v.copy())
+        eigenvectors = PETSc.Mat().create(comm=self.comm)
+        eigenvectors.setType("dense")
+        eigenvectors.setSizes([v.getSize(), nconv])
+        eigenvectors.setFromOptions()
+        eigenvectors.setUp()
+        for i in range(nconv):
+            self.evp.getEigenpair(i, v) #To get left eigenvectors: self.evp.getLeftEigenvector(i, v)
+            eigenvectors.setValues(range(v.getSize()), i, v)
+        eigenvectors.assemble()
         return eigenvectors

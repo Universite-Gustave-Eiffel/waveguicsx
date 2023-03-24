@@ -1,1 +1,5 @@
 .private/*
+waveguicsx.egg-info/
+waveguicsx/__pycache__/
+.idea/*
+

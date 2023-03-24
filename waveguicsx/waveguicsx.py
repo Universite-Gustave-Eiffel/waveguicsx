@@ -9,7 +9,7 @@ import time
 # TODO: test and debugging for: multiple domains, Dirichlet BC, PML
 #
 # TO KEEP IN MIND:
-# - eigenvectors are now stored as a PETSc matrix, which will allow fast matrix multiplications (e.g. self.M * eigenvectors[ik])
+# - eigenvectors are now stored as a PETSc matrix, which will allow fast matrix multiplications in the future (e.g. self.M * eigenvectors[ik])
 # - memory usage (-> check with A is B, with import sys; sys.getsizeof(eigenvectors), or with memory profiler, etc.)
 
 class Waveguide:

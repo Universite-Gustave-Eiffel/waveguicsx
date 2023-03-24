@@ -82,8 +82,8 @@ K3.assemble()
 ##################################
 # Solve the eigenproblem with SLEPc\
 # The parameter is k, the eigenvalue is omega**2
-import waveguicsx
-wg = waveguicsx.Waveguide(MPI.COMM_WORLD, M, K1, K2, K3)
+from waveguicsx.waveguide import Waveguide
+wg = Waveguide(MPI.COMM_WORLD, M, K1, K2, K3)
 wg.set_parameters(wavenumber=np.arange(0.1, 2, 0.1))
 wg.solve(nev) #access to components with: wg.eigenvalues[ik][imode], wg.eigenvectors[ik][idof,imode]
 wg.plot_dispersion()
@@ -123,7 +123,7 @@ u_plotter.show()
 ##################################
 # Solve the eigenproblem with SLEPc\
 # The parameter is omega, the eigenvalue is k
-wg = waveguicsx.Waveguide(MPI.COMM_WORLD, M, K1, K2, K3)
+wg = Waveguide(MPI.COMM_WORLD, M, K1, K2, K3)
 wg.set_parameters(omega=np.arange(0.2, 8, 0.2))
 wg.solve(nev) #access to components with: wg.eigenvalues[ik][imode], wg.eigenvectors[ik][idof,imode]
 wg.plot_dispersion()

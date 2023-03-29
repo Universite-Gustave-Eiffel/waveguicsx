@@ -1,10 +1,11 @@
 ##################################
-# 3D elastic waveguide\
-# The cross-section is a 2D unit square with free boundary conditions on its 1D boundaries\
-# Waveguide FE formulation (SAFE) leading to the following eigenvalue problem:\
-# $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$
+# 3D (visco-)elastic waveguide example\
+# The cross-section is a 2D unit square with free boundary conditions on its 1D boundaries, material: viscoelastic steel\
+# The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\
+# $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\
+# Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities.
 # In this example:
-# - the parameter loop (here, the wavenumber loop) is distributed on all processes
+# - the parameter loop (here, the frequency loop) is distributed on all processes
 # - FE mesh and matrices are (therefore) built on each local process
 # Reminder for an execution in parallel mode (e.g. 4 processes):
 #  mpiexec -n 4 python3 Elastic_Waveguide_Bar3D_ParallelizedLoop.py
@@ -20,10 +21,11 @@ import matplotlib.pyplot as plt
 
 ##################################
 # Scaled input parameters
-rho, cs, cl = 1.0, 1.0, 1.8 #density, shear and longitudinal wave celerities
+rho, cs, cl, kappas, kappal = 1.0, 1.0, 1.8282, 0.008, 0.003 #density, shear and longitudinal wave celerities, shear and longitudinal bulk wave attenuations
 N = 25 #number of elements along one side of the square
 nev = 10 #number of eigenvalues
-wavenumber = np.arange(0.1, 5, 0.1) #wavenumber range
+omega = np.arange(0.2, 8, 0.2) #frequency range (eigenvalues are wavenumber)
+cs, cl = cs/(1+1j*kappas/2/np.pi), cl/(1+1j*kappal/2/np.pi) #complex celerities
 
 ##################################
 # Create mesh and finite elements (six-node triangles with three dofs per node for the three components of displacement)
@@ -56,12 +58,12 @@ bcs = []
 u = ufl.TrialFunction(V)
 v = ufl.TestFunction(V)
 Lxy = lambda u: ufl.as_vector([u[0].dx(0), u[1].dx(1), 0, u[0].dx(1)+u[1].dx(0), u[2].dx(0), u[2].dx(1)])
-Ls  = lambda u: ufl.as_vector([0, 0, u[2], 0, u[0], u[1]])
+Lz  = lambda u: ufl.as_vector([0, 0, u[2], 0, u[0], u[1]])
 k1 = ufl.inner(C*Lxy(u), Lxy(v)) * ufl.dx
 k1_form = dolfinx.fem.form(k1)
-k2 = (ufl.inner(C*Ls(u), Lxy(v)) - ufl.inner(Lxy(u),C*Ls(v))) * ufl.dx
+k2 = (ufl.inner(C*Lz(u), Lxy(v)) - ufl.inner(C*Lxy(u),Lz(v))) * ufl.dx
 k2_form = dolfinx.fem.form(k2)
-k3 = ufl.inner(C*Ls(u), Ls(v)) * ufl.dx
+k3 = ufl.inner(C*Lz(u), Lz(v)) * ufl.dx
 k3_form = dolfinx.fem.form(k3)
 m = rho*ufl.inner(u, v) * ufl.dx
 mass_form = dolfinx.fem.form(m)
@@ -88,22 +90,22 @@ size = comm.Get_size()  #number of processors
 rank = comm.Get_rank()  #returns the rank of the process that called it within comm_world
 # Split the parameter range and scatter to all
 if rank == 0: #define on rank 0 only
-    param_split = np.array_split(wavenumber, size) #split param in blocks of length size roughly
+    param_split = np.array_split(omega, size) #split param in blocks of length size roughly
 else:
     param_split = None
 param_local = comm.scatter(param_split, root=0) #scatter 1 block per process
 # Solve
 wg = Waveguide(MPI.COMM_SELF, M, K1, K2, K3) #MPI.COMM_SELF = SLEPc will used FE matrices on each local process
-wg.set_parameters(wavenumber=param_local)
+wg.set_parameters(omega=param_local)
 wg.solve(nev)
 # Gather
-wg.wavenumber = comm.reduce([wg.wavenumber], op=MPI.SUM, root=0) #reduce works for lists: brackets are necessary (wg.wavenumber is not a list but a numpy array)
+wg.omega = comm.reduce([wg.omega], op=MPI.SUM, root=0) #reduce works for lists: brackets are necessary (wg.omega is not a list but a numpy array)
 wg.eigenvalues = comm.reduce(wg.eigenvalues, op=MPI.SUM, root=0)
-#wg.eigenvectors = comm.reduce(wg.eigenvectors, op=MPI.SUM, root=0) #don't do this line: reduce cannot pickle 'petsc4py.PETSc.Vec' objects and the mode shapes are better distributed on each processor rather than gathered
+#wg.eigenvectors = comm.reduce(wg.eigenvectors, op=MPI.SUM, root=0) #don't do this line: reduce cannot pickle 'petsc4py.PETSc.Vec' objects (keep the mode shapes distributed on each processor rather than gather them)
 # Plot results
 if rank == 0:
-    wg.wavenumber = np.concatenate(wg.wavenumber) #wg.wavenumber is transformed to a numpy array for a proper use of wg.plot_dispersion()
+    wg.omega = np.concatenate(wg.omega) #wg.omega is transformed to a numpy array for a proper use of wg.plot_dispersion()
     wg.plot_dispersion()
-    plt.savefig("Elastic_Waveguide_Bar3D_ParallelizedLoop.svg")
-    #plt.show()
+    #plt.savefig("Elastic_Waveguide_Bar3D_ParallelizedLoop.svg")
+    plt.show()
 

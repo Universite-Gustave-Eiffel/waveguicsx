@@ -11,7 +11,7 @@ In the former case, the eigenvalue is $k$, while in the latter case, the eigenva
 ### Example  
 ...TODO...
 ```python
-from waveguicsx import waveguide 
+from waveguicsx.waveguide import waveguide 
 param = np.arange(0.1, 2, 0.1)
 waveguide = waveguide.Waveguide(MPI.COMM_WORLD, M, K1, K2, K3)
 waveguide.set_parameters(wavenumber=param) #or: waveguide.setParameters(omega=param)
@@ -40,3 +40,4 @@ python3 -c "from waveguicsx.waveguide import Waveguide; print('ok')"
 
 ### References
 ...TODO...
+

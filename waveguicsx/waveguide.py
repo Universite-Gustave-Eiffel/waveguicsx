@@ -58,6 +58,8 @@ class Waveguide:
         Solve the eigenvalue problem repeatedly for the parameter range, solutions are stored as attributes (eigenvalues, eigenvectors)
     plot_dispersion(axs=None, color="k",  marker="o", markersize=2, linestyle="", **kwargs):
         Plot dispersion curves (based on multiple subplot matplotlib)
+    plot_spectrum(index=0, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+        Plot the spectrum, Im(eigenvalues) vs. Re(eigenvalues), for the parameter index specified by the user
     """
     def __init__(self, comm:'_MPI.Comm', M:PETSc.Mat, K1:PETSc.Mat, K2:PETSc.Mat, K3:PETSc.Mat):
         """
@@ -223,6 +225,28 @@ class Waveguide:
         fig.tight_layout()
         # plt.show()  # let user decide whether he wants to interrupt the execution for display, or save to figure...
         return axs
+
+    def plot_spectrum(self, index=0, ax=None, color="k",
+                        marker="o", markersize=2, linestyle="", **kwargs):
+        """
+        Plot the spectrum, Im(k) vs. Re(k) computed for omega[index] (if the parameter is the frequency),
+        or Im(omega) vs. Re(omega) for wavenumber[index] (if the parameter is the wavenumber)
+        
+        Parameters
+        ----------
+        index: 
+        ax: the matplotlib axe on which to plot data (created if None)
+        color: str, marker: str, markersize: int, linestyle: str, **kwargs are passed to ax.plot
+
+        Returns
+        -------
+        ax: the plot axe used for display
+        """
+        if ax is None:
+            fig, ax = plt.subplots(1, 1)
+        ax.plot(self.eigenvalues[index].real, self.eigenvalues[index].imag, color=color, marker=marker, markersize=markersize, linestyle=linestyle, **kwargs)
+        fig.tight_layout()
+        return ax
     
     def compute_mode_properties(self):
         """ Post-process modal properties (ve, vg, traveling direction...) """

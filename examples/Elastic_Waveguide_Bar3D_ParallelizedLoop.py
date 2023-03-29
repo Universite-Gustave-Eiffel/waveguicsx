@@ -18,6 +18,7 @@ from slepc4py import SLEPc
 import numpy as np
 import matplotlib.pyplot as plt
 #import pyvista
+#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
 
 ##################################
 # Scaled input parameters

@@ -17,12 +17,12 @@ import matplotlib.pyplot as plt
 import pyvista
 
 from waveguicsx.waveguide import Waveguide
+#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
 
 #TODO:
 #- Dirichlet BC instead of Neumann
-#- subdomains: any other method, simpler ?
+#- subdomains: any other method ?
 #- subplots: is it possible to use several data (here, gammax and gammay) without redefining the 'grid' ?
-
 
 ##################################
 # Scaled input parameters (materials: steel into cement)
@@ -30,7 +30,7 @@ rho, cs, cl, kappas, kappal = 1.0, 1.0, 1.8282, 0.008, 0.003 #density, shear and
 rho_ext, cs_ext, cl_ext, kappas_ext, kappal_ext = 0.2017, 0.5215, 0.8620, 0.100, 0.043 #idem for the external medium
 alpha = 2+4j #average value of the absorbing function inside the PML
 N = 25 #number of elements along one side of the domain
-nev = 10 #number of eigenvalues
+nev = 20 #number of eigenvalues
 omega = np.arange(0.2, 8, 0.2) #frequency range (eigenvalues are wavenumber)
 cs, cl, cs_ext, cl_ext = cs/(1+1j*kappas/2/np.pi), cl/(1+1j*kappal/2/np.pi), cs_ext/(1+1j*kappas_ext/2/np.pi), cl_ext/(1+1j*kappal_ext/2/np.pi) #complex celerities
 
@@ -64,41 +64,41 @@ Q = dolfinx.fem.FunctionSpace(mesh, ufl.TensorElement("DG", "triangle", 0, (6,6)
 C = dolfinx.fem.Function(Q)
 C.interpolate(eval_C) #C.vector.getSize() should be equal to number of cells x 36
 # Vizualization
-#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
-plotter = pyvista.Plotter(window_size=[600, 200])
-num_cells_local = mesh.topology.index_map(mesh.topology.dim).size_local
-grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(mesh, mesh.topology.dim, np.arange(num_cells_local, dtype=np.int32)))
-grid.cell_data["C"] = C.x.array[0::36].real #index from 0 to 35, 0 being for C11
-grid.set_active_scalars("C")
-plotter.add_mesh(grid, show_edges=True)
+plotter = pyvista.Plotter(window_size=[600, 400])
+grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(mesh, mesh.topology.dim))
+grid.cell_data["Cij"] = C.x.array[0::36].real #index from 0 to 35, 0 being for C11...
+grid.set_active_scalars("Cij")
+plotter.add_mesh(grid, show_edges=True, show_scalar_bar=True)
+plotter.add_text('Re(Cij)', 'upper_edge', color='black', font_size=8)
 plotter.view_xy()
 plotter.show()
 
 ##################################
-# Create PML functions, continuous
-def eval_gamma(x): #comment on pml to do !!!!!!!!!!!!!!!!!!!!!!!!!!
+# Create Cartesian PML functions, continuous
+def eval_gamma(x): #pml profile: continuous and parabolic
     values = [1+3*(alpha-1)*((abs(x[0])-0.5)/0.25)**2*(abs(x[0])>=0.5), #gammax
               1+3*(alpha-1)*((abs(x[1])-0.5)/0.25)**2*(abs(x[1])>=0.5)] #gammay
     return values
-Q = dolfinx.fem.FunctionSpace(mesh, ufl.VectorElement("CG", "triangle", 1, 2)) #linear "P1"????????????, 2 components (gammay and gammay)
+Q = dolfinx.fem.FunctionSpace(mesh, ufl.VectorElement("CG", "triangle", 2, 2))
 gamma = dolfinx.fem.Function(Q)
 gamma.interpolate(eval_gamma)
 # Vizualization
-plotter = pyvista.Plotter(window_size=[600, 200], shape=(1,2))
+plotter = pyvista.Plotter(window_size=[800, 400], shape=(1,2))
 gridx = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(Q))
-#gridx = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(mesh, mesh.topology.dim)) #????this line is used for plotting mesh only???????????????
-gammax = gamma.x.array[0::2]
-gridx.point_data["gammax"] = gammax.imag
+gridx.point_data["gammax"] = gamma.x.array[0::2].imag
 gridx.set_active_scalars("gammax")
 plotter.subplot(0,0)
-plotter.add_mesh(gridx, show_edges=True)
+plotter.add_mesh(grid, style="wireframe", color="k") #FE mesh
+plotter.add_mesh(gridx, opacity=0.8, show_scalar_bar=True, show_edges=False)
+plotter.add_text('Im(gammax)', 'upper_edge', color='black', font_size=8)
 plotter.view_xy()
 gridy = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(Q))
-gammay = gamma.x.array[1::2]
-gridy.point_data["gammay"] = gammay.imag
+gridy.point_data["gammay"] = gamma.x.array[1::2].imag
 gridy.set_active_scalars("gammay")
 plotter.subplot(0,1)
-plotter.add_mesh(gridy, show_edges=True)
+plotter.add_mesh(grid, style="wireframe", color="k") #FE mesh
+plotter.add_mesh(gridy, opacity=0.8, show_scalar_bar=True, show_edges=False)
+plotter.add_text('Im(gammay)', 'upper_edge', color='black', font_size=8)
 plotter.view_xy()
 plotter.show()
 
@@ -107,27 +107,29 @@ plotter.show()
 bcs = []
 # Dirichlet test case:
 #fdim = mesh.topology.dim - 1
-#boundary_facets = dolfinx.mesh.locate_entities_boundary(mesh, dim=fdim, marker=lambda x: np.logical_or(np.isclose(x[0], 0.0),
-#                                                                                                       np.isclose(x[0], 1.0)+
-#                                                                                                       np.isclose(x[1], 0.0)+
-#                                                                                                       np.isclose(x[1], 1.0)))
+#boundary_facets = dolfinx.mesh.locate_entities_boundary(mesh, dim=fdim, marker=lambda x: np.logical_or(np.isclose(x[0], -0.75),
+#                                                                                                       np.isclose(x[0], +0.75)+
+#                                                                                                       np.isclose(x[1], -0.75)+
+#                                                                                                       np.isclose(x[1], +0.75)))
 #boundary_dofs = dolfinx.fem.locate_dofs_topological(V=V, entity_dim=fdim, entities=boundary_facets)
 #bcs = [dolfinx.fem.dirichletbc(value=np.zeros(3, dtype=PETSc.ScalarType), dofs=boundary_dofs, V=V)]
 
 ##################################
 # Define variational problem (SAFE method)
-#TODO: PMLization by including terms gammax=gamma[0] and gammay=gamma[1]!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 u = ufl.TrialFunction(V)
 v = ufl.TestFunction(V)
-Lxy = lambda u: ufl.as_vector([u[0].dx(0), u[1].dx(1), 0, u[0].dx(1)+u[1].dx(0), u[2].dx(0), u[2].dx(1)])
+Lx = lambda u: ufl.as_vector([u[0].dx(0), 0, 0, u[1].dx(0), u[2].dx(0), 0])
+Ly = lambda u: ufl.as_vector([0, u[1].dx(1), 0, u[0].dx(1), 0, u[2].dx(1)])
 Lz  = lambda u: ufl.as_vector([0, 0, u[2], 0, u[0], u[1]])
-k1 = ufl.inner(C*Lxy(u), Lxy(v)) * ufl.dx
+gammax = gamma[0]
+gammay = gamma[1]
+k1 = (ufl.inner(C*(gammay/gammax*Lx(u)+Ly(u)), Lx(v)) + ufl.inner(C*(Lx(u)+gammax/gammay*Ly(u)), Ly(v))) * ufl.dx
 k1_form = dolfinx.fem.form(k1)
-k2 = (ufl.inner(C*Lz(u), Lxy(v)) - ufl.inner(C*Lxy(u),Lz(v))) * ufl.dx
+k2 = (gammay*ufl.inner(C*Lz(u), Lx(v))+gammax*ufl.inner(C*Lz(u), Ly(v)) - ufl.inner(C*(gammay*Lx(u)+gammax*Ly(u)), Lz(v))) * ufl.dx
 k2_form = dolfinx.fem.form(k2)
-k3 = ufl.inner(C*Lz(u), Lz(v)) * ufl.dx
+k3 = ufl.inner(C*Lz(u), Lz(v)) * gammax * gammay * ufl.dx
 k3_form = dolfinx.fem.form(k3)
-m = rho*ufl.inner(u, v) * ufl.dx
+m = rho*ufl.inner(u, v) * gammax * gammay * ufl.dx
 mass_form = dolfinx.fem.form(m)
 
 ##################################
@@ -144,10 +146,12 @@ K3.assemble()
 ##################################
 # Solve the eigenproblem with SLEPc\
 # The parameter is omega, the eigenvalue is k
-wg = waveguide.Waveguide(MPI.COMM_WORLD, M, K1, K2, K3)
+wg = Waveguide(MPI.COMM_WORLD, M, K1, K2, K3)
 wg.set_parameters(omega=omega)
 wg.solve(nev) #access to components with: wg.eigenvalues[ik][imode], wg.eigenvectors[ik][idof,imode]
 wg.plot_dispersion()
+plt.show()
+wg.plot_spectrum(index=0)
 plt.show()
 
 ##################################
@@ -161,4 +165,3 @@ u_plotter.add_mesh(grid, style="wireframe", color="k") #FE mesh
 u_plotter.add_mesh(u_grid.warp_by_vector("u", factor=2.0), opacity=0.8, show_scalar_bar=True, show_edges=False) #do not show edges of higher order elements with pyvista
 u_plotter.show_axes()
 u_plotter.show()
-

@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import pyvista
 
 from waveguicsx.waveguide import Waveguide
+#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
 
 ##################################
 # Scaled input parameters
@@ -124,7 +125,6 @@ print(f'Euler-Bernoulli beam solution (only accurate for low frequency):\n \
 
 ##################################
 # Mesh visualization
-#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
 grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(mesh, mesh.topology.dim))
 plotter = pyvista.Plotter()
 plotter.add_mesh(grid, show_edges=True)

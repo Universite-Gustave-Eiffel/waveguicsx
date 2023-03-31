@@ -6,8 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
-# TODO: test and debugging for: Dirichlet BC
-#
 # TO KEEP IN MIND:
 # - eigenvectors are now stored as a PETSc matrix, which will allow fast matrix multiplications in the future (e.g. self.M * eigenvectors[ik])
 # - memory usage (-> check with A is B, with import sys; sys.getsizeof(eigenvectors), or with memory profiler, etc.)
@@ -134,7 +132,7 @@ class Waveguide:
         self.evp.setTolerances(tol=1e-6, max_it=20)
         ST = self.evp.getST()
         ST.setType(SLEPc.ST.Type.SINVERT)
-        ST.setShift(1e-6) #note: a small shift might prevent errors (e.g. zero pivot with dirichlet bc)
+        #ST.setShift(1e-6) #do not set shift here: it will be set automatically to target later (see solve method)
         self.evp.setST(ST)
         #self.evp.st.ksp.setType('preonly') #'preonly' is the default, other choice could be 'gmres', 'bcgs'...
         #self.evp.st.ksp.pc.setType('lu') #'lu' is the default, other choice could be 'bjacobi'...
@@ -151,26 +149,20 @@ class Waveguide:
             number of eigenpairs requested
         target : complex number or user-defined function of the parameter, optional (default: 0)
             target around which eigenpairs are looked for
+            a small shift might sometimes prevent errors (e.g. zero pivot with dirichlet bc)
         """
         # Eigensolver setup
         self.evp.setDimensions(nev=nev)
-        #self.evp.setTarget(target)
         if isinstance(target, (float, int, complex)): #redefine target as a constant function if target is given as a number
             target_constant = target
             target = lambda parameter_value: target_constant
         
-        # Print setup information
-        parameters = {"omega": self.omega, "wavenumber": self.wavenumber}[self.pb_type]
-        print(f'Waveguide parameter: {self.pb_type} ({len(parameters)} iterations)\n' \
-               '\n---- SLEPc setup ----\n')
-        self.evp.view()
-        print('')
-        
         # Loop over the parameter
+        parameters = {"omega": self.omega, "wavenumber": self.wavenumber}[self.pb_type]
+        print(f'Waveguide parameter: {self.pb_type} ({len(parameters)} iterations)')
         for i, parameter_value in enumerate(parameters):
             start = time.perf_counter()
             self.evp.setTarget(target(parameter_value))
-            print(self.evp.getTarget())
             if self.pb_type=="wavenumber":
                  self.evp.setOperators(self.K1 + PETSc.ScalarType(1j*parameter_value)*self.K2 + PETSc.ScalarType(parameter_value**2)*self.K3, self.M)
             elif self.pb_type == "omega":
@@ -182,7 +174,10 @@ class Waveguide:
             self.eigenvectors.append(self._get_eigenvectors())
             print(f'Iteration {i}, elapsed time :{(time.perf_counter() - start):.2f}s')
             #self.evp.setInitialSpace(self.eigenvectors[-1]) #try to use current modal basis to compute next, but may be only the first eigenvector...
-
+        print('\n---- SLEPc setup (based on last iteration) ----\n')
+        self.evp.view()
+        print('')
+        
     def plot_dispersion(self, axs=None, color="k",
                         marker="o", markersize=2, linestyle="", **kwargs):
         """

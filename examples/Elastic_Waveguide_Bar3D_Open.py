@@ -16,13 +16,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pyvista
 
-from waveguicsx.waveguide import Waveguide
-#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
+from waveguide import Waveguide
+pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
 
-#TODO:
-#- Dirichlet BC instead of Neumann
-#- subdomains: any other method ?
-#- subplots: is it possible to use several data (here, gammax and gammay) without redefining the 'grid' ?
+#TODO: check Dirichlet BC
 
 ##################################
 # Scaled input parameters (materials: steel into cement)
@@ -30,8 +27,9 @@ rho, cs, cl, kappas, kappal = 1.0, 1.0, 1.8282, 0.008, 0.003 #density, shear and
 rho_ext, cs_ext, cl_ext, kappas_ext, kappal_ext = 0.2017, 0.5215, 0.8620, 0.100, 0.043 #idem for the external medium
 alpha = 2+4j #average value of the absorbing function inside the PML
 N = 25 #number of elements along one side of the domain
-nev = 20 #number of eigenvalues
-omega = np.arange(0.2, 8, 0.2) #frequency range (eigenvalues are wavenumber)
+nev = 10 #number of eigenvalues
+omega = np.arange(0.5, 50, 0.5) #frequency range (eigenvalues are wavenumber)
+target = lambda omega: omega*cs/cl #target set at the longitudinal wavenumber of core to find L(0,n) modes
 cs, cl, cs_ext, cl_ext = cs/(1+1j*kappas/2/np.pi), cl/(1+1j*kappal/2/np.pi), cs_ext/(1+1j*kappas_ext/2/np.pi), cl_ext/(1+1j*kappal_ext/2/np.pi) #complex celerities
 
 ##################################
@@ -104,15 +102,15 @@ plotter.show()
 
 ##################################
 # Create free boundary conditions (or uncomment lines below for Dirichlet)
-bcs = []
+#bcs = []
 # Dirichlet test case:
-#fdim = mesh.topology.dim - 1
-#boundary_facets = dolfinx.mesh.locate_entities_boundary(mesh, dim=fdim, marker=lambda x: np.logical_or(np.isclose(x[0], -0.75),
-#                                                                                                       np.isclose(x[0], +0.75)+
-#                                                                                                       np.isclose(x[1], -0.75)+
-#                                                                                                       np.isclose(x[1], +0.75)))
-#boundary_dofs = dolfinx.fem.locate_dofs_topological(V=V, entity_dim=fdim, entities=boundary_facets)
-#bcs = [dolfinx.fem.dirichletbc(value=np.zeros(3, dtype=PETSc.ScalarType), dofs=boundary_dofs, V=V)]
+fdim = mesh.topology.dim - 1
+boundary_facets = dolfinx.mesh.locate_entities_boundary(mesh, dim=fdim, marker=lambda x: np.logical_or(np.isclose(x[0], -0.75),
+                                                                                                       np.isclose(x[0], +0.75)+
+                                                                                                       np.isclose(x[1], -0.75)+
+                                                                                                       np.isclose(x[1], +0.75)))
+boundary_dofs = dolfinx.fem.locate_dofs_topological(V=V, entity_dim=fdim, entities=boundary_facets)
+bcs = [dolfinx.fem.dirichletbc(value=np.zeros(3, dtype=PETSc.ScalarType), dofs=boundary_dofs, V=V)]
 
 ##################################
 # Define variational problem (SAFE method)
@@ -148,15 +146,15 @@ K3.assemble()
 # The parameter is omega, the eigenvalue is k
 wg = Waveguide(MPI.COMM_WORLD, M, K1, K2, K3)
 wg.set_parameters(omega=omega)
-wg.solve(nev) #access to components with: wg.eigenvalues[ik][imode], wg.eigenvectors[ik][idof,imode]
+wg.solve(nev, target=target)
 wg.plot_dispersion()
 plt.show()
-wg.plot_spectrum(index=0)
-plt.show()
+#wg.plot_spectrum(index=0)
+#plt.show()
 
 ##################################
 # Mode shape visualization
-ik, imode = 0, 5 #parameter index, mode index to visualize
+ik, imode = 50, 1 #parameter index, mode index to visualize
 vec = wg.eigenvectors[ik].getColumnVector(imode)
 u_grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(V))
 u_grid["u"] = np.array(vec).real.reshape(int(np.array(vec).size/V.element.value_shape), int(V.element.value_shape)) #V.element.value_shape is equal to 3

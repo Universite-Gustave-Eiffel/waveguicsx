@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
-# TODO: test and debugging for: multiple domains, Dirichlet BC, PML
+# TODO: test and debugging for: Dirichlet BC
 #
 # TO KEEP IN MIND:
 # - eigenvectors are now stored as a PETSc matrix, which will allow fast matrix multiplications in the future (e.g. self.M * eigenvectors[ik])
@@ -107,17 +107,21 @@ class Waveguide:
         # The parameter is the frequency omega, the eigenvalue is the wavenumber k
         if wavenumber is None:
             self.pb_type = "omega"
+            if isinstance(omega, (float, int, complex)): #single element special case
+                omega = [omega]
             self.omega = omega
             # Setup the SLEPc solver for the quadratic eigenvalue problem
             self.evp = SLEPc.PEP()
             self.evp.create(comm=self.comm)
             self.evp.setProblemType(SLEPc.PEP.ProblemType.GENERAL) #note: for the undamped case, HERMITIAN is possible with QARNOLDI and TOAR but surprisingly not faster
-            self.evp.setType(SLEPc.PEP.Type.QARNOLDI) #note: the computational speed of LINEAR, QARNOLDI and TOAR seems to be almost identical
+            self.evp.setType(SLEPc.PEP.Type.LINEAR) #note: the computational speed of LINEAR, QARNOLDI and TOAR seems to be almost identical
             self.evp.setWhichEigenpairs(SLEPc.PEP.Which.TARGET_IMAGINARY)
 
         # The parameter is the frequency omega, the eigenvalue is the wavenumber k
         elif omega is None:
             self.pb_type = "wavenumber"
+            if isinstance(wavenumber, (float, int, complex)): #single element special case
+                wavenumber = [wavenumber]
             self.wavenumber = wavenumber
             # Setup the SLEPc solver for the generalized eigenvalue problem
             self.evp = SLEPc.EPS()
@@ -145,12 +149,15 @@ class Waveguide:
         ----------
         nev : int
             number of eigenpairs requested
-        target : complex, optional (default: 0)
+        target : complex number or user-defined function of the parameter, optional (default: 0)
             target around which eigenpairs are looked for
         """
         # Eigensolver setup
         self.evp.setDimensions(nev=nev)
-        self.evp.setTarget(target)
+        #self.evp.setTarget(target)
+        if isinstance(target, (float, int, complex)): #redefine target as a constant function if target is given as a number
+            target_constant = target
+            target = lambda parameter_value: target_constant
         
         # Print setup information
         parameters = {"omega": self.omega, "wavenumber": self.wavenumber}[self.pb_type]
@@ -162,6 +169,8 @@ class Waveguide:
         # Loop over the parameter
         for i, parameter_value in enumerate(parameters):
             start = time.perf_counter()
+            self.evp.setTarget(target(parameter_value))
+            print(self.evp.getTarget())
             if self.pb_type=="wavenumber":
                  self.evp.setOperators(self.K1 + PETSc.ScalarType(1j*parameter_value)*self.K2 + PETSc.ScalarType(parameter_value**2)*self.K3, self.M)
             elif self.pb_type == "omega":

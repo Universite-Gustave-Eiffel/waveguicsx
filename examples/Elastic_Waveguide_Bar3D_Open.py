@@ -16,10 +16,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pyvista
 
-from waveguide import Waveguide
-pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
-
-#TODO: check Dirichlet BC
+from waveguicsx.waveguide import Waveguide
+#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
 
 ##################################
 # Scaled input parameters (materials: steel into cement)
@@ -132,13 +130,13 @@ mass_form = dolfinx.fem.form(m)
 
 ##################################
 # Build PETSc matrices
-M = dolfinx.fem.petsc.assemble_matrix(mass_form, bcs=bcs)
+M = dolfinx.fem.petsc.assemble_matrix(mass_form)
 M.assemble()
 K1 = dolfinx.fem.petsc.assemble_matrix(k1_form, bcs=bcs)
 K1.assemble()
-K2 = dolfinx.fem.petsc.assemble_matrix(k2_form, bcs=bcs)
+K2 = dolfinx.fem.petsc.assemble_matrix(k2_form)
 K2.assemble()
-K3 = dolfinx.fem.petsc.assemble_matrix(k3_form, bcs=bcs)
+K3 = dolfinx.fem.petsc.assemble_matrix(k3_form)
 K3.assemble()
 
 ##################################

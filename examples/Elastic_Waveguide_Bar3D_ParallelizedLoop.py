@@ -71,13 +71,13 @@ mass_form = dolfinx.fem.form(m)
 
 ##################################
 # Build PETSc matrices
-M = dolfinx.fem.petsc.assemble_matrix(mass_form)
+M = dolfinx.fem.petsc.assemble_matrix(mass_form, bcs=bcs, diagonal=0.0)
 M.assemble()
 K1 = dolfinx.fem.petsc.assemble_matrix(k1_form, bcs=bcs)
 K1.assemble()
-K2 = dolfinx.fem.petsc.assemble_matrix(k2_form)
+K2 = dolfinx.fem.petsc.assemble_matrix(k2_form, bcs=bcs, diagonal=0.0)
 K2.assemble()
-K3 = dolfinx.fem.petsc.assemble_matrix(k3_form)
+K3 = dolfinx.fem.petsc.assemble_matrix(k3_form, bcs=bcs, diagonal=0.0)
 K3.assemble()
 
 ##################################

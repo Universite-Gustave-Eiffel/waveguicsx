@@ -27,7 +27,7 @@ alpha = 2+4j #average value of the absorbing function inside the PML
 N = 25 #number of elements along one side of the domain
 nev = 10 #number of eigenvalues
 omega = np.arange(0.5, 50, 0.5) #frequency range (eigenvalues are wavenumber)
-target = lambda omega: omega*cs/cl #target set at the longitudinal wavenumber of core to find L(0,n) modes
+target = lambda omega: omega*cs.real/cl #target set at the longitudinal wavenumber of core to find L(0,n) modes
 cs, cl, cs_ext, cl_ext = cs/(1+1j*kappas/2/np.pi), cl/(1+1j*kappal/2/np.pi), cs_ext/(1+1j*kappas_ext/2/np.pi), cl_ext/(1+1j*kappal_ext/2/np.pi) #complex celerities
 
 ##################################
@@ -44,25 +44,28 @@ def isotropic_law(rho, cs, cl):
     C11 = C22 = C33 = E/(1+nu)/(1-2*nu)*(1-nu)
     C12 = C13 = C23 = E/(1+nu)/(1-2*nu)*nu
     C44 = C55 = C66 = E/(1+nu)/2
-    return np.array([[C11,C12,C13,0,0,0], 
+    C = np.array([[C11,C12,C13,0,0,0], 
                      [C12,C22,C23,0,0,0], 
                      [C13,C23,C33,0,0,0], 
                      [0,0,0,C44,0,0], 
                      [0,0,0,0,C55,0], 
-                     [0,0,0,0,0,C66]]).reshape(36,1)
+                     [0,0,0,0,0,C66]])
+    C = C[np.triu_indices(6)] #the upper-triangle part of C (21 elements only)...
+    C = np.append(C,np.zeros(15)).reshape(36,1) #... stored as a column vector completed with zeros up to 36 elements (error otherwise)
+    return C
 C0 = isotropic_law(rho, cs, cl)
 C_ext = isotropic_law(rho_ext, cs_ext, cl_ext)
 def eval_C(x):
     values = C0 * np.logical_and(abs(x[0])<=0.5, abs(x[1])<=0.5) \
            + C_ext * np.logical_or(abs(x[0])>=0.5, abs(x[1])>=0.5)
     return values
-Q = dolfinx.fem.FunctionSpace(mesh, ufl.TensorElement("DG", "triangle", 0, (6,6)))
+Q = dolfinx.fem.FunctionSpace(mesh, ufl.TensorElement("DG", "triangle", 0, (6,6), symmetry=True)) #symmetry enables to store 21 elements instead of 36
 C = dolfinx.fem.Function(Q)
-C.interpolate(eval_C) #C.vector.getSize() should be equal to number of cells x 36
+C.interpolate(eval_C) #C.vector.getSize()) should be equal to number of cells x 21
 # Vizualization
 plotter = pyvista.Plotter(window_size=[600, 400])
 grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(mesh, mesh.topology.dim))
-grid.cell_data["Cij"] = C.x.array[0::36].real #index from 0 to 35, 0 being for C11...
+grid.cell_data["Cij"] = C.x.array[0::21].real #index from 0 to 20, 0 being for C11...
 grid.set_active_scalars("Cij")
 plotter.add_mesh(grid, show_edges=True, show_scalar_bar=True)
 plotter.add_text('Re(Cij)', 'upper_edge', color='black', font_size=8)

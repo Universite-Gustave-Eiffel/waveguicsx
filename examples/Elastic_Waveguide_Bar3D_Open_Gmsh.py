@@ -65,19 +65,20 @@ gmsh.model.addPhysicalGroup(2, [exterior], tag=2) #2: for 2D (surface)
 gmsh.model.addPhysicalGroup(1, [5, 6, 7, 8], tag=21) #1: for 1D (line)
 # Generate mesh
 gmsh.model.mesh.generate(2) #generate a 2D mesh
-gmsh.model.mesh.setOrder(1) #order 1 in gmsh, the element order is set from dolfinx
+gmsh.model.mesh.setOrder(2) #interpolation order for the geometry, here 2nd order
 # From gmsh to fenicsx
 mesh, cell_tags, facet_tags = dolfinx.io.gmshio.model_to_mesh(gmsh.model, MPI.COMM_WORLD, 0, gdim=2)
 # # Reminder for save & read
 # gmsh.write("Elastic_Waveguide_Bar3D_Open.msh") #save to disk
 # mesh, cell_tags, facet_tags = dolfinx.io.gmshio.read_from_msh("Elastic_Waveguide_Bar3D_Open.msh", MPI.COMM_WORLD, rank=0, gdim=2)
 gmsh.finalize() #called when done using the Gmsh Python API
-# Visualize
+# Visualize FE mesh with pyvista
+Vmesh = dolfinx.fem.FunctionSpace(mesh, ufl.FiniteElement("CG", "triangle", 1)) #order 1 is properly handled with pyvista
 plotter = pyvista.Plotter()
-grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(mesh, mesh.topology.dim))
+grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(Vmesh))
 grid.cell_data["Marker"] = cell_tags.values
 grid.set_active_scalars("Marker")
-actor = plotter.add_mesh(grid, show_edges=True)
+plotter.add_mesh(grid, show_edges=True)
 plotter.view_xy()
 plotter.show()
 # Finite element space
@@ -109,10 +110,11 @@ cells = cell_tags.find(2) #exterior (tag=2)
 C.x.array[[range(21*c,21*c+21) for c in cells]] = np.tile(C_ext, (len(cells),1))
 # Vizualization
 plotter = pyvista.Plotter(window_size=[600, 400])
-grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(mesh, mesh.topology.dim))
-grid.cell_data["Cij"] = C.x.array[0::21].real #index from 0 to 35, 0 being for C11...
-grid.set_active_scalars("Cij")
-plotter.add_mesh(grid, show_edges=True, show_scalar_bar=True)
+gridC = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(mesh, mesh.topology.dim)) #or *dolfinx.plot.create_vtk_mesh(Vmesh)
+gridC.cell_data["Cij"] = C.x.array[0::21].real #index from 0 to 35, 0 being for C11...
+gridC.set_active_scalars("Cij")
+plotter.add_mesh(grid, style="wireframe", color="k") #FE mesh (with vertices of order 1 elements only owing to pyvista) 
+plotter.add_mesh(gridC, opacity=0.8, show_scalar_bar=True, show_edges=False)
 plotter.add_text('Re(Cij)', 'upper_edge', color='black', font_size=8)
 plotter.view_xy()
 plotter.show()

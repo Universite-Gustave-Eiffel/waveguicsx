@@ -15,7 +15,7 @@ class Waveguide:
     A class for solving waveguide problems (based on SLEPc eigensolver)
     
     The problem must be based on the so-called SAFE (Semi-Analytical Finite Element) formulation:
-    (K1-omega**2*M + 1j*k*K2 + k**2*K3)*U=0
+    (K1-omega**2*M + 1j*k*(K2-K2^T) + k**2*K3)*U=0
     The varying parameter can be the angular frequency omega or the wavenumber k.
     In the former case, the eigenvalue is k, while in the latter case, the eigenvalue is omega**2.
     
@@ -47,17 +47,21 @@ class Waveguide:
         list of mode shapes
         access to components with eigenvectors[ik][idof,imode] (ip: parameter index, imode: mode index, idof: dof index)
         or eigenvectors[ik].getColumnVector(imode)
+    eigenforces : list of PETSc matrices
+        list of eigenforces (acces to components: see eigenvectors)
     
     Methods
     -------
     set_parameters(omega=None, wavenumber=None):
         Set problem type (pb_type), the parameter range (omega or wavenumber) as well as default parameters of SLEPc eigensolver (evp)
     solve(nev=1, target=0):
-        Solve the eigenvalue problem repeatedly for the parameter range, solutions are stored as attributes (eigenvalues, eigenvectors)
+        Solve the eigenvalue problem repeatedly for the parameter range, solutions are stored as attributes (names: eigenvalues, eigenvectors)
     plot_dispersion(axs=None, color="k",  marker="o", markersize=2, linestyle="", **kwargs):
         Plot dispersion curves (based on multiple subplot matplotlib)
     plot_spectrum(index=0, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
         Plot the spectrum, Im(eigenvalues) vs. Re(eigenvalues), for the parameter index specified by the user
+    compute_eigenforce():
+        Compute the eigenforces for the whole parameter range and store them as an attribute (name: eigenforces)
     """
     def __init__(self, comm:'_MPI.Comm', M:PETSc.Mat, K1:PETSc.Mat, K2:PETSc.Mat, K3:PETSc.Mat):
         """
@@ -83,6 +87,7 @@ class Waveguide:
         self.evp: Union[SLEPc.PEP, SLEPc.EPS, None] = None
         self.eigenvalues: list = []
         self.eigenvectors: list = []
+        self.eigenforces: list = []
         
         # Print the number of degrees of freedom
         print(f'Total number of degrees of freedom: {self.M.size[0]}')
@@ -158,15 +163,16 @@ class Waveguide:
             target = lambda parameter_value: target_constant
         
         # Loop over the parameter
+        K2T = self.K2.copy().transpose() #K2^T is stored before loop (faster computations)
         parameters = {"omega": self.omega, "wavenumber": self.wavenumber}[self.pb_type]
         print(f'Waveguide parameter: {self.pb_type} ({len(parameters)} iterations)')
         for i, parameter_value in enumerate(parameters):
             start = time.perf_counter()
             self.evp.setTarget(target(parameter_value))
             if self.pb_type=="wavenumber":
-                 self.evp.setOperators(self.K1 + PETSc.ScalarType(1j*parameter_value)*self.K2 + PETSc.ScalarType(parameter_value**2)*self.K3, self.M)
+                 self.evp.setOperators(self.K1 + PETSc.ScalarType(1j*parameter_value)*(self.K2-K2T) + PETSc.ScalarType(parameter_value**2)*self.K3, self.M)
             elif self.pb_type == "omega":
-                self.evp.setOperators([self.K1-PETSc.ScalarType(parameter_value)**2*self.M, PETSc.ScalarType(1j)*self.K2, self.K3])
+                self.evp.setOperators([self.K1-PETSc.ScalarType(parameter_value)**2*self.M, PETSc.ScalarType(1j)*(self.K2-K2T), self.K3])
             self.evp.solve()
             #self.evp.errorView()
             #self.evp.valuesView()
@@ -176,6 +182,7 @@ class Waveguide:
             #self.evp.setInitialSpace(self.eigenvectors[-1]) #try to use current modal basis to compute next, but may be only the first eigenvector...
         print('\n---- SLEPc setup (based on last iteration) ----\n')
         self.evp.view()
+        K2T.destroy()
         print('')
         
     def plot_dispersion(self, axs=None, color="k",
@@ -252,9 +259,20 @@ class Waveguide:
         fig.tight_layout()
         return ax
     
-    def compute_mode_properties(self):
-        """ Post-process modal properties (ve, vg, traveling direction...) """
-        #Future works
+    def compute_eigenforces(self):
+        """ Post-process the eigenforces F=(K2^T+1j*k*K3)*U for every mode and the whole parameter range"""
+        start = time.perf_counter()
+        self.eigenforces = []
+        K2T = self.K2.copy().transpose() #K2^T is stored before loop (faster computations)
+        for i in range(len(self.eigenvectors)):
+            diag = PETSc.Mat().createAIJ(self.eigenvectors[i].getSize()[1])
+            diag.setUp()
+            diag.assemble()
+            diag.setDiagonal(PETSc.Vec().createWithArray(self.eigenvalues[i]))
+            self.eigenforces.append(K2T*self.eigenvectors[i]+PETSc.ScalarType(1j)*self.K3*self.eigenvectors[i]*diag)
+        diag.destroy()
+        K2T.destroy()
+        print(f'Computation of eigenforces, elapsed time : {(time.perf_counter() - start):.2f}s')
     
     def track_mode(self):
         """ Track a desired mode """

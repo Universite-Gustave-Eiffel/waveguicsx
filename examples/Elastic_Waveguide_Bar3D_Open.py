@@ -135,17 +135,17 @@ mass_form = dolfinx.fem.form(m)
 # Build PETSc matrices
 M = dolfinx.fem.petsc.assemble_matrix(mass_form, bcs=bcs, diagonal=0.0)
 M.assemble()
-K1 = dolfinx.fem.petsc.assemble_matrix(k1_form, bcs=bcs)
+K0 = dolfinx.fem.petsc.assemble_matrix(k1_form, bcs=bcs)
+K0.assemble()
+K1 = dolfinx.fem.petsc.assemble_matrix(k2_form, bcs=bcs, diagonal=0.0)
 K1.assemble()
-K2 = dolfinx.fem.petsc.assemble_matrix(k2_form, bcs=bcs, diagonal=0.0)
+K2 = dolfinx.fem.petsc.assemble_matrix(k3_form, bcs=bcs, diagonal=0.0)
 K2.assemble()
-K3 = dolfinx.fem.petsc.assemble_matrix(k3_form, bcs=bcs, diagonal=0.0)
-K3.assemble()
 
 ##################################
 # Solve the eigenproblem with SLEPc\
 # The parameter is omega, the eigenvalue is k
-wg = Waveguide(MPI.COMM_WORLD, M, K1, K2, K3)
+wg = Waveguide(MPI.COMM_WORLD, M, K0, K1, K2)
 wg.set_parameters(omega=omega)
 wg.evp.setWhichEigenpairs(SLEPc.PEP.Which.TARGET_MAGNITUDE) #here, preferred to TARGET_IMAGINARY
 wg.solve(nev, target=target)

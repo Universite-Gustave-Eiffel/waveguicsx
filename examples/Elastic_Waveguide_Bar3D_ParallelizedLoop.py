@@ -73,12 +73,12 @@ mass_form = dolfinx.fem.form(m)
 # Build PETSc matrices
 M = dolfinx.fem.petsc.assemble_matrix(mass_form, bcs=bcs, diagonal=0.0)
 M.assemble()
-K1 = dolfinx.fem.petsc.assemble_matrix(k1_form, bcs=bcs)
+K0 = dolfinx.fem.petsc.assemble_matrix(k1_form, bcs=bcs)
+K0.assemble()
+K1 = dolfinx.fem.petsc.assemble_matrix(k2_form, bcs=bcs, diagonal=0.0)
 K1.assemble()
-K2 = dolfinx.fem.petsc.assemble_matrix(k2_form, bcs=bcs, diagonal=0.0)
+K2 = dolfinx.fem.petsc.assemble_matrix(k3_form, bcs=bcs, diagonal=0.0)
 K2.assemble()
-K3 = dolfinx.fem.petsc.assemble_matrix(k3_form, bcs=bcs, diagonal=0.0)
-K3.assemble()
 
 ##################################
 # Solve the eigenproblem with SLEPc\
@@ -96,7 +96,7 @@ else:
     param_split = None
 param_local = comm.scatter(param_split, root=0) #scatter 1 block per process
 # Solve
-wg = Waveguide(MPI.COMM_SELF, M, K1, K2, K3) #MPI.COMM_SELF = SLEPc will used FE matrices on each local process
+wg = Waveguide(MPI.COMM_SELF, M, K0, K1, K2) #MPI.COMM_SELF = SLEPc will used FE matrices on each local process
 wg.set_parameters(omega=param_local)
 wg.solve(nev)
 # Gather

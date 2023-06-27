@@ -13,14 +13,14 @@ class Waveguide:
     A class for solving waveguide problems (based on SLEPc eigensolver)
     
     The problem must be based on the so-called SAFE (Semi-Analytical Finite Element) formulation:
-    (K1-omega**2*M + 1j*k*(K2-K2^T) + k**2*K3)*U=0
+    (K0-omega**2*M + 1j*k*(K1-K1^T) + k**2*K2)*U=0
     The varying parameter can be the angular frequency omega or the wavenumber k.
     In the former case, the eigenvalue is k, while in the latter case, the eigenvalue is omega**2.
     
     Example:
     import waveguicsx
     param = np.arange(0.1, 2, 0.1)
-    waveguide = waveguicsx.Waveguide(MPI.COMM_WORLD, M, K1, K2, K3)
+    waveguide = waveguicsx.Waveguide(MPI.COMM_WORLD, M, K0, K1, K2)
     waveguide.set_parameters(wavenumber=param) #or: waveguide.setParameters(omega=param)
     waveguide.solve(nev)
     waveguide.plot()
@@ -30,7 +30,7 @@ class Waveguide:
     ----------
     comm : mpi4py.MPI.Intracomm
         MPI communicator (parallel processing)
-    M, K1, K2, K3 : petsc4py.PETSc.Mat
+    M, K0, K1, K2 : petsc4py.PETSc.Mat
         SAFE matrices
     problem_type : str
         problem_type is "omega" if the varying parameter is omega, "wavenumber" if this is k
@@ -80,7 +80,7 @@ class Waveguide:
     compute_pml_ratio():
         Compute the pml ratio for the whole parameter range and store them as an attribute (name: pml_ratio)
     """
-    def __init__(self, comm:'_MPI.Comm', M:PETSc.Mat, K1:PETSc.Mat, K2:PETSc.Mat, K3:PETSc.Mat):
+    def __init__(self, comm:'_MPI.Comm', M:PETSc.Mat, K0:PETSc.Mat, K1:PETSc.Mat, K2:PETSc.Mat):
         """
         Constructor
         
@@ -88,14 +88,14 @@ class Waveguide:
         ----------
         comm : mpi4py.MPI.Intracomm
             MPI communicator (parallel processing)
-        M, K1, K2, K3 : petsc4py.PETSc.Mat
+        M, K0, K1, K2 : petsc4py.PETSc.Mat
             SAFE matrices
         """
         self.comm = comm
         self.M = M
+        self.K0 = K0
         self.K1 = K1
         self.K2 = K2
-        self.K3 = K3
 
         # Set the default values for the internal attributes used in this class
         self.problem_type: str = ""  # "wavenumber" or "omega"
@@ -183,16 +183,16 @@ class Waveguide:
             target = lambda parameter_value: target_constant
         
         # Loop over the parameter
-        K2T = self.K2.copy().transpose() #K2^T is stored before loop (faster computations)
+        K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
         parameters = {"omega": self.omega, "wavenumber": self.wavenumber}[self.problem_type]
         print(f'Waveguide parameter: {self.problem_type} ({len(parameters)} iterations)')
         for i, parameter_value in enumerate(parameters):
             start = time.perf_counter()
             self.evp.setTarget(target(parameter_value))
             if self.problem_type=="wavenumber":
-                 self.evp.setOperators(self.K1 + PETSc.ScalarType(1j*parameter_value)*(self.K2-K2T) + PETSc.ScalarType(parameter_value**2)*self.K3, self.M)
+                 self.evp.setOperators(self.K0 + PETSc.ScalarType(1j*parameter_value)*(self.K1-K1T) + PETSc.ScalarType(parameter_value**2)*self.K2, self.M)
             elif self.problem_type == "omega":
-                self.evp.setOperators([self.K1-PETSc.ScalarType(parameter_value)**2*self.M, PETSc.ScalarType(1j)*(self.K2-K2T), self.K3])
+                self.evp.setOperators([self.K0-PETSc.ScalarType(parameter_value)**2*self.M, PETSc.ScalarType(1j)*(self.K1-K1T), self.K2])
             self.evp.solve()
             #self.evp.errorView()
             #self.evp.valuesView()
@@ -202,7 +202,7 @@ class Waveguide:
             #self.evp.setInitialSpace(self.eigenvectors[-1]) #try to use current modal basis to compute next, but may be only the first eigenvector...
         #print('\n---- SLEPc setup (based on last iteration) ----\n')
         #self.evp.view()
-        K2T.destroy()
+        K1T.destroy()
         print('')
 
     def plot(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
@@ -346,14 +346,14 @@ class Waveguide:
         return ax
 
     def compute_eigenforces(self):
-        """ Post-process the eigenforces F=(K2^T+1j*k*K3)*U for every mode in the whole parameter range"""
+        """ Post-process the eigenforces F=(K1^T+1j*k*K2)*U for every mode in the whole parameter range"""
         start = time.perf_counter()
         self.eigenforces = []
-        K2T = self.K2.copy().transpose() #K2^T is stored before loop (faster computations)
+        K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
         for i in range(len(self.eigenvectors)):
             wavenumber, _ = self._concatenate(i=i) #repeat parameter as many times as the number of eigenvalues
-            self.eigenforces.append(K2T*self.eigenvectors[i]+PETSc.ScalarType(1j)*self.K3*self.eigenvectors[i]*self._diag(wavenumber))
-        K2T.destroy()
+            self.eigenforces.append(K1T*self.eigenvectors[i]+PETSc.ScalarType(1j)*self.K2*self.eigenvectors[i]*self._diag(wavenumber))
+        K1T.destroy()
         print(f'Computation of eigenforces, elapsed time : {(time.perf_counter() - start):.2f}s')
 
     def compute_energy_velocity(self):
@@ -365,21 +365,21 @@ class Waveguide:
         # Energy velocity, integration on the whole domain
         start = time.perf_counter()
         self.energy_velocity = []
-        K2T = self.K2.copy().transpose() #K2^T is stored before loop (faster computations)
+        K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
         for i in range(len(self.eigenvectors)):
             #repeat parameter as many times as the number of eigenvalues
             wavenumber, omega = self._concatenate(i=i)
             #time averaged kinetic energy
             E = 0.25*np.abs(omega**2)*np.real(self._dot_eigenvectors(i, self.M*self.eigenvectors[i])) 
             #add time averaged potential energy
-            temp = (self.K1*self.eigenvectors[i] + 1j*self.K2*self.eigenvectors[i]*self._diag(wavenumber)
-                    -1j*K2T*self.eigenvectors[i]*self._diag(wavenumber.conjugate()) + self.K3*self.eigenvectors[i]*self._diag(np.abs(wavenumber)**2))
+            temp = (self.K0*self.eigenvectors[i] + 1j*self.K1*self.eigenvectors[i]*self._diag(wavenumber)
+                    -1j*K1T*self.eigenvectors[i]*self._diag(wavenumber.conjugate()) + self.K2*self.eigenvectors[i]*self._diag(np.abs(wavenumber)**2))
             E = E + 0.25*np.real(self._dot_eigenvectors(i, temp))
             #time averaged complex Poynting vector (normal component)
             Pn = -1j*omega/2*self._dot_eigenvectors(i, self.eigenforces[i])
             #cross-section and time averaged energy velocity
             self.energy_velocity.append(np.real(Pn)/E)
-        K2T.destroy()
+        K1T.destroy()
         print(f'Computation of energy velocity, elapsed time : {(time.perf_counter() - start):.2f}s')
         
         # Warning for pml problems (integration restricted on the core is currently not possible)
@@ -435,9 +435,9 @@ class Waveguide:
             print('Eigenforces have not yet been computed')
             return
         if self.problem_type == "wavenumber":
-            biorthogonality = self.eigenvectors[i].copy().hermitianTranspose()*self.M*self.eigenvectors[i] #hyp: K1, K2, K3, M and eigenvalues must be real here!
+            biorthogonality = self.eigenvectors[i].copy().hermitianTranspose()*self.M*self.eigenvectors[i] #hyp: K0, K1, K2, M and eigenvalues must be real here!
             # Warning for lossy problems
-            dofs_complex = np.nonzero(np.iscomplex(self.K3.getDiagonal()[:]))[0]
+            dofs_complex = np.nonzero(np.iscomplex(self.K2.getDiagonal()[:]))[0]
             if dofs_complex.size!=0:
                 print("Warning: the orthogonality relation implemented is currently valid for real matrices only (lossless problems)")
         elif self.problem_type == "omega":

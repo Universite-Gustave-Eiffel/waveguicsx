@@ -149,7 +149,7 @@ wg = Waveguide(MPI.COMM_WORLD, M, K1, K2, K3)
 wg.set_parameters(omega=omega)
 wg.evp.setWhichEigenpairs(SLEPc.PEP.Which.TARGET_MAGNITUDE) #here, preferred to TARGET_IMAGINARY
 wg.solve(nev, target=target)
-wg.plot_dispersion()
+wg.plot()
 plt.show()
 #wg.plot_spectrum(index=0)
 #plt.show()

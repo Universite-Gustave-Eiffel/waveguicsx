@@ -105,8 +105,8 @@ wg.eigenvalues = comm.reduce(wg.eigenvalues, op=MPI.SUM, root=0)
 #wg.eigenvectors = comm.reduce(wg.eigenvectors, op=MPI.SUM, root=0) #don't do this line: reduce cannot pickle 'petsc4py.PETSc.Vec' objects (keep the mode shapes distributed on each processor rather than gather them)
 # Plot results
 if rank == 0:
-    wg.omega = np.concatenate(wg.omega) #wg.omega is transformed to a numpy array for a proper use of wg.plot_dispersion()
-    wg.plot_dispersion()
+    wg.omega = np.concatenate(wg.omega) #wg.omega is transformed to a numpy array for a proper use of wg.plot()
+    wg.plot()
     #plt.savefig("Elastic_Waveguide_Bar3D_ParallelizedLoop.svg")
     plt.show()
 

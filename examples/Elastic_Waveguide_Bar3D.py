@@ -93,7 +93,7 @@ K3.assemble()
 wg = Waveguide(MPI.COMM_WORLD, M, K1, K2, K3)
 wg.set_parameters(wavenumber=wavenumber)
 wg.solve(nev) #access to components with: wg.eigenvalues[ik][imode], wg.eigenvectors[ik][idof,imode]
-wg.plot_dispersion()
+wg.plot()
 plt.show()
 
 ##################################
@@ -111,7 +111,7 @@ print(f'Euler-Bernoulli beam solution (only accurate for low frequency):\n \
 wg = Waveguide(MPI.COMM_WORLD, M, K1, K2, K3)
 wg.set_parameters(omega=omega)
 wg.solve(nev) #access to components with: wg.eigenvalues[ik][imode], wg.eigenvectors[ik][idof,imode]
-wg.plot_dispersion()
+wg.plot()
 plt.show() #blocking
 
 ##################################

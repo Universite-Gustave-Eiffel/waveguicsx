@@ -403,9 +403,14 @@ class Waveguide:
             wavenumber, _ = self._concatenate(i=i)
             temp = delta/self.energy_velocity[i]
             temp[np.nonzero(np.abs(wavenumber.imag)+np.abs(temp)>np.abs(wavenumber.real))] = 0 #do not use the LAP if |Im(k)| + |delta/ve| is significant
-            wavenumlap = wavenumber + 1j*temp
-            self.traveling_direction.append(np.sign(wavenumlap.imag))
-        print(f'Determination of traveling direction, elapsed time : {(time.perf_counter() - start):.2f}s')
+            traveling_direction = np.sign((wavenumber+1j*temp).imag)
+            self.traveling_direction.append(traveling_direction)
+            #Check if any exponentially growing modes (in the numerical LAP, delta is user-defined, which could sometimes lead to wrong traveling directions)
+            growing_modes = np.nonzero(wavenumber.imag*traveling_direction<0)[0]
+            if len(growing_modes)!=0:
+                print('Warning in computing traveling direction: exponentially growing modes found (unproper sign of Im(k) detected)')
+                print(f'for iteration {i}, with |Im(k)/Re(k)| up to {(np.abs(wavenumber[growing_modes].imag/wavenumber[growing_modes].real)).max():.2e}')
+        print(f'Computation of traveling direction, elapsed time : {(time.perf_counter() - start):.2f}s')
 
     def compute_pml_ratio(self):
         """

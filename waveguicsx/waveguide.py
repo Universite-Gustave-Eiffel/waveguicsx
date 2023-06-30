@@ -34,6 +34,8 @@ class Waveguide:
         SAFE matrices
     problem_type : str
         problem_type is "omega" if the varying parameter is omega, "wavenumber" if this is k
+    two_sided : bool
+        if True, left eigenvectors will be also computed (otherwise, only right eigenvectors are computed)
     omega or wavenumber : numpy.ndarray
         the parameter range specified by the user (see method setParameters)
     evp : PEP or EPS instance (SLEPc object)
@@ -45,10 +47,14 @@ class Waveguide:
         list of mode shapes
         access to components with eigenvectors[ik][idof,imode] (ip: parameter index, imode: mode index, idof: dof index)
         or eigenvectors[ik].getColumnVector(imode)
+    left_eigenvectors: list of PETSc matrices
+        list of left mode shapes (only computed if two_sided is set to True by user)
     eigenforces : list of PETSc matrices
         list of eigenforces (acces to components: see eigenvectors)
     energy_velocity : list of numpy arrays
         list of energy velocity (access to component: see eigenvalues)
+    group_velocity : list of numpy arrays
+        list of group velocity (access to component: see eigenvalues)
     traveling_direction : list of numpy arrays
         list of traveling_direction (access to component: see eigenvalues)
     pml_ratio : list of numpy arrays
@@ -56,25 +62,32 @@ class Waveguide:
     
     Methods
     -------
-    set_parameters(omega=None, wavenumber=None):
+    set_parameters(omega=None, wavenumber=None, two_sided=False):
         Set problem type (problem_type), the parameter range (omega or wavenumber) as well as default parameters of SLEPc eigensolver (evp)
+        Set two_sided to True if left eigenvectors are needed (e.g. for normalization or group velocity computation)
     solve(nev=1, target=0):
-        Solve the eigenvalue problem repeatedly for the parameter range, solutions are stored as attributes (names: eigenvalues, eigenvectors)
-    plot(ax=None, color="k",  marker="o", markersize=2, linestyle="", **kwargs):
+        Solve the eigenvalue problem repeatedly for the parameter range, solutions are stored as attributes (names: eigenvalues,
+        eigenvectors, as well as left_eigenvectors if two_sided is True)
+    plot(direction=None, pml_threshold=None, ax=None, color="k",  marker="o", markersize=2, linestyle="", **kwargs):
         Plot dispersion curves Re(omega) vs. Re(wavenumber) using matplotlib
-    plot_phase_velocity(ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+    plot_phase_velocity(direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
         Plot phase velocity dispersion curves, vp=Re(omega)/Re(wavenumber) vs. Re(omega)
-    plot_attenuation(ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+    plot_attenuation(direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
         Plot attenuation dispersion curves, Im(wavenumber) vs. Re(omega) if omega is the parameter,
         or Im(omega) vs. Re(omega) if wavenumber is the parameter
-    plot_energy_velocity(ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+    plot_energy_velocity(direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
         Plot energy velocity dispersion curves, ve vs. Re(omega)
+    plot_group_velocity(direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+        Plot group velocity dispersion curves, vg vs. Re(omega)
     plot_spectrum(index=0, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
         Plot the spectrum, Im(eigenvalues) vs. Re(eigenvalues), for the parameter index specified by the user
     compute_eigenforce():
         Compute the eigenforces for the whole parameter range and store them as an attribute (name: eigenforces)
     compute_energy_velocity():
         Compute the energy velocity for the whole parameter range and store them as an attribute (name: energy_velocity)
+    compute_group_velocity():
+        Compute the group velocity for the whole parameter range and store them as an attribute (name: energy_velocity)
+        Left eigenvectors are required (two_sided must be set to True)
     compute_traveling_direction():
         Compute the traveling_direction for the whole parameter range and store them as an attribute (name: traveling_direction)
     compute_pml_ratio():
@@ -101,44 +114,59 @@ class Waveguide:
         self.problem_type: str = ""  # "wavenumber" or "omega"
         self.omega: Union[np.ndarray, None] = None
         self.wavenumber: Union[np.ndarray, None] = None
+        self.two_sided = None
         self.evp: Union[SLEPc.PEP, SLEPc.EPS, None] = None
         self.eigenvalues: list = []
         self.eigenvectors: list = []
+        self.left_eigenvectors: list = []
         self.eigenforces: list = []
         self.energy_velocity: list = []
+        self.group_velocity: list = []
         self.traveling_direction: list = []
         self.pml_ratio: list = []
         
         # Print the number of degrees of freedom
         print(f'Total number of degrees of freedom: {self.M.size[0]}')
 
-    def set_parameters(self, omega: Union[np.ndarray, None]=None, wavenumber:Union[np.ndarray, None]=None):
+    def set_parameters(self, omega: Union[np.ndarray, None]=None, wavenumber:Union[np.ndarray, None]=None, two_sided=False):
         """
         Set the parameter range (omega or wavenumber) as well as default parameters of the SLEPc eigensolver (evp)
         The user must specify the parameter omega or wavenumber, but not both
         This method generates the attributes omega (or wavenumber) and evp
         After this method call, different SLEPc parameters can be set by changing the attribute evp manually
+        Set two_sided=True for solving left eigenvectors also
         
         Parameters
         ----------
         omega or wavenumber : numpy.ndarray
             the parameter range specified by the user
+        two_sided : bool
+            False if left eigenvectiors are not needed, True if they must be solved also (e.g. for mode normalization and group velocity)
         """
         if not (wavenumber is None) ^ (omega is None):
-            raise NotImplementedError('Please specify omega or wavenumber (and not both)!')
-
+            raise NotImplementedError('Please specify omega or wavenumber (and not both)')
+        
         # The parameter is the frequency omega, the eigenvalue is the wavenumber k
         if wavenumber is None:
             self.problem_type = "omega"
             if isinstance(omega, (float, int, complex)): #single element special case
                 omega = [omega]
             self.omega = omega
-            # Setup the SLEPc solver for the quadratic eigenvalue problem
-            self.evp = SLEPc.PEP()
-            self.evp.create(comm=self.comm)
-            self.evp.setProblemType(SLEPc.PEP.ProblemType.GENERAL) #note: for the undamped case, HERMITIAN is possible with QARNOLDI and TOAR but surprisingly not faster
-            self.evp.setType(SLEPc.PEP.Type.LINEAR) #note: the computational speed of LINEAR, QARNOLDI and TOAR seems to be almost identical
-            self.evp.setWhichEigenpairs(SLEPc.PEP.Which.TARGET_IMAGINARY)
+            if not two_sided: #left eigenvectors not required
+                # Setup the SLEPc solver for the quadratic eigenvalue problem
+                self.evp = SLEPc.PEP()
+                self.evp.create(comm=self.comm)
+                self.evp.setProblemType(SLEPc.PEP.ProblemType.GENERAL) #note: for the undamped case, HERMITIAN is possible with QARNOLDI and TOAR but surprisingly not faster
+                self.evp.setType(SLEPc.PEP.Type.LINEAR) #note: the computational speed of LINEAR, QARNOLDI and TOAR seems to be almost identical
+                self.evp.setWhichEigenpairs(SLEPc.PEP.Which.TARGET_IMAGINARY)
+            else: #left eigenvectors required by user
+                # Setup the SLEPc solver for the quadratic eigenvalue problem linearized externally! (SLEPc.EPS used, setTwoSided is not available in SLEPc.PEP)
+                self.evp = SLEPc.EPS()
+                self.evp.create(comm=self.comm)
+                self.evp.setProblemType(SLEPc.EPS.ProblemType.GNHEP) #note: GHEP (generalized Hermitian) is surprinsingly a little bit slower...
+                self.evp.setType(SLEPc.EPS.Type.KRYLOVSCHUR) #note: ARNOLDI also works although slightly slower
+                self.evp.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_IMAGINARY)
+                self.evp.setTwoSided(two_sided)
 
         # The parameter is the frequency omega, the eigenvalue is the wavenumber k
         elif omega is None:
@@ -152,8 +180,10 @@ class Waveguide:
             self.evp.setProblemType(SLEPc.EPS.ProblemType.GNHEP) #note: GHEP (generalized Hermitian) is surprinsingly a little bit slower...
             self.evp.setType(SLEPc.EPS.Type.KRYLOVSCHUR) #note: ARNOLDI also works although slightly slower
             self.evp.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_MAGNITUDE)
+            self.evp.setTwoSided(two_sided)
         
-        # Setup common to EPS and PEP
+        # Common setup
+        self.two_sided = two_sided
         self.evp.setTolerances(tol=1e-6, max_it=20)
         ST = self.evp.getST()
         ST.setType(SLEPc.ST.Type.SINVERT)
@@ -192,17 +222,38 @@ class Waveguide:
             if self.problem_type=="wavenumber":
                  self.evp.setOperators(self.K0 + PETSc.ScalarType(1j*parameter_value)*(self.K1-K1T) + PETSc.ScalarType(parameter_value**2)*self.K2, self.M)
             elif self.problem_type == "omega":
-                self.evp.setOperators([self.K0-PETSc.ScalarType(parameter_value)**2*self.M, PETSc.ScalarType(1j)*(self.K1-K1T), self.K2])
+                if not self.two_sided: #left eigenvectors not required -> PEP class is used
+                    self.evp.setOperators([self.K0-PETSc.ScalarType(parameter_value)**2*self.M, PETSc.ScalarType(1j)*(self.K1-K1T), self.K2])
+                else: #left eigenvectors are required -> linearize the quadratic evp and use EPS class (PEP class is not possible)
+                    Zero = PETSc.Mat().createAIJ(self.M.getSize(), comm=self.comm)
+                    Zero.setUp()
+                    Zero.assemble()
+                    Id = PETSc.Mat().createAIJ(self.M.getSize(), comm=self.comm)
+                    Id.setUp()
+                    Id.setDiagonal(self.M.createVecRight()+1)
+                    Id.assemble()
+                    A = self._build_block_matrix(-(self.K0-PETSc.ScalarType(parameter_value)**2*self.M), -PETSc.ScalarType(1j)*(self.K1-K1T), Zero, Id)
+                    B = self._build_block_matrix(Zero, self.K2, Id, Zero)
+                    #A = self._build_block_matrix(self.K0-PETSc.ScalarType(parameter_value)**2*self.M, Zero, -K1T, Id)
+                    #B = self._build_block_matrix(-PETSc.ScalarType(1j)*self.K1, PETSc.ScalarType(1j)*Id, PETSc.ScalarType(1j)*self.K2, Zero)
+                    self.evp.setOperators(A, B)
             self.evp.solve()
             #self.evp.errorView()
             #self.evp.valuesView()
             self.eigenvalues.append(self._get_eigenvalues())
             self.eigenvectors.append(self._get_eigenvectors())
+            if self.two_sided: #get left eigenvectors also
+                self.left_eigenvectors.append(self._get_eigenvectors(side='left'))
             print(f'Iteration {i}, elapsed time :{(time.perf_counter() - start):.2f}s')
             #self.evp.setInitialSpace(self.eigenvectors[-1]) #try to use current modal basis to compute next, but may be only the first eigenvector...
         #print('\n---- SLEPc setup (based on last iteration) ----\n')
         #self.evp.view()
         K1T.destroy()
+        if self.problem_type=="omega" and self.two_sided:
+            Zero.destroy()
+            Id.destroy()
+            A.destroy()
+            B.destroy()
         print('')
 
     def plot(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
@@ -212,7 +263,7 @@ class Waveguide:
         Parameters
         ----------
         direction: +1 for positive-going modes, -1 for negative-going modes, None for plotting all modes
-        pml_threshold: threshold to filter out PML modes (i.e. such that pml_ratio<pml_threshold)
+        pml_threshold: threshold to filter out PML modes (modes such that pml_ratio<pml_threshold)
         ax: the matplotlib axes on which to plot data (created if None)
         color: str, marker: str, markersize: int, linestyle: str, **kwargs are passed to ax.plot
 
@@ -220,6 +271,7 @@ class Waveguide:
         -------
         ax: the matplotlib axes used for display
         """
+        # Initialization
         self._compute_if_necessary(direction, pml_threshold) #compute traveling direction and pml ratio if necessary
         if ax is None:
             fig, ax = plt.subplots(1, 1)
@@ -243,6 +295,7 @@ class Waveguide:
         Plot phase velocity dispersion curves, vp=Re(omega)/Re(wavenumber) vs. Re(omega)
         Parameters and Returns: see plot(...)
         """
+        # Initialization
         self._compute_if_necessary(direction, pml_threshold) #compute traveling direction and pml ratio if necessary
         if ax is None:
             fig, ax = plt.subplots(1, 1)
@@ -269,6 +322,7 @@ class Waveguide:
         or Im(omega) vs. Re(omega) if wavenumber is the parameter
         Parameters and Returns: see plot(...)
         """
+        # Initialization
         self._compute_if_necessary(direction, pml_threshold) #compute traveling direction and pml ratio if necessary
         if ax is None:
             fig, ax = plt.subplots(1, 1)
@@ -297,6 +351,7 @@ class Waveguide:
         Plot energy velocity dispersion curves, ve vs. Re(omega)
         Parameters and Returns: see plot(...)
         """
+        # Initialization
         self._compute_if_necessary(direction, pml_threshold) #compute traveling direction and pml ratio if necessary
         if len(self.energy_velocity)==0:  #compute the energy velocity if not yet computed
             self.compute_energy_velocity()
@@ -312,6 +367,32 @@ class Waveguide:
         ax.set_ylim(ve.min(), ve.max())
         ax.set_xlabel('Re(omega)')
         ax.set_ylabel('ve')
+        
+        fig.tight_layout()
+        # plt.show()  #let user decide whether he wants to interrupt the execution for display, or save to figure...
+        return ax
+
+    def plot_group_velocity(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+        """
+        Plot group velocity dispersion curves, ve vs. Re(omega)
+        Parameters and Returns: see plot(...)
+        """
+        # Initialization
+        self._compute_if_necessary(direction, pml_threshold) #compute traveling direction and pml ratio if necessary
+        if len(self.group_velocity)==0:  #compute the group velocity if not yet computed
+            self.compute_group_velocity()
+        if ax is None:
+            fig, ax = plt.subplots(1, 1)
+        
+        # Build concatenaded arrays
+        _, omega, vg = self._concatenate('group_velocity', direction=direction, pml_threshold=pml_threshold)
+        
+        # vp vs. Re(omega)
+        ax.plot(omega.real, vg, color=color, marker=marker, markersize=markersize, linestyle=linestyle, **kwargs)
+        ax.set_xlim(omega.real.min(), omega.real.max())
+        ax.set_ylim(vg.min(), vg.max())
+        ax.set_xlabel('Re(omega)')
+        ax.set_ylabel('vg')
         
         fig.tight_layout()
         # plt.show()  #let user decide whether he wants to interrupt the execution for display, or save to figure...
@@ -357,7 +438,10 @@ class Waveguide:
         print(f'Computation of eigenforces, elapsed time : {(time.perf_counter() - start):.2f}s')
 
     def compute_energy_velocity(self):
-        """ Post-process the energy velocity ve for every mode in the whole parameter range"""
+        """
+        Post-process the energy velocity ve=Re(P)/Re(E) for every mode in the whole parameter range, where P is the
+        normal component of complex Poynting vector and E is the total energy (cross-section time-averaged)
+        """
         # Compute the eigenforces if not yet computed
         if len(self.eigenforces)==0:
             self.compute_eigenforces()
@@ -390,18 +474,21 @@ class Waveguide:
     def compute_traveling_direction(self, delta=1e-2):
         """
         Post-process the traveling direction, +1 or -1, for every mode in the whole parameter range,
-        using the sign of Im(k + 1j*delta/ve) where delta is the imaginary shift used for analytical
-        continuation of k
-        This criterion is based on the limiting absorption principle, although theoretically,
-        vg should be used instead of ve
+        using the sign of Im(k + 1j*delta/v) where delta is the imaginary shift used for analytical
+        continuation of k, and v is the group velocity (or, if not available, the energy velocity)
+        This criterion is based on the limiting absorption principle (theoretically, vg should be used
+        instead of ve)
         """
-        if len(self.energy_velocity)==0:  #compute the energy velocity if not yet computed
-            self.compute_energy_velocity()
+        if len(self.group_velocity)==0:
+            if self.two_sided:
+                self.compute_group_velocity() #compute the group velocity
+            elif len(self.energy_velocity)==0: #or, if not available, compute the energy velocity
+                self.compute_energy_velocity()
         start = time.perf_counter()
         self.traveling_direction = []
         for i in range(len(self.eigenvalues)):
             wavenumber, _ = self._concatenate(i=i)
-            temp = delta/self.energy_velocity[i]
+            temp = delta/(self.energy_velocity[i] if len(self.group_velocity)==0 else self.group_velocity[i])
             temp[np.nonzero(np.abs(wavenumber.imag)+np.abs(temp)>np.abs(wavenumber.real))] = 0 #do not use the LAP if |Im(k)| + |delta/ve| is significant
             traveling_direction = np.sign((wavenumber+1j*temp).imag)
             self.traveling_direction.append(traveling_direction)
@@ -421,18 +508,33 @@ class Waveguide:
         start = time.perf_counter()
         self.pml_ratio = []
         for i in range(len(self.eigenvectors)):
-            _, omega = self._concatenate(i=i) #repeat parameter as many times as the number of eigenvalues
+            _, omega = self._concatenate(i=i)
             Ek = 0.25*np.abs(omega**2)*self._dot_eigenvectors(i, self.M*self.eigenvectors[i]) #"complex" kinetic energy
             self.pml_ratio.append(1-np.imag(Ek)/np.abs(Ek))
         print(f'Computation of pml ratio, elapsed time : {(time.perf_counter() - start):.2f}s')
 
-    def track_mode(self):
-        """ Track a desired mode """
-        #Future works
-    
-    def compute_response(self):
-        """ Post-process the forced response """
-        #Future works
+    def compute_group_velocity(self):
+        """
+        Post-process the group velocity, vg=Re(dk/domega) for every mode in the whole parameter range
+        Left eigenvectors are required
+        """
+        if not self.two_sided:
+            raise NotImplementedError('The attribute two_sided is False, please specify set_parameter(..., two_sided=True): left eigenvectors are needed to compute the group velocity')        
+        start = time.perf_counter()
+        self.group_velocity = []
+        K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
+        for i in range(len(self.eigenvectors)):
+            #repeat parameter as many times as the number of eigenvalues
+            wavenumber, omega = self._concatenate(i=i)
+            #numerator
+            numerator = 2*omega*self._dot_eigenvectors(i, self.M*self.eigenvectors[i], side='left') 
+            #denominator
+            denominator = 1j*(self.K1-K1T)*self.eigenvectors[i] + 2*self.K2*self.eigenvectors[i]*self._diag(wavenumber)
+            denominator = self._dot_eigenvectors(i, denominator, side='left')
+            #group velocity
+            self.group_velocity.append(1/np.real(numerator/denominator))
+        K1T.destroy()
+        print(f'Computation of group velocity, elapsed time : {(time.perf_counter() - start):.2f}s')
 
     def _check_biorthogonality(self, i):
         """ Return and plot, for the ith parameter, the Modal Assurance Criterion (MAC) matrix based on the (bi)-orthogonality relation (for internal use)"""
@@ -444,7 +546,7 @@ class Waveguide:
             # Warning for lossy problems
             dofs_complex = np.nonzero(np.iscomplex(self.K2.getDiagonal()[:]))[0]
             if dofs_complex.size!=0:
-                print("Warning: the orthogonality relation implemented is currently valid for real matrices only (lossless problems)")
+                print("Warning: the orthogonality relation implemented is valid for real matrices only (lossless problems)")
         elif self.problem_type == "omega":
             biorthogonality = self.eigenforces[i].copy().transpose()*self.eigenvectors[i]-self.eigenvectors[i].copy().transpose()*self.eigenforces[i]
         plt.matshow(np.abs(biorthogonality[:,:]))
@@ -457,21 +559,29 @@ class Waveguide:
             eigenvalues = np.sqrt(eigenvalues)
         return eigenvalues
 
-    def _get_eigenvectors(self):
-        """ Return all converged eigenvectors of the current EVP object in a PETSc dense matrix (for internal use) """
+    def _get_eigenvectors(self, side='right'):
+        """
+        Return all converged eigenvectors of the current EVP object in a PETSc dense matrix (for internal use)
+        Return left eigenvectors if side is set to 'left', right eigenvectors otherwise
+        """
         nconv = self.evp.getConverged()
         v = self.evp.getOperators()[0].createVecRight()
+        index = range(v.getSize()) if v.getSize()==self.M.getSize()[0] else range(int(v.getSize()/2)) #1/2 in case of externally linearized quadratic evp
         eigenvectors = PETSc.Mat().create(comm=self.comm)
         eigenvectors.setType("dense")
-        eigenvectors.setSizes([v.getSize(), nconv])
+        eigenvectors.setSizes([self.M.getSize()[0], nconv])
         eigenvectors.setFromOptions()
         eigenvectors.setUp()
         for i in range(nconv):
-            self.evp.getEigenpair(i, v) #To get left eigenvectors: self.evp.getLeftEigenvector(i, v)
-            eigenvectors.setValues(range(v.getSize()), i, v)
+            if side != 'left':
+                self.evp.getEigenpair(i, v)
+            else:
+                self.evp.getLeftEigenvector(i, v)
+                v.conjugate() #cancel the conjugate internally applied by SLEPc
+            eigenvectors.setValues(index, i, v[index])
         eigenvectors.assemble()
         return eigenvectors
-    
+
     def _concatenate(self, *args, direction: Union[int, None]=None, pml_threshold: Union[int, None]=None, i: Union[int, None]=None):
         """
         Return concatenated wavenumber and omega in the whole parameter range as 1D numpy arrays (for internal use)
@@ -482,10 +592,7 @@ class Waveguide:
         If i is specified, then the function returns the results for the ith parameter only
         """
         argout = []
-        if i is None:
-            index = slice(None)
-        else:
-            index = slice(i, i+1)
+        index = slice(None) if i is None else slice(i, i+1)
         if self.problem_type == "wavenumber":
             wavenumber = np.repeat(self.wavenumber[index], [len(egv) for egv in self.eigenvalues[index]])
             omega = np.concatenate(self.eigenvalues[index])
@@ -519,16 +626,38 @@ class Waveguide:
         diag = PETSc.Mat().createAIJ(len(vec), comm=self.comm)
         diag.setUp()
         diag.assemble()
-        diag.setDiagonal(PETSc.Vec().createWithArray(vec))
+        diag.setDiagonal(PETSc.Vec().createWithArray(vec, comm=self.comm))
         return diag
 
-    def _dot_eigenvectors(self, i, eigenfield):
+    def _dot_eigenvectors(self, i, eigenfield, side='right'):
         """
-        Return the dot product, mode by mode, between eigenvectors[i] (taking the conjugate) and a given eigenfield (for internal use)
+        Return the dot product, mode by mode, between eigenvectors[i] and a given eigenfield (for internal use)
         The matrix eigenfield must have the same size as eigenvectors[i]
+        Dot product using left eigenvectors (without taking their conjugate) if side is set to 'left',
+        right eigenvectors (taking their conjugate) otherwise
         """
         res = []
         for mode in range(self.eigenvectors[i].getSize()[1]):
-            res.append(eigenfield.getColumnVector(mode).dot(self.eigenvectors[i].getColumnVector(mode))) #or: np.vdot(self.eigenvectors[i][:,mode],eigenfield[:,mode]))
+            if side != 'left':
+                res.append(eigenfield.getColumnVector(mode).dot(self.eigenvectors[i].getColumnVector(mode))) #or: np.vdot(self.eigenvectors[i][:,mode],eigenfield[:,mode]))
+            else:
+                res.append(eigenfield.getColumnVector(mode).tDot(self.left_eigenvectors[i].getColumnVector(mode)))
         res = np.array(res)
         return res
+    
+    def _build_block_matrix(self, A, B, C, D):
+        """ Return the block matrix [[A, B], [C, D]] given the equal-sized blocks A, B, C, D (for internal use) """    
+        bs = A.getSize() #block size
+        #Block A
+        csr = A.getValuesCSR()
+        Mat = PETSc.Mat().createAIJWithArrays([2*bs[0], 2*bs[1]], [np.insert(csr[0], len(csr[0]), np.full(bs[0], csr[0][-1])), csr[1], csr[2]], comm=self.comm)
+        #Block B
+        csr = B.getValuesCSR()
+        Mat = Mat + PETSc.Mat().createAIJWithArrays([2*bs[0], 2*bs[1]], [np.insert(csr[0], len(csr[0]), np.full(bs[0], csr[0][-1])), csr[1]+bs[1], csr[2]], comm=self.comm)
+        #Block C
+        csr = C.getValuesCSR()
+        Mat = Mat + PETSc.Mat().createAIJWithArrays([2*bs[0], 2*bs[1]], [np.insert(csr[0], 0, np.zeros(bs[0])), csr[1], csr[2]], comm=self.comm)
+        #Block D
+        csr = D.getValuesCSR()
+        Mat = Mat + PETSc.Mat().createAIJWithArrays([2*bs[0], 2*bs[1]], [np.insert(csr[0], 0, np.zeros(bs[0])), csr[1]+bs[1], csr[2]], comm=self.comm)
+        return Mat

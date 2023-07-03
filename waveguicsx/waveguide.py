@@ -143,6 +143,9 @@ class Waveguide:
         two_sided : bool
             False if left eigenvectiors are not needed, True if they must be solved also (e.g. for mode normalization and group velocity)
         """
+        if len(self.eigenvalues)!=0:
+            print('Eigenvalue problem already solved (re-initialize the Waveguide object to solve a new eigenproblem)')
+            return
         if not (wavenumber is None) ^ (omega is None):
             raise NotImplementedError('Please specify omega or wavenumber (and not both)')
         
@@ -206,6 +209,10 @@ class Waveguide:
             target around which eigenpairs are looked for
             a small shift might sometimes prevent errors (e.g. zero pivot with dirichlet bc)
         """
+        if len(self.eigenvalues)!=0:
+            print('Eigenvalue problem already solved (re-initialize the Waveguide object to solve a new eigenproblem)')
+            return
+        
         # Eigensolver setup
         self.evp.setDimensions(nev=nev)
         if isinstance(target, (float, int, complex)): #redefine target as a constant function if target is given as a number
@@ -234,6 +241,7 @@ class Waveguide:
                     Id.assemble()
                     A = self._build_block_matrix(-(self.K0-PETSc.ScalarType(parameter_value)**2*self.M), -PETSc.ScalarType(1j)*(self.K1-K1T), Zero, Id)
                     B = self._build_block_matrix(Zero, self.K2, Id, Zero)
+                    #Note: the operators A and B below enable to get the eigenforces but increase computation time -> discarded...
                     #A = self._build_block_matrix(self.K0-PETSc.ScalarType(parameter_value)**2*self.M, Zero, -K1T, Id)
                     #B = self._build_block_matrix(-PETSc.ScalarType(1j)*self.K1, PETSc.ScalarType(1j)*Id, PETSc.ScalarType(1j)*self.K2, Zero)
                     self.evp.setOperators(A, B)
@@ -428,8 +436,10 @@ class Waveguide:
 
     def compute_eigenforces(self):
         """ Post-process the eigenforces F=(K1^T+1j*k*K2)*U for every mode in the whole parameter range"""
+        if len(self.eigenforces)==len(self.eigenvalues):
+            print('Eigenforces already computed')
+            return
         start = time.perf_counter()
-        self.eigenforces = []
         K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
         for i in range(len(self.eigenvectors)):
             wavenumber, _ = self._concatenate(i=i) #repeat parameter as many times as the number of eigenvalues
@@ -442,13 +452,16 @@ class Waveguide:
         Post-process the energy velocity ve=Re(P)/Re(E) for every mode in the whole parameter range, where P is the
         normal component of complex Poynting vector and E is the total energy (cross-section time-averaged)
         """
+        if len(self.energy_velocity)==len(self.eigenvalues):
+            print('Energy velocity already computed')
+            return
+        
         # Compute the eigenforces if not yet computed
         if len(self.eigenforces)==0:
             self.compute_eigenforces()
         
         # Energy velocity, integration on the whole domain
         start = time.perf_counter()
-        self.energy_velocity = []
         K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
         for i in range(len(self.eigenvectors)):
             #repeat parameter as many times as the number of eigenvalues
@@ -479,13 +492,15 @@ class Waveguide:
         This criterion is based on the limiting absorption principle (theoretically, vg should be used
         instead of ve)
         """
+        if len(self.traveling_direction)==len(self.eigenvalues):
+            print('Traveling direction already computed')
+            return
         if len(self.group_velocity)==0:
             if self.two_sided:
                 self.compute_group_velocity() #compute the group velocity
             elif len(self.energy_velocity)==0: #or, if not available, compute the energy velocity
                 self.compute_energy_velocity()
         start = time.perf_counter()
-        self.traveling_direction = []
         for i in range(len(self.eigenvalues)):
             wavenumber, _ = self._concatenate(i=i)
             temp = delta/(self.energy_velocity[i] if len(self.group_velocity)==0 else self.group_velocity[i])
@@ -505,8 +520,10 @@ class Waveguide:
         the "complex" kinetic energy, for every mode in the whole parameter range        
         Note that in the absence of PML, the pml ratio is equal to 1
         """
+        if len(self.pml_ratio)==len(self.eigenvalues):
+            print('PML ratio already computed')
+            return
         start = time.perf_counter()
-        self.pml_ratio = []
         for i in range(len(self.eigenvectors)):
             _, omega = self._concatenate(i=i)
             Ek = 0.25*np.abs(omega**2)*self._dot_eigenvectors(i, self.M*self.eigenvectors[i]) #"complex" kinetic energy
@@ -518,10 +535,12 @@ class Waveguide:
         Post-process the group velocity, vg=Re(dk/domega) for every mode in the whole parameter range
         Left eigenvectors are required
         """
+        if len(self.group_velocity)==len(self.eigenvalues):
+            print('Group velocity already computed')
+            return
         if not self.two_sided:
             raise NotImplementedError('The attribute two_sided is False, please specify set_parameter(..., two_sided=True): left eigenvectors are needed to compute the group velocity')        
         start = time.perf_counter()
-        self.group_velocity = []
         K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
         for i in range(len(self.eigenvectors)):
             #repeat parameter as many times as the number of eigenvalues

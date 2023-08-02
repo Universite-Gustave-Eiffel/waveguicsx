@@ -49,8 +49,6 @@ class Waveguide:
         list of mode shapes
         access to components with eigenvectors[ik][idof,imode] (ip: parameter index, imode: mode index, idof: dof index)
         or eigenvectors[ik].getColumnVector(imode)
-    left_eigenvectors: list of PETSc matrices
-        list of left mode shapes (only computed if two_sided is set to True by user)
     eigenforces : list of PETSc matrices
         list of eigenforces (acces to components: see eigenvectors)
     energy_velocity : list of numpy arrays
@@ -85,6 +83,10 @@ class Waveguide:
         Plot energy velocity dispersion curves, ve vs. Re(omega)
     plot_group_velocity(direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
         Plot group velocity dispersion curves, vg vs. Re(omega)
+    plot_coefficient(direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+        Plot response coefficients as a function of frequency, |q| vs. Re(omega)
+    plot_excitability(direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+        Plot excitability as a function of frequency, |e| vs. Re(omega)
     plot_spectrum(index=0, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
         Plot the spectrum, Im(eigenvalues) vs. Re(eigenvalues), for the parameter index specified by the user
     compute_eigenforce():
@@ -98,9 +100,11 @@ class Waveguide:
         Compute the traveling directions for the whole parameter range and store them as an attribute (name: traveling_direction)
     compute_pml_ratio():
         Compute the pml ratios for the whole parameter range and store them as an attribute (name: pml_ratio)
-    compute_response_coefficient(F, amplitude_omega=None, amplitude_wavenumber=None, dof=None):
+    compute_poynting_normalization():
+        Normalization of eigenvectors and eigenforces, so that U'=U/sqrt(|P|), where P is the normal component of complex Poynting vector
+    compute_response_coefficient(F, spectrum=None, wavenumber_function=None, dof=None):
         Compute the response coefficients due to excitation vector F for the whole parameter range and store them as an attribute (name: coefficient)
-    compute_response(dof, z, amplitude_omega=None, amplitude_wavenumber=None, plot=False):
+    compute_response(dof, z, spectrum=None, wavenumber_function=None, plot=False):
         Compute the response at the degree of freedom dof and the axial coordinate z for the whole frequency range
     """
     def __init__(self, comm:'_MPI.Comm', M:PETSc.Mat, K0:PETSc.Mat, K1:PETSc.Mat, K2:PETSc.Mat):
@@ -130,7 +134,6 @@ class Waveguide:
         self.evp: Union[SLEPc.PEP, SLEPc.EPS, None] = None
         self.eigenvalues: list = []
         self.eigenvectors: list = []
-        self.left_eigenvectors: list = []
         self.eigenforces: list = []
         self.energy_velocity: list = []
         self.group_velocity: list = []
@@ -234,6 +237,14 @@ class Waveguide:
         if isinstance(target, (float, int, complex)): #redefine target as a constant function if target is given as a number
             target_constant = target
             target = lambda parameter_value: target_constant
+        if self.problem_type == "omega" and self.two_sided: #build Zero and Id matrices
+            Zero = PETSc.Mat().createAIJ(self.M.getSize(), comm=self.comm)
+            Zero.setUp()
+            Zero.assemble()
+            Id = PETSc.Mat().createAIJ(self.M.getSize(), comm=self.comm)
+            Id.setUp()
+            Id.setDiagonal(self.M.createVecRight()+1)
+            Id.assemble()
         
         # Loop over the parameter
         K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
@@ -243,25 +254,17 @@ class Waveguide:
             start = time.perf_counter()
             self.evp.setTarget(target(parameter_value))
             if self.problem_type=="wavenumber":
-                 self.evp.setOperators(self.K0 + PETSc.ScalarType(1j*parameter_value)*(self.K1-K1T) + PETSc.ScalarType(parameter_value**2)*self.K2, self.M)
+                 self.evp.setOperators(self.K0 + 1j*parameter_value*(self.K1-K1T) + parameter_value**2*self.K2, self.M)
             elif self.problem_type == "omega":
                 if not self.two_sided: #left eigenvectors not required -> PEP class is used
-                    self.evp.setOperators([self.K0-PETSc.ScalarType(parameter_value)**2*self.M, PETSc.ScalarType(1j)*(self.K1-K1T), self.K2])
+                    self.evp.setOperators([self.K0-parameter_value**2*self.M, 1j*(self.K1-K1T), self.K2])
                 else: #left eigenvectors are required -> linearize the quadratic evp and use EPS class (PEP class is not possible)
-                    Zero = PETSc.Mat().createAIJ(self.M.getSize(), comm=self.comm)
-                    Zero.setUp()
-                    Zero.assemble()
-                    Id = PETSc.Mat().createAIJ(self.M.getSize(), comm=self.comm)
-                    Id.setUp()
-                    Id.setDiagonal(self.M.createVecRight()+1)
-                    Id.assemble()
                     coeff = 1 #self.K2.norm(norm_type=PETSc.NormType.FROBENIUS) #NORM_1, FROBENIUS (same as NORM_2 for vectors), INFINITY
-                    A = self._build_block_matrix(-(self.K0-PETSc.ScalarType(parameter_value)**2*self.M), -PETSc.ScalarType(1j)*(self.K1-K1T), Zero, coeff*Id)
-                    B = self._build_block_matrix(Zero, self.K2, coeff*Id, Zero)
-                    #Note: the operators A and B below enable to get the eigenforces but increase computation time -> discarded...
-                    #A = self._build_block_matrix(self.K0-PETSc.ScalarType(parameter_value)**2*self.M, Zero, -K1T, Id)
-                    #B = self._build_block_matrix(-PETSc.ScalarType(1j)*self.K1, PETSc.ScalarType(1j)*Id, PETSc.ScalarType(1j)*self.K2, Zero)
-                    self.evp.setOperators(A, B)
+                    self.evp.setOperators(self._build_block_matrix(-(self.K0-parameter_value**2*self.M), -1j*(self.K1-K1T), Zero, coeff*Id),
+                                          self._build_block_matrix(Zero, self.K2, coeff*Id, Zero))
+                    #Note: the operators below enable to get the eigenforces but increase computation time -> discarded...
+                    #self.evp.setOperators(self._build_block_matrix(self.K0-parameter_value**2*self.M, Zero, -K1T, Id),
+                    #                      self._build_block_matrix(-1j*self.K1, 1j*Id, 1j*self.K2, Zero))
             self.evp.solve()
             #self.evp.errorView()
             #self.evp.valuesView()
@@ -272,13 +275,11 @@ class Waveguide:
             #self.evp.setInitialSpace(self.eigenvectors[-1]) #self.evp.setLeftInitialSpace(....) #try to use current modal basis to compute next, but may be only the first eigenvector...
         #print('\n---- SLEPc setup (based on last iteration) ----\n')
         #self.evp.view()
-        K1T.destroy()
-        if self.problem_type=="omega" and self.two_sided:
-            Zero.destroy()
-            Id.destroy()
-            A.destroy()
-            B.destroy()
         print('')
+        
+        # Memory saving
+        K1T.destroy()
+        self.evp.destroy()
 
     def plot(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
         """
@@ -422,6 +423,62 @@ class Waveguide:
         # plt.show()  #let user decide whether he wants to interrupt the execution for display, or save to figure...
         return ax
 
+    def plot_coefficient(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+        """
+        Plot response coefficients as a function of frequency, |q| vs. Re(omega)
+        Parameters and Returns: see plot(...)
+        """
+        if len(self.coefficient)==0:
+            raise NotImplementedError('No response coefficient has been computed')
+        
+        # Initialization
+        self._compute_if_necessary(direction, pml_threshold) #compute traveling direction and pml ratio if necessary
+        if ax is None:
+            fig, ax = plt.subplots(1, 1)
+        
+        # Build concatenaded arrays
+        _, omega, coefficient = self._concatenate('coefficient', direction=direction, pml_threshold=pml_threshold)
+        
+        # vp vs. Re(omega)
+        coefficient = np.abs(coefficient) #np.angle(coefficient)
+        ax.plot(omega.real, coefficient, color=color, marker=marker, markersize=markersize, linestyle=linestyle, **kwargs)
+        ax.set_xlim(omega.real.min(), omega.real.max())
+        ax.set_ylim(coefficient.min(), coefficient.max())
+        ax.set_xlabel('Re(omega)')
+        ax.set_ylabel('|q|')
+        
+        fig.tight_layout()
+        # plt.show()  #let user decide whether he wants to interrupt the execution for display, or save to figure...
+        return ax
+
+    def plot_excitability(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+        """
+        Plot excitability as a function of frequency, |e| vs. Re(omega)
+        Parameters and Returns: see plot(...)
+        """
+        if len(self.excitability)==0:
+            raise NotImplementedError('No excitability has been computed')
+        
+        # Initialization
+        self._compute_if_necessary(direction, pml_threshold) #compute traveling direction and pml ratio if necessary
+        if ax is None:
+            fig, ax = plt.subplots(1, 1)
+        
+        # Build concatenaded arrays
+        _, omega, excitability = self._concatenate('excitability', direction=direction, pml_threshold=pml_threshold)
+        
+        # vp vs. Re(omega)
+        excitability = np.abs(excitability) #np.angle(excitability)
+        ax.plot(omega.real, excitability, color=color, marker=marker, markersize=markersize, linestyle=linestyle, **kwargs)
+        ax.set_xlim(omega.real.min(), omega.real.max())
+        ax.set_ylim(excitability.min(), excitability.max())
+        ax.set_xlabel('Re(omega)')
+        ax.set_ylabel('|e|')
+        
+        fig.tight_layout()
+        # plt.show()  #let user decide whether he wants to interrupt the execution for display, or save to figure...
+        return ax
+
     def plot_spectrum(self, index=0, ax=None, color="k",
                         marker="o", markersize=2, linestyle="", **kwargs):
         """
@@ -457,9 +514,9 @@ class Waveguide:
             return
         start = time.perf_counter()
         K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
-        for i in range(len(self.eigenvectors)):
+        for i, eigenvectors in enumerate(self.eigenvectors):
             wavenumber, _ = self._concatenate(i=i) #repeat parameter as many times as the number of eigenvalues
-            self.eigenforces.append(K1T*self.eigenvectors[i]+PETSc.ScalarType(1j)*self.K2*self.eigenvectors[i]*self._diag(wavenumber))
+            self.eigenforces.append(K1T*eigenvectors+1j*self.K2*eigenvectors*self._diag(wavenumber))
         K1T.destroy()
         print(f'Computation of eigenforces, elapsed time : {(time.perf_counter() - start):.2f}s')
 
@@ -479,15 +536,14 @@ class Waveguide:
         # Energy velocity, integration on the whole domain
         start = time.perf_counter()
         K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
-        for i in range(len(self.eigenvectors)):
+        for i, eigenvectors in enumerate(self.eigenvectors):
             #repeat parameter as many times as the number of eigenvalues
             wavenumber, omega = self._concatenate(i=i)
             #time averaged kinetic energy
-            E = 0.25*np.abs(omega**2)*np.real(self._dot_eigenvectors(i, self.M*self.eigenvectors[i])) 
+            E = 0.25*np.abs(omega**2)*np.real(self._dot_eigenvectors(i, self.M*eigenvectors)) 
             #add time averaged potential energy
-            temp = (self.K0*self.eigenvectors[i] + 1j*self.K1*self.eigenvectors[i]*self._diag(wavenumber)
-                    -1j*K1T*self.eigenvectors[i]*self._diag(wavenumber.conjugate()) + self.K2*self.eigenvectors[i]*self._diag(np.abs(wavenumber)**2))
-            E = E + 0.25*np.real(self._dot_eigenvectors(i, temp))
+            E = E + 0.25*np.real(self._dot_eigenvectors(i, self.K0*eigenvectors + 1j*self.K1*eigenvectors*self._diag(wavenumber)
+                                                        -1j*K1T*eigenvectors*self._diag(wavenumber.conjugate()) + self.K2*eigenvectors*self._diag(np.abs(wavenumber)**2)))
             #time averaged complex Poynting vector (normal component)
             Pn = -1j*omega/2*self._dot_eigenvectors(i, self.eigenforces[i])
             #cross-section and time averaged energy velocity
@@ -496,9 +552,13 @@ class Waveguide:
         print(f'Computation of energy velocity, elapsed time : {(time.perf_counter() - start):.2f}s')
         
         # Warning for pml problems (integration restricted on the core is currently not possible)
-        dofs_pml = np.nonzero(np.iscomplex(self.M.getDiagonal()[:]))[0]
-        if dofs_pml.size!=0:
+        dofs_pml = np.iscomplex(self.M.getDiagonal()[:])
+        if any(dofs_pml):
             print("Warning: the energy velocity is currently integrated on the whole domain including PML region")
+        
+        ## Future works: a possible trick to restrict the integration on physical dofs
+        #dofs_pml = np.iscomplex(M.getDiagonal()[:]) #problem: if not stuck to the core, can include part of the exterior domain
+        #Mat = M.copy(); Mat.zeroRowsColumns(dofs_pml, diag=0) #or: eigenvectors.zeroRows(dofs_pml, diag=0)
 
     def compute_traveling_direction(self, delta=1e-2):
         """
@@ -520,12 +580,12 @@ class Waveguide:
         for i in range(len(self.eigenvalues)):
             wavenumber, _ = self._concatenate(i=i)
             temp = delta/(self.energy_velocity[i] if len(self.group_velocity)==0 else self.group_velocity[i])
-            temp[np.nonzero(np.abs(wavenumber.imag)+np.abs(temp)>np.abs(wavenumber.real))] = 0 #do not use the LAP if |Im(k)| + |delta/ve| is significant
+            temp[np.abs(wavenumber.imag)+np.abs(temp)>np.abs(wavenumber.real)] = 0 #do not use the LAP if |Im(k)| + |delta/ve| is significant
             traveling_direction = np.sign((wavenumber+1j*temp).imag)
             self.traveling_direction.append(traveling_direction)
             #Check if any exponentially growing modes (in the numerical LAP, delta is user-defined, which could sometimes lead to wrong traveling directions)
-            growing_modes = np.nonzero(wavenumber.imag*traveling_direction<0)[0]
-            if len(growing_modes)!=0:
+            growing_modes = wavenumber.imag*traveling_direction<0
+            if any(growing_modes):
                 print('Warning in computing traveling direction: exponentially growing modes found (unproper sign of Im(k) detected)')
                 print(f'for iteration {i}, with |Im(k)/Re(k)| up to {(np.abs(wavenumber[growing_modes].imag/wavenumber[growing_modes].real)).max():.2e}')
         print(f'Computation of traveling direction, elapsed time : {(time.perf_counter() - start):.2f}s')
@@ -540,9 +600,9 @@ class Waveguide:
             print('PML ratio already computed')
             return
         start = time.perf_counter()
-        for i in range(len(self.eigenvectors)):
+        for i, eigenvectors in enumerate(self.eigenvectors):
             _, omega = self._concatenate(i=i)
-            Ek = 0.25*np.abs(omega**2)*self._dot_eigenvectors(i, self.M*self.eigenvectors[i]) #"complex" kinetic energy
+            Ek = 0.25*np.abs(omega**2)*self._dot_eigenvectors(i, self.M*eigenvectors) #"complex" kinetic energy
             self.pml_ratio.append(1-np.imag(Ek)/np.abs(Ek))
         print(f'Computation of pml ratio, elapsed time : {(time.perf_counter() - start):.2f}s')
 
@@ -552,6 +612,7 @@ class Waveguide:
         Opposite-going eigenvectors are required: to properly work, this function assumes that opposite-going modes
         have been sorted as consecutive pairs in eigenvalues and eigenvectors (this can be ensured by setting two_sided to True)
         """
+        tol = 1e-4 #tolerance for checking that opposite-going modes seem to be correctly paired
         if len(self.group_velocity)==len(self.eigenvalues):
             print('Group velocity already computed')
             return
@@ -559,43 +620,79 @@ class Waveguide:
             raise NotImplementedError('Group velocity computation is not possible: opposite-going modes cannot be paired for this kind of problem (check that the problem is of omega type and that target has been set to 0 or two_sided is True)')
         start = time.perf_counter()
         K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
-        for i in range(len(self.eigenvalues)):
-            if (self.eigenvalues[i].size%2)!=0: #test if the number of eigensolutions is an even integer
+        for i, (eigenvalues, eigenvectors) in enumerate(zip(self.eigenvalues, self.eigenvectors)):
+            #Quick tests
+            if (eigenvalues.size%2)!=0: #check if the number of eigensolutions is an even integer
                 raise NotImplementedError(f'Group velocity computation is not possible at iteration {i}: the number of positive-going modes must be the same as the number of negative-going modes')
+            if any(np.abs((eigenvalues[0::2]+eigenvalues[1::2])/eigenvalues[0::2])>tol): #check that opposite-going modes seem to be correctly paired
+                print(f'Warning at iteration {i}: opposite-going modes may be not correctly paired (tolerance exceeded)')
+            #Computation of group velocity
             wavenumber, omega = self._concatenate(i=i) #repeat parameter as many times as the number of eigenvalues
             group_velocity = np.zeros(self.eigenvalues[i].size)
-            numerator = self.M*self.eigenvectors[i]
-            denominator = 1j*(self.K1-K1T)*self.eigenvectors[i] + 2*self.K2*self.eigenvectors[i]*self._diag(wavenumber) #note: this line could probably be avoided if _compute_biorthogonality_factor() has already been done
+            numerator = self.M*eigenvectors
+            denominator = 2*self.K2*eigenvectors #note: computing the denominator can probably be avoided if _compute_biorthogonality_factor() has already been done
+            denominator = denominator*self._diag(wavenumber)
+            denominator += 1j*self.K1*eigenvectors
+            denominator -= 1j*K1T*eigenvectors
             for mode in range(0,self.eigenvalues[i].size,2):
-                uleft = self.eigenvectors[i].getColumnVector(mode+1)
+                uleft = eigenvectors.getColumnVector(mode+1)
                 group_velocity[mode] = 1/np.real( 2*omega[mode]*numerator.getColumnVector(mode).tDot(uleft) / denominator.getColumnVector(mode).tDot(uleft) )
-                group_velocity[mode+1] = -group_velocity[mode]
+                uleft = eigenvectors.getColumnVector(mode)
+                group_velocity[mode+1] = 1/np.real( 2*omega[mode+1]*numerator.getColumnVector(mode+1).tDot(uleft) / denominator.getColumnVector(mode+1).tDot(uleft) )
+                #group_velocity[mode+1] = -group_velocity[mode]
             self.group_velocity.append(group_velocity)
         K1T.destroy()
         print(f'Computation of group velocity, elapsed time : {(time.perf_counter() - start):.2f}s')
 
-    def compute_response_coefficient(self, F, amplitude_omega=None, amplitude_wavenumber=None, dof=None):
+    def compute_poynting_normalization(self):
+        """
+        Post-process the normalization of eigenvectors and eigenforces, so that U'=U/sqrt(|P|),
+        where P is the normal component of complex Poynting vector
+        After normalization, every mode is such that |P|=1
+        Normalization is not mandatory but, when applied, has to be done before any response coefficient computation
+        """
+        if len(self.coefficient)!=0: #response already computed
+            raise NotImplementedError('Normalization has to be applied before response coefficient computation')
+        if len(self.eigenforces)==0: #compute the eigenforces if not yet computed      
+            self.compute_eigenforces()
+        start = time.perf_counter()
+        index = range(self.eigenvectors[0].getSize()[0])
+        for i in range(len(self.eigenvalues)):
+            #repeat parameter as many times as the number of eigenvalues
+            _, omega = self._concatenate(i=i)
+            #Normalization
+            normalization = []
+            for mode in range(self.eigenvalues[i].size):
+                U = self.eigenvectors[i].getColumnVector(mode)
+                F = self.eigenforces[i].getColumnVector(mode)
+                normalization.append(1/np.sqrt(np.abs(-1j*omega[mode]/2*F.dot(U))))
+            self.eigenvectors[i] = self.eigenvectors[i]*self._diag(normalization)
+            self.eigenforces[i] = self.eigenforces[i]*self._diag(normalization)
+        print(f'Computation of normalization, elapsed time : {(time.perf_counter() - start):.2f}s')
+        #print(np.array([-1j*omega[mode]/2*np.vdot(self.eigenvectors[i][:,mode], self.eigenforces[i][:,mode]) for mode in range(self.eigenvalues[i].size)])) #check for last iteration
+
+    def compute_response_coefficient(self, F, spectrum=None, wavenumber_function=None, dof=None):
         """
         Computation of modal coefficients due to the excitation vector F for every mode in the whole omega range (omega denotes the angular frequency)
         Modal coefficients qm are defined from: U(z,omega) = sum qm(omega)*Um(omega)*exp(i*km*z), m=1...M,
         Opposite-going eigenvectors are required: to properly work, this function assumes that opposite-going modes
         have been sorted as consecutive pairs in eigenvalues and eigenvectors (this can be ensured by setting two_sided to True)
         Assumption: the source is centred at z=0
-        Note: amplitude_omega and amplitude_wavenumber can be specified in compute_response(...) instead of compute_response_coefficient(...),
+        Note: spectrum and wavenumber_function can be specified in compute_response(...) instead of compute_response_coefficient(...),
         but not in both functions in the same time (otherwise the excitation would be modulated twice)
         
         Parameters
         ----------
         F : PETSc vector
             SAFE excitation vector
-        amplitude_omega : numpy.ndarray
-            when specified, amplitude_omega is a vector of length omega  used to modulate F in terms of frequency (default: 1 for all frequencies)
-        amplitude_wavenumber: python function
-            when specified, amplitude_wavenumber is a python function used to modulate F in terms of wavenumber (example:
-            amplitude_wavenumber = lambda x: np.sin(x), default: 1 for all wavenumbers, i.e. source localized at z=0)
+        spectrum : numpy.ndarray
+            when specified, spectrum is a vector of length omega  used to modulate F in terms of frequency (default: 1 for all frequencies)
+        wavenumber_function: python function
+            when specified, wavenumber_function is a python function used to modulate F in terms of wavenumber (example:
+            wavenumber_function = lambda x: np.sin(x), default: 1 for all wavenumbers, i.e. source localized at z=0)
         dof : int
             when specified, it calculates the modal contribution qm*Um at the degree of freedom dof (equal to the so-defined modal excitability
-            if amplitude_omega and amplitude_wavenumber are equal to 1, i.e. unit force localized at a single degree of freedom),
+            if spectrum and wavenumber_function are equal to 1, i.e. unit force localized at a single degree of freedom),
             stored in the attribute excitability  
         """
         #Initialization
@@ -604,14 +701,14 @@ class Waveguide:
         self.F = F
         self.coefficient = [] #re-initialized every time compute_response_coefficient(..) is executed (F is an input)
         self.excitability = [] #idem
-        if amplitude_omega is None:
-            amplitude_omega = np.ones(self.omega.size)
-        if amplitude_wavenumber is None:
-            amplitude_wavenumber = lambda k: 1+0*k
+        if spectrum is None:
+            spectrum = np.ones(self.omega.size)
+        if wavenumber_function is None:
+            wavenumber_function = lambda k: 1+0*k
         
         #Check
-        if len(amplitude_omega) != self.omega.size:
-            raise NotImplementedError('The length of amplitude_omega must be equal to the length of omega')
+        if len(spectrum) != self.omega.size:
+            raise NotImplementedError('The length of spectrum must be equal to the length of omega')
         if dof is not None and not isinstance(dof, int):
             raise NotImplementedError('dof must be an integer')
         if len(self._biorthogonality_factor)==0: #biorthogonality normalization factor has not yet been computed
@@ -627,25 +724,25 @@ class Waveguide:
             [index.extend([j+1, j]) for j in range(0,len(self.eigenvalues[i]),2)] #index for assigning opposite-going modes (sorted as consecutive pairs)
             coefficient = coefficient[index]
             coefficient = coefficient/self._biorthogonality_factor[i]*self.traveling_direction[i]
-            coefficient = coefficient*amplitude_omega[i]*amplitude_wavenumber(self.eigenvalues[i])
+            coefficient = coefficient*spectrum[i]*wavenumber_function(self.eigenvalues[i])
             self.coefficient.append(coefficient)
             if dof is not None:
                 self.excitability.append(self.coefficient[-1]*self.eigenvectors[i][dof,:])
         print(f'Computation of response coefficient, elapsed time : {(time.perf_counter() - start):.2f}s')
 
-    def compute_response(self, dof, z, omega_index=None, amplitude_omega=None, amplitude_wavenumber=None, plot=False):
+    def compute_response(self, dof, z, omega_index=None, spectrum=None, wavenumber_function=None, plot=False):
         """
         Post-process the response (modal expansion) at the degree of freedom dof and the axial coordinate z, for the whole frequency range
-        The outputs are response, a numpy 2d array of size len(omega)*len(dof or z)
+        The outputs are frequency, a numpy 1d array of size len(omega), and response, a numpy 2d array of size len(dof or z)*len(omega)
         dof and z cannot be both vectors, except if omega_index is specified or omega is scalar (single frequency computation): in that case,
-        the array response is of size len(dof)*len(z), which can be useful to plot the whole field at a single frequency
+        the array response is of size len(z)*len(dof), which can be useful to plot the whole field at a single frequency
         The response at each frequency omega is calculated from:
         U(z,omega) = sum qm(omega)*Um(omega)*exp(i*km*z), m=1...M,
         where z is the receiver position along the waveguide axis
         M is the number of modes traveling in the proper direction, positive if z is positive, negative if z is negative
         Assumption: the source is assumed to be centred at z=0
         Warning: the response calculation is only valid if z lies oustide the source region
-        Note: amplitude_omega and amplitude_wavenumber can be specified in compute_response_coefficient(...) instead
+        Note: spectrum and wavenumber_function can be specified in compute_response_coefficient(...) instead
         of compute_response(...), but not in both functions in the same time (otherwise the excitation would be modulated twice)
         
         Parameters
@@ -656,16 +753,17 @@ class Waveguide:
             axial coordinate where the response is computed
         omega_index : int
             omega index to compute the response at a single frequency, allowing the consideration of multiple dof and z
-        amplitude_omega : numpy.ndarray
-            when specified, amplitude_omega is a vector of length omega  used to modulate F in terms of frequency (default: 1 for all frequencies)
-        amplitude_wavenumber: python function
-            when specified, amplitude_wavenumber is a python function used to modulate F in terms of wavenumber (example:
-            amplitude_wavenumber = lambda x: np.sin(x), default: 1 for all wavenumbers, i.e. source localized at z=0)
+        spectrum : numpy.ndarray
+            when specified, spectrum is a vector of length omega  used to modulate F in terms of frequency (default: 1 for all frequencies)
+        wavenumber_function: python function
+            when specified, wavenumber_function is a python function used to modulate F in terms of wavenumber (example:
+            wavenumber_function = lambda x: np.sin(x), default: 1 for all wavenumbers, i.e. source localized at z=0)
         plot : bool
             if set to True, the magnitude and phase of response are plotted as a function of frequency
         
         Returns
         -------
+        frequency: numpy 1d array, the frequency vector, i.e. omega/(2*pi)
         response : numpy array, the matrix response
         ax : when plot is set to True, ax[0] is the matplotlib axes used for magnitude, ax[1] is the matplotlib axes used for phase
         """
@@ -673,7 +771,7 @@ class Waveguide:
         #Initialization
         response = []
         dof = np.array(dof)
-        z = np.array(z)
+        z = np.array(z).reshape(-1, 1)
         if omega_index is None:
             omega_index = range(self.omega.size)
         else:
@@ -681,22 +779,22 @@ class Waveguide:
                 omega_index = [omega_index]
             else:
                 raise NotImplementedError('omega_index must be an integer')
-        if amplitude_omega is None:
-            amplitude_omega = np.ones(self.omega.size)
+        if spectrum is None:
+            spectrum = np.ones(self.omega.size)
         
         #Check
         if self.problem_type=='wavenumber':
             raise NotImplementedError('Response computation not implemented in case wavenumber is parameter')
         if plot and len(omega_index)==1:
             raise NotImplementedError('Plot is not possible for a single frequency computation (please set plot to False)')
-        if len(amplitude_omega) != self.omega.size:
-            raise NotImplementedError('The length of amplitude_omega must be equal to the length of omega')
-        if len(np.nonzero(z==0)[0])!=0:
+        if len(spectrum) != self.omega.size:
+            raise NotImplementedError('The length of spectrum must be equal to the length of omega')
+        if any(z==0):
             raise NotImplementedError('z cannot contain zero values (z must lie outside the source region)')
-        if amplitude_wavenumber is not None:
+        if wavenumber_function is not None:
             print('Reminder: z should lie outside the source region')
-        if amplitude_wavenumber is None:
-            amplitude_wavenumber = lambda k: 1+0*k
+        if wavenumber_function is None:
+            wavenumber_function = lambda k: 1+0*k
         direction = np.sign(z)
         if np.abs(direction.sum())!=direction.size:
             raise NotImplementedError('z cannot contain both negative and positive values')
@@ -710,33 +808,36 @@ class Waveguide:
         start = time.perf_counter()
         direction = direction[0] if direction.size>1 else direction
         for i in omega_index:
-            imode = np.nonzero(self.traveling_direction[i]==direction) #indices of modes traveling in the desired direction
-            temp = self.coefficient[i][imode]*amplitude_omega[i]*amplitude_wavenumber(self.eigenvalues[i][imode])
-            temp = (np.squeeze(self.eigenvectors[i][dof.tolist(),imode]) @ np.diag(temp)) @ np.exp(1j*np.outer(self.eigenvalues[i][imode], z)) #np.diag(temp) has many zeros (use sparse?)
+            imode = np.nonzero(self.traveling_direction[i]==direction)[0].tolist() #indices of modes traveling in the desired direction
+            temp = self.coefficient[i][imode]*spectrum[i]*wavenumber_function(self.eigenvalues[i][imode])
+            #temp = (self.eigenvectors[i][dof.tolist(),imode] @ np.diag(temp)) @ np.exp(1j*np.outer(self.eigenvalues[i][imode], z)) #OLD: np.diag(temp) may have many zeros
+            temp = PETSc.Mat().createDense([dof.size, len(imode)], array=self.eigenvectors[i][dof.tolist(),imode], comm=self.comm) * self._diag(temp)
+            temp = temp[:,:] @ np.exp(1j*np.outer(self.eigenvalues[i][imode], z)) #note: PETSc matrices have no exponential function (although PETSc vectors have one!) -> going back to numpy arrays here for simplicity...
             temp = temp.reshape(-1,1) #enforce vector to be column
             response.append(temp)
-        response = np.squeeze(np.concatenate(response, axis=1)).T #numpy array of size len(self.omega)*len(dof or z)
+        response = np.squeeze(np.concatenate(response, axis=1)) #numpy array of size len(dof or z)*len(self.omega)
         if len(omega_index)==1:
-            response = response.reshape(dof.size,z.size) #numpy array of size len(dof)*len(z)
+            response = response.reshape(z.size, dof.size) #numpy array of size len(z)*len(dof)
         print(f'Computation of response, elapsed time : {(time.perf_counter() - start):.2f}s')
+        frequency = self.omega[omega_index]/(2*np.pi)
         
         #Plots
         if plot:
             #Magnitude
             fig, ax_abs = plt.subplots(1, 1)
-            ax_abs.plot(self.omega.real, np.abs(response), marker="o", markersize=2, linestyle="") #color="k"
+            ax_abs.plot(self.omega.real, np.abs(response.T), linewidth=1, linestyle="-") #color="k"
             ax_abs.set_xlabel('Re(omega)')
             ax_abs.set_ylabel('|u|')
             fig.tight_layout()
             #Phase
             fig, ax_angle = plt.subplots(1, 1)
-            ax_angle.plot(self.omega.real, np.angle(response), marker="o", markersize=2, linestyle="") #color="k"
+            ax_angle.plot(self.omega.real, np.angle(response.T), linewidth=1, linestyle="-") #color="k"
             ax_angle.set_xlabel('Re(omega)')
             ax_angle.set_ylabel('arg(u)')
             fig.tight_layout()
-            return response, [ax_abs, ax_angle]
+            return frequency, response, [ax_abs, ax_angle]
         else:
-            return response
+            return frequency, response
 
     def _compute_biorthogonality_factor(self):
         """
@@ -746,7 +847,7 @@ class Waveguide:
         To properly work, this method assumes that opposite-going modes have been sorted as
         consecutive pairs in eigenvalues and eigenvectors (this can be ensured by setting two_sided to True)
         """
-        tol = 1e-6
+        tol = 1e-4 #tolerance for checking that opposite-going modes seem to be correctly paired
         if self.problem_type=='wavenumber' or (self.target!=0 and not self.two_sided):
             raise NotImplementedError('Computation of biorthogonality factor is not possible: opposite-going modes cannot be paired for this kind of problem (check that the problem is of omega type and that target has been set to 0 or two_sided is True)')
         if len(self._biorthogonality_factor)!=0:
@@ -755,19 +856,18 @@ class Waveguide:
         if len(self.eigenforces)==0: #compute the eigenforces if not yet computed      
             self.compute_eigenforces()
         start = time.perf_counter()
-        index = range(self.eigenvectors[0].getSize()[0])
-        for i in range(len(self.eigenvalues)):
-            if (self.eigenvalues[i].size%2)!=0: #test if the number of eigensolutions is an even integer
+        for i, (eigenvalues, eigenvectors, eigenforces) in enumerate(zip(self.eigenvalues, self.eigenvectors, self.eigenforces)):
+            #Quick tests
+            if (eigenvalues.size%2)!=0: #check if the number of eigensolutions is an even integer
                 raise NotImplementedError(f'Computation of biorthogonality factor is not possible at iteration {i}: the number of positive-going modes must be the same as the number of negative-going modes')
-            #Quick check that opposite-going modes seem to be correctly paired
-            if any(np.abs((self.eigenvalues[i][0::2]+self.eigenvalues[i][1::2])/self.eigenvalues[i][0::2])>tol):
+            if any(np.abs((eigenvalues[0::2]+eigenvalues[1::2])/eigenvalues[0::2])>tol): #check that opposite-going modes seem to be correctly paired
                 print(f'Warning at iteration {i}: opposite-going modes may be not correctly paired (tolerance exceeded)')
             #Biorthogonality normalization factor
-            for mode in range(0,self.eigenvalues[i].size,2):
-                U = self.eigenvectors[i].getColumnVector(mode)
-                F = self.eigenforces[i].getColumnVector(mode)
-                Uopposite = self.eigenvectors[i].getColumnVector(mode+1)
-                Fopposite = self.eigenforces[i].getColumnVector(mode+1)
+            for mode in range(0,eigenvalues.size,2):
+                U = eigenvectors.getColumnVector(mode)
+                F = eigenforces.getColumnVector(mode)
+                Uopposite = eigenvectors.getColumnVector(mode+1)
+                Fopposite = eigenforces.getColumnVector(mode+1)
                 self._biorthogonality_factor.append(U.tDot(Fopposite) - Uopposite.tDot(F))
                 self._biorthogonality_factor.append(-self._biorthogonality_factor[-1]) #the opposite-going mode
         print(f'Computation of biorthogonality normalization factor, elapsed time : {(time.perf_counter() - start):.2f}s')
@@ -780,8 +880,8 @@ class Waveguide:
         if self.problem_type == "wavenumber":
             biorthogonality = self.eigenvectors[i].copy().hermitianTranspose()*self.M*self.eigenvectors[i] #hyp: K0, K1, K2, M and eigenvalues must be real here!
             # Warning for lossy problems
-            dofs_complex = np.nonzero(np.iscomplex(self.K2.getDiagonal()[:]))[0]
-            if dofs_complex.size!=0:
+            dofs_complex = np.iscomplex(self.K2.getDiagonal()[:])
+            if any(dofs_complex):
                 print("Warning: the orthogonality relation implemented is valid for real matrices only (lossless problems)")
         elif self.problem_type == "omega":
             biorthogonality = self.eigenforces[i].copy().transpose()*self.eigenvectors[i]-self.eigenvectors[i].copy().transpose()*self.eigenforces[i]
@@ -851,13 +951,13 @@ class Waveguide:
             argout.append(np.concatenate(getattr(self, arg)[index])) 
         if direction is not None:
             traveling_direction = np.concatenate(self.traveling_direction[index])
-            imode = np.nonzero(traveling_direction==direction)[0] #indices of modes traveling in the desired direction
+            imode = traveling_direction==direction #indices of modes traveling in the desired direction
             argout = [argout[j][imode] for j in range(len(argout))]
         else:
             imode = slice(None)
         if pml_threshold is not None:
             pml_ratio = np.concatenate(self.pml_ratio[index])
-            iphysical = np.nonzero(pml_ratio[imode]>=pml_threshold)[0] #indices of physical modes (i.e. excluding PML modes)
+            iphysical = pml_ratio[imode]>=pml_threshold #indices of physical modes (i.e. excluding PML modes)
             argout = [argout[j][iphysical] for j in range(len(argout))]
         return argout
 
@@ -886,7 +986,7 @@ class Waveguide:
             res.append(eigenfield.getColumnVector(mode).dot(self.eigenvectors[i].getColumnVector(mode))) #dot: conjugate, tDot: without
         res = np.array(res)
         return res
-    
+
     def _build_block_matrix(self, A, B, C, D):
         """ Return the block matrix [[A, B], [C, D]] given the equal-sized blocks A, B, C, D (for internal use) """    
         bs = A.getSize() #block size

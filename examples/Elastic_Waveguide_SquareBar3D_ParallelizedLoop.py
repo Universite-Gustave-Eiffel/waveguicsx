@@ -65,7 +65,7 @@ C = isotropic_law(rho, cs, cl)
 C = dolfinx.fem.Constant(mesh, PETSc.ScalarType(C))
 
 ##################################
-# Create free boundary conditions (or uncomment lines below for Dirichlet)
+# Create free boundary conditions
 bcs = []
 
 ##################################

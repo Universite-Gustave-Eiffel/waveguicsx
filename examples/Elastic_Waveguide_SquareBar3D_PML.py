@@ -1,11 +1,12 @@
 ##################################
 # 3D (visco-)elastic waveguide example\
-# The cross-section is a 2D unit square buried into a PML external elastic medium of thickness 0.25,\
+# The cross-section is a 2D square buried into a PML external elastic medium\
 # material: viscoelastic steel into cement grout\
 # The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\
 # $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\
-# Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities.
+# Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities\
 # The PML has a parabolic profile
+# Results are to be compared with Fig. 8 of paper: Treyssede, Journal of Computational Physics 314 (2016), 341–354
 
 import dolfinx
 import ufl
@@ -20,21 +21,38 @@ from waveguicsx.waveguide import Waveguide
 #pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
 
 ##################################
-# Scaled input parameters (materials: steel into cement)
-rho, cs, cl, kappas, kappal = 1.0, 1.0, 1.8282, 0.008, 0.003 #density, shear and longitudinal wave celerities, shear and longitudinal bulk wave attenuations (core)
-rho_ext, cs_ext, cl_ext, kappas_ext, kappal_ext = 0.2017, 0.5215, 0.8620, 0.100, 0.043 #idem for the external medium
+# Input parameters
+a = 2.7e-3 #core half-length (m)
+b = 1.5*a #half-length including PML (m)
+N = 24 #number of finite elements along one half-side
+if not (a*N/b).is_integer():
+    raise NotImplementedError("The ratio a/b*N must be an integer, please adjust N")
+rho_core, cs_core, cl_core = 7932, 3260, 5960 #core density (kg/m3), shear and longitudinal wave celerities (m/s)
+kappas_core, kappal_core = 0.008, 0.003 #core shear and longitudinal bulk wave attenuations (Np/wavelength)
+rho_ext, cs_ext, cl_ext = 1600, 1700, 2810 #for the external medium
+kappas_ext, kappal_ext = 0.100, 0.043 #for the external medium
 alpha = 2+4j #average value of the absorbing function inside the PML
-N = 25 #number of elements along one side of the domain
+omega = 2*np.pi*np.linspace(0, 26e6/(a*1e3), num=200) #angular frequencies (rad/s)
 nev = 10 #number of eigenvalues
-omega = np.arange(0.5, 50, 0.5) #frequency range (eigenvalues are wavenumber)
-target = lambda omega: omega*cs.real/cl #target set at the longitudinal wavenumber of core to find L(0,n) modes
-cs, cl, cs_ext, cl_ext = cs/(1+1j*kappas/2/np.pi), cl/(1+1j*kappal/2/np.pi), cs_ext/(1+1j*kappas_ext/2/np.pi), cl_ext/(1+1j*kappal_ext/2/np.pi) #complex celerities
+target = lambda omega: omega/cl_core.real #target set at the longitudinal wavenumber of core to find L(0,n) modes
 
 ##################################
-# Create mesh and finite elements (six-node triangles with three dofs per node for the three components of displacement)
-mesh = dolfinx.mesh.create_rectangle(MPI.COMM_WORLD, [np.array([-0.75, -0.75]), np.array([0.75, 0.75])], 
-                               [N, N], dolfinx.mesh.CellType.triangle)
-element = ufl.VectorElement("CG", "triangle", 2, 3) #Lagrange element, triangle, quadratic "P2", 3D vector
+# Re-scaling
+L0 = a #characteristic length
+T0 = a/cs_core #characteristic time
+M0 = rho_core*a**3#characteristic mass
+a, b = a/L0, b/L0
+rho_core, cs_core, cl_core = rho_core/M0*L0**3, cs_core/L0*T0, cl_core/L0*T0
+rho_ext, cs_ext, cl_ext = rho_ext/M0*L0**3, cs_ext/L0*T0, cl_ext/L0*T0
+omega = omega*T0
+cs_core, cl_core = cs_core/(1+1j*kappas_core/2/np.pi), cl_core/(1+1j*kappal_core/2/np.pi) #complex celerities (core)
+cs_ext, cl_ext = cs_ext/(1+1j*kappas_ext/2/np.pi), cl_ext/(1+1j*kappal_ext/2/np.pi) #complex celerities (exterior)
+
+##################################
+# Create mesh and finite elements (P2 quadrilaterals with three dofs per node for the three components of displacement)
+mesh = dolfinx.mesh.create_rectangle(MPI.COMM_WORLD, [np.array([-b, -b]), np.array([b, b])], 
+                               [2*N, 2*N], dolfinx.mesh.CellType.quadrilateral)
+element = ufl.VectorElement("CG", "quadrilateral", 2, 3) #Lagrange element, quadrilateral, quadratic "P2", 3D vector
 V = dolfinx.fem.FunctionSpace(mesh, element)
 
 ##################################
@@ -53,19 +71,28 @@ def isotropic_law(rho, cs, cl):
     C = C[np.triu_indices(6)] #the upper-triangle part of C (21 elements only)...
     C = np.append(C,np.zeros(15)).reshape(36,1) #... stored as a column vector completed with zeros up to 36 elements (error otherwise)
     return C
-C0 = isotropic_law(rho, cs, cl)
+C_core = isotropic_law(rho_core, cs_core, cl_core)
 C_ext = isotropic_law(rho_ext, cs_ext, cl_ext)
 def eval_C(x):
-    values = C0 * np.logical_and(abs(x[0])<=0.5, abs(x[1])<=0.5) \
-           + C_ext * np.logical_or(abs(x[0])>=0.5, abs(x[1])>=0.5)
+    values = C_core * np.logical_and(abs(x[0])<=a, abs(x[1])<=a) \
+           + C_ext * np.logical_or(abs(x[0])>=a, abs(x[1])>=a)
     return values
-Q = dolfinx.fem.FunctionSpace(mesh, ufl.TensorElement("DG", "triangle", 0, (6,6), symmetry=True)) #symmetry enables to store 21 elements instead of 36
+Q = dolfinx.fem.FunctionSpace(mesh, ufl.TensorElement("DG", "quadrilateral", 0, (6,6), symmetry=True)) #symmetry enables to store 21 elements instead of 36
 C = dolfinx.fem.Function(Q)
 C.interpolate(eval_C) #C.vector.getSize()) should be equal to number of cells x 21
+# Same approach for density
+def eval_rho(x):
+    values = rho_core * np.logical_and(abs(x[0])<=a, abs(x[1])<=a) \
+           + rho_ext * np.logical_or(abs(x[0])>=a, abs(x[1])>=a)
+    return values
+Q = dolfinx.fem.FunctionSpace(mesh, ("DG", 0))
+rho = dolfinx.fem.Function(Q)
+rho.interpolate(eval_rho)
 # Vizualization
 plotter = pyvista.Plotter(window_size=[600, 400])
 grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(mesh, mesh.topology.dim))
 grid.cell_data["Cij"] = C.x.array[0::21].real #index from 0 to 20, 0 being for C11...
+#grid.cell_data["Cij"] = rho.x.array.real #for checking density
 grid.set_active_scalars("Cij")
 plotter.add_mesh(grid, show_edges=True, show_scalar_bar=True)
 plotter.add_text('Re(Cij)', 'upper_edge', color='black', font_size=8)
@@ -75,10 +102,10 @@ plotter.show()
 ##################################
 # Create Cartesian PML functions, continuous
 def eval_gamma(x): #pml profile: continuous and parabolic
-    values = [1+3*(alpha-1)*((abs(x[0])-0.5)/0.25)**2*(abs(x[0])>=0.5), #gammax
-              1+3*(alpha-1)*((abs(x[1])-0.5)/0.25)**2*(abs(x[1])>=0.5)] #gammay
+    values = [1+3*(alpha-1)*((abs(x[0])-a)/(b-a))**2*(abs(x[0])>=a), #gammax
+              1+3*(alpha-1)*((abs(x[1])-a)/(b-a))**2*(abs(x[1])>=a)] #gammay
     return values
-Q = dolfinx.fem.FunctionSpace(mesh, ufl.VectorElement("CG", "triangle", 2, 2))
+Q = dolfinx.fem.FunctionSpace(mesh, ufl.VectorElement("CG", "quadrilateral", 2, 2))
 gamma = dolfinx.fem.Function(Q)
 gamma.interpolate(eval_gamma)
 # Vizualization
@@ -103,13 +130,13 @@ plotter.show()
 
 ##################################
 # Create free boundary conditions (or uncomment lines below for Dirichlet)
-#bcs = []
+# bcs = []
 # Dirichlet test case:
 fdim = mesh.topology.dim - 1
-boundary_facets = dolfinx.mesh.locate_entities_boundary(mesh, dim=fdim, marker=lambda x: np.logical_or(np.isclose(x[0], -0.75),
-                                                                                                       np.isclose(x[0], +0.75)+
-                                                                                                       np.isclose(x[1], -0.75)+
-                                                                                                       np.isclose(x[1], +0.75)))
+boundary_facets = dolfinx.mesh.locate_entities_boundary(mesh, dim=fdim, marker=lambda x: np.logical_or(np.isclose(x[0], -b),
+                                                                                                       np.isclose(x[0], +b)+
+                                                                                                       np.isclose(x[1], -b)+
+                                                                                                       np.isclose(x[1], +b)))
 boundary_dofs = dolfinx.fem.locate_dofs_topological(V=V, entity_dim=fdim, entities=boundary_facets)
 bcs = [dolfinx.fem.dirichletbc(value=np.zeros(3, dtype=PETSc.ScalarType), dofs=boundary_dofs, V=V)]
 
@@ -149,7 +176,16 @@ wg = Waveguide(MPI.COMM_WORLD, M, K0, K1, K2)
 wg.set_parameters(omega=omega)
 wg.evp.setWhichEigenpairs(SLEPc.PEP.Which.TARGET_MAGNITUDE) #here, preferred to TARGET_IMAGINARY
 wg.solve(nev, target=target)
-wg.plot()
+
+##################################
+# Plot dispersion curves\
+# Results are to be compared with Fig. 8 of Treyssede, Journal of Computational Physics 314 (2016), 341–354
+ax = wg.plot_energy_velocity()
+ax.set_xlim([0, 2*np.pi*26e3/3260])
+ax.set_ylim([0, 6000/3260])
+ax = wg.plot_attenuation()
+ax.set_xlim([0, 2*np.pi*26e3/3260])
+ax.set_ylim([0, 2000/(8.686*1000)])
 plt.show()
 #wg.plot_spectrum(index=0)
 #plt.show()
@@ -165,3 +201,6 @@ u_plotter.add_mesh(grid, style="wireframe", color="k") #FE mesh
 u_plotter.add_mesh(u_grid.warp_by_vector("u", factor=2.0), opacity=0.8, show_scalar_bar=True, show_edges=False) #do not show edges of higher order elements with pyvista
 u_plotter.show_axes()
 u_plotter.show()
+
+""
+

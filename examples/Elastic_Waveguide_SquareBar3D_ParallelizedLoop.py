@@ -1,14 +1,15 @@
 ##################################
 # 3D (visco-)elastic waveguide example\
-# The cross-section is a 2D unit square with free boundary conditions on its 1D boundaries, material: viscoelastic steel\
+# The cross-section is a 2D square with free boundary conditions on its 1D boundaries\
+# material: viscoelastic steel\
 # The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\
 # $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\
-# Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities.
+# Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities\
 # In this example:
 # - the parameter loop (here, the frequency loop) is distributed on all processes
 # - FE mesh and matrices are (therefore) built on each local process
 # Reminder for an execution in parallel mode (e.g. 4 processes):
-#  mpiexec -n 4 python3 Elastic_Waveguide_Bar3D_ParallelizedLoop.py
+#  mpiexec -n 4 python3 Elastic_Waveguide_SquareBar3D_ParallelizedLoop.py
 
 import dolfinx
 import ufl
@@ -18,19 +19,32 @@ from slepc4py import SLEPc
 import numpy as np
 import matplotlib.pyplot as plt
 #import pyvista
+
 #pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
 
 ##################################
-# Scaled input parameters
-rho, cs, cl, kappas, kappal = 1.0, 1.0, 1.8282, 0.008, 0.003 #density, shear and longitudinal wave celerities, shear and longitudinal bulk wave attenuations
-N = 25 #number of elements along one side of the square
-nev = 10 #number of eigenvalues
-omega = np.arange(0.2, 8, 0.2) #frequency range (eigenvalues are wavenumber)
-cs, cl = cs/(1+1j*kappas/2/np.pi), cl/(1+1j*kappal/2/np.pi) #complex celerities
+# Input parameters
+a = 2.7e-3 #core half-length (m)
+N = 10 #number of finite elements along one half-side
+rho, cs, cl = 7932, 3260, 5960 #core density (kg/m3), shear and longitudinal wave celerities (m/s)
+kappas, kappal = 0.008, 0.003 #core shear and longitudinal bulk wave attenuations (Np/wavelength)
+omega = 2*np.pi*np.linspace(500e3/1000, 500e3, num=50) #angular frequency range (rad/s)
+nev = 20 #number of eigenvalues
+
+##################################
+# Re-scaling
+L0 = a #characteristic length
+T0 = a/cs #characteristic time
+M0 = rho*a**3#characteristic mass
+a = a/L0
+rho, cs, cl = rho/M0*L0**3, cs/L0*T0, cl/L0*T0
+omega = omega*T0
+cs, cl = cs/(1+1j*kappas/2/np.pi), cl/(1+1j*kappal/2/np.pi) #complex celerities (core)
 
 ##################################
 # Create mesh and finite elements (six-node triangles with three dofs per node for the three components of displacement)
-mesh = dolfinx.mesh.create_unit_square(MPI.COMM_SELF, N, N) #MPI.COMM_SELF = FE mesh is built on each local process
+mesh = dolfinx.mesh.create_rectangle(MPI.COMM_SELF, [np.array([-a, -a]), np.array([a, a])], 
+                               [2*N, 2*N], dolfinx.mesh.CellType.triangle) #MPI.COMM_SELF = FE mesh is built on each local process
 element = ufl.VectorElement("CG", "triangle", 2, 3) #Lagrange element, triangle, quadratic "P2", 3D vector
 V = dolfinx.fem.FunctionSpace(mesh, element)
 

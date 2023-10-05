@@ -1,10 +1,12 @@
 ##################################
 # 3D (visco-)elastic waveguide example\
-# The cross-section is a 2D unit square with free boundary conditions on its 1D boundaries, material: viscoelastic steel\
+# The cross-section is a 2D square with free boundary conditions on its boundaries\
+# material: viscoelastic steel\
 # The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\
 # $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\
-# This eigenproblem is solved with the varying parameter as the wavenumber (eigenvalues are then frequencies) or as the frequency (eigenvalues are then wavenumbers).\
-# Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities.
+# This eigenproblem is solved with the varying parameter as the wavenumber (eigenvalues are then frequencies) or as the frequency (eigenvalues are then wavenumbers)\
+# Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities\
+# Results are compared with Euler-Bernoulli analytical solutions for the lowest wavenumber or frequency parameter
 
 import dolfinx
 import ufl
@@ -19,17 +21,30 @@ from waveguicsx.waveguide import Waveguide
 #pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
 
 ##################################
-# Scaled input parameters
-rho, cs, cl, kappas, kappal = 1.0, 1.0, 1.8282, 0.008, 0.003 #density, shear and longitudinal wave celerities, shear and longitudinal bulk wave attenuations
-N = 25 #number of elements along one side of the square
-nev = 10 #number of eigenvalues
-wavenumber = np.arange(0.1, 2, 0.1) #wavenumber range (eigenvalues are frequency)
-omega = np.arange(0.2, 8, 0.2) #frequency range (eigenvalues are wavenumber)
-cs, cl = cs/(1+1j*kappas/2/np.pi), cl/(1+1j*kappal/2/np.pi) #complex celerities
+# Input parameters
+a = 2.7e-3 #core half-length (m)
+N = 10 #number of finite elements along one half-side
+rho, cs, cl = 7932, 3260, 5960 #core density (kg/m3), shear and longitudinal wave celerities (m/s)
+kappas, kappal = 0.008, 0.003 #core shear and longitudinal bulk wave attenuations (Np/wavelength)
+omega = 2*np.pi*np.linspace(500e3/1000, 500e3, num=50) #angular frequency range (rad/s)
+wavenumber = omega/cs #wavenumber range (1/m, eigenvalues are frequency)
+nev = 20 #number of eigenvalues
+
+##################################
+# Re-scaling
+L0 = a #characteristic length
+T0 = a/cs #characteristic time
+M0 = rho*a**3#characteristic mass
+a = a/L0
+rho, cs, cl = rho/M0*L0**3, cs/L0*T0, cl/L0*T0
+omega = omega*T0
+wavenumber = wavenumber*L0
+cs, cl = cs/(1+1j*kappas/2/np.pi), cl/(1+1j*kappal/2/np.pi) #complex celerities (core)
 
 ##################################
 # Create mesh and finite elements (six-node triangles with three dofs per node for the three components of displacement)
-mesh = dolfinx.mesh.create_unit_square(MPI.COMM_WORLD, N, N)
+mesh = dolfinx.mesh.create_rectangle(MPI.COMM_WORLD, [np.array([-a, -a]), np.array([a, a])], 
+                               [2*N, 2*N], dolfinx.mesh.CellType.triangle)
 element = ufl.VectorElement("CG", "triangle", 2, 3) #Lagrange element, triangle, quadratic "P2", 3D vector
 V = dolfinx.fem.FunctionSpace(mesh, element)
 
@@ -54,10 +69,10 @@ C = dolfinx.fem.Constant(mesh, PETSc.ScalarType(C))
 bcs = []
 # Dirichlet test case:
 #fdim = mesh.topology.dim - 1
-#boundary_facets = dolfinx.mesh.locate_entities_boundary(mesh, dim=fdim, marker=lambda x: np.logical_or(np.isclose(x[0], 0.0),
-#                                                                                                       np.isclose(x[0], 1.0)+
-#                                                                                                       np.isclose(x[1], 0.0)+
-#                                                                                                       np.isclose(x[1], 1.0)))
+#boundary_facets = dolfinx.mesh.locate_entities_boundary(mesh, dim=fdim, marker=lambda x: np.logical_or(np.isclose(x[0], -a),
+#                                                                                                       np.isclose(x[0], +a)+
+#                                                                                                       np.isclose(x[1], -a)+
+#                                                                                                       np.isclose(x[1], +a)))
 #boundary_dofs = dolfinx.fem.locate_dofs_topological(V=V, entity_dim=fdim, entities=boundary_facets)
 #bcs = [dolfinx.fem.dirichletbc(value=np.zeros(3, dtype=PETSc.ScalarType), dofs=boundary_dofs, V=V)]
 
@@ -99,11 +114,12 @@ plt.show()
 ##################################
 # Comparison with Euler-Bernoulli analytical solutions
 k = wg.wavenumber[0]
-print(f'Computed eigenvalues for the first wavenumber (k={k}):\n {np.around(wg.eigenvalues[0],decimals=10)}')
+print(f'Computed eigenvalues for the first wavenumber (k={k}):\n {np.around(wg.eigenvalues[0],decimals=6)}')
+E, mu, I, Ip, S = rho*cs**2*(3*cl**2-4*cs**2)/(cl**2-cs**2), rho*cs**2, (2*a)**4/12, 0.1406*(2*a)**4, (2*a)**2 #0.1406 is for square section
 print(f'Euler-Bernoulli beam solution (only accurate for low frequency):\n \
-        Bending wave: {np.around(np.sqrt(k**4*cs**2*(3*cl**2-4*cs**2)/(cl**2-cs**2)/12*(1**2)),decimals=10)}\n \
-        Torsional wave: {np.around(np.sqrt(k**2*cs**2*(6*0.1406)),decimals=10)}\n \
-        Longitudinal wave: {np.around(np.sqrt(k**2*cs**2*(3*cl**2-4*cs**2)/(cl**2-cs**2)),decimals=10)}')
+        Bending wave: {np.around(np.sqrt(E*I/rho/S*k**4),decimals=6)}\n \
+        Torsional wave: {np.around(np.sqrt(mu*Ip/rho/(2*I)*k**2),decimals=6)}\n \
+        Longitudinal wave: {np.around(np.sqrt(E/rho*k**2),decimals=6)}')
 
 ##################################
 # Solve the eigenproblem with SLEPc\
@@ -117,11 +133,11 @@ plt.show() #blocking
 ##################################
 # Comparison with Euler-Bernoulli analytical solutions
 w = wg.omega[0]
-print(f'Computed eigenvalues for the first frequency (omega={w}):\n {np.around(wg.eigenvalues[0],decimals=10)}')
+print(f'Computed eigenvalues for the first frequency (omega={w}):\n {np.around(wg.eigenvalues[0],decimals=6)}')
 print(f'Euler-Bernoulli beam solution (only accurate for low frequency):\n \
-        Bending wave: {np.around(np.sqrt(w/np.sqrt(cs**2*(3*cl**2-4*cs**2)/(cl**2-cs**2)/12*(1**2))),decimals=10)}\n \
-        Torsional wave: {np.around(w/cs/np.sqrt(6*0.1406),decimals=10)}\n \
-        Longitudinal wave: {np.around(w/np.sqrt(cs**2*(3*cl**2-4*cs**2)/(cl**2-cs**2)),decimals=10)}')
+        Bending wave: {np.around(np.sqrt(np.sqrt(rho*S/E/I*w**2)),decimals=6)}\n \
+        Torsional wave: {np.around(np.sqrt(rho*2*I/mu/Ip*w**2),decimals=6)}\n \
+        Longitudinal wave: {np.around(np.sqrt(rho/E*w**2),decimals=6)}')
 
 ##################################
 # Mesh visualization
@@ -142,4 +158,7 @@ u_plotter.add_mesh(grid, style="wireframe", color="k") #FE mesh
 u_plotter.add_mesh(u_grid.warp_by_vector("u", factor=2.0), opacity=0.8, show_scalar_bar=True, show_edges=False) #do not show edges of higher order elements with pyvista
 u_plotter.show_axes()
 u_plotter.show()
+
+
+""
 

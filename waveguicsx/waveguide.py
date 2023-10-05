@@ -443,7 +443,7 @@ class Waveguide:
             if len(unpaired)!=0: #test for unpaired modes
                 print(f'Iteration {i}: unpaired modes found, index={unpaired}')
                 if len(self.traveling_direction)==len(self.eigenvalues): #the traveling direction has already been computed but using energy velocity
-                    self.traveling_direction[i][unpaired] = np.NaN #or 0?! -> try traveling_direction as integer?????
+                    self.traveling_direction[i][unpaired] = np.NaN #or 0?! -> try traveling_direction as integer!!!!!
             #Store pairs and biorthogonality factors
             self.opposite_going.append(opposite_going)
             self._biorthogonality_factor.append(biorthogonality_factor)
@@ -508,7 +508,10 @@ class Waveguide:
             print('Traveling direction already computed')
             return
         if len(self.group_velocity)==0 and len(self.energy_velocity)==0: #both group velocity and energy velocity have not been already computed
-            self.compute_energy_velocity() #use the energy velocity (simpler to compute: the pairing of opposite-going is not required) 
+            if len(self.opposite_going)==0:
+                self.compute_energy_velocity() #the energy velocity is simpler to compute (the pairing of opposite-going is not required)
+            else:
+                self.compute_group_velocity()
         start = time.perf_counter()
         for i in range(len(self.eigenvalues)):
             wavenumber, _ = self._concatenate(i=i)

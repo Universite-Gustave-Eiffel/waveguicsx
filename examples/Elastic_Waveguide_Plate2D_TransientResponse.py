@@ -1,11 +1,12 @@
 ##################################
-# 2D (visco-)elastic waveguide example (Lamb modes in a plate)\
+# 2D (visco-)elastic waveguide example (Lamb modes in a plate excited near 1st ZGV resonance)\
 # The cross-section is a 1D line with free boundary conditions on its boundaries\
 # material: viscoelastic steel\
 # The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\
 # $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\
 # This eigenproblem is solved with the varying parameter as the frequency (eigenvalues are then wavenumbers)\
-# Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities\
+# Viscoelastic loss can be included by introducing imaginary parts (negative) to wave celerities\
+# Results are to be compared with Figs. 5b, 7a and 8a of paper: Treyssede and Laguerre, JASA 133 (2013), 3827-3837\
 # Note: the depth direction is x, the axis of propagation is z
 
 import dolfinx
@@ -32,7 +33,7 @@ nev = 20 #number of eigenvalues
 ##################################
 # Excitation spectrum
 from wavesignal import Signal
-excitation = Signal(alpha=0*np.log(50)/5e-3) #!!!!!!!!!!!!!!!!alpha=0 or not ? (+ voir plus bas a la fin aussi)
+excitation = Signal(alpha=0*np.log(50)/5e-3)
 excitation.toneburst(fs=1000e3, T=5e-3, fc=250e3, n=5)
 excitation.plot()
 excitation.plot_spectrum()
@@ -119,7 +120,8 @@ dof = dof*2 + 0 #x-direction
 F[dof] = 1
 
 ###############################################################################
-# Computation of forced response
+# Computation of excitabilities and forced response\
+# Results are to be compared with Figs. 5b and 7a of Treyssede and Laguerre, JASA 133 (2013), 3827-3837
 wg.compute_response_coefficient(F=F, dof=dof)
 ax = wg.plot_excitability()
 ax.set_yscale('log')
@@ -129,8 +131,9 @@ axs[0].get_lines()[0].set_color("black")
 plt.close()
 
 ###############################################################################
-# Time response
-response = Signal(frequency=frequency, spectrum=response, alpha=0)
+# Time response\
+# Results are to be compared with Fig. 8a of Treyssede and Laguerre, JASA 133 (2013), 3827-3837
+response = Signal(frequency=frequency, spectrum=response, alpha=0*np.log(50)/5e-3*T0)
 response.plot_spectrum()
 response.ifft(coeff=1)
 response.plot()

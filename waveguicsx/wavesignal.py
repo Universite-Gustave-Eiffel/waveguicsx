@@ -143,7 +143,7 @@ class Signal:
             f_low = np.array([])
         else:  #non-zero first frequency
             f_low = np.arange(0, frequency[0]-1e-6*df, df)  #low frequency
-        f_high = np.arange(frequency[-1]+df, coeff*frequency[-1]+df, df)  #high frequency
+        f_high = np.arange(frequency[-1]+df, coeff*frequency[-1]+1e-6*df, df)  #high frequency
         frequency = np.concatenate([f_low, frequency, f_high])
         spectrum = self.spectrum.reshape(-1, len(self.frequency))
         spectrum = np.concatenate([np.zeros((spectrum.shape[0], len(f_low))), spectrum, np.zeros((spectrum.shape[0], len(f_high)))], axis=1)
@@ -175,7 +175,7 @@ class Signal:
         fs = np.ceil(fs/fc)*fc  #redefine fs so that fs/fc is an integer
         dt = 1/fs  #time step
         T = np.floor(T/2/dt)*2*dt + dt  #redefine T so that the number of points is equal to an even integer
-        self.time = np.arange(0, T+dt, dt)  #time vector
+        self.time = np.arange(0, T+1e-6*dt, dt)  #time vector
         #N = len(self.time)  # number of points (N=T/dt+1, even)
         
         # Ricker waveform
@@ -196,11 +196,11 @@ class Signal:
         fs = np.ceil(fs/fc)*fc  #redefine fs so that fs/fc is an integer
         dt = 1/fs  #time step
         T = np.floor(T/2/dt)*2*dt + dt  #redefine T so that the number of points is equal to an even integer
-        self.time = np.arange(0, T+dt, dt)  #time vector
+        self.time = np.arange(0, T+1e-6*dt, dt)  #time vector
         #N = len(self.time)  # number of points (N=T/dt+1, even)
         
         # Toneburst waveform
-        t = np.arange(0, n/fc+dt, dt)  #n/fc yields an integer number of time steps because fs/fc is an integer
+        t = np.arange(0, n/fc+1e-6*dt, dt)  #n/fc yields an integer number of time steps because fs/fc is an integer
         x = np.sin(2*np.pi*fc*t)
         x *= np.hanning(len(x))  #hanning window
         self.waveform = np.zeros(len(self.time))
@@ -215,7 +215,7 @@ class Signal:
         # Time
         dt = 1/fs  #time step
         T = np.floor(T/2/dt)*2*dt + dt  #redefine T so that the number of points is equal to an even integer
-        self.time = np.arange(0, T+dt, dt)  #time vector
+        self.time = np.arange(0, T+1e-6*dt, dt)  #time vector
         
         # Chirp waveform
         index = np.argmin(np.abs(self.time-chirp_duration))

@@ -416,7 +416,7 @@ class Waveguide:
                     if len(candidates)==1:
                         temp = eigenvalues[candidates] #store initial value
                         eigenvalues[candidates]= np.inf #trick to discard the first candidate
-                        candidates2 = lower_half[np.argmin(np.abs((eigenvalues[mode]+eigenvalues[lower_half])/eigenvalues[mode]))] #find the second candidate
+                        candidates2 = lower_half[np.argmin(np.abs(eigenvalues[mode]+eigenvalues[lower_half]))] #find the second candidate
                         eigenvalues[candidates] = temp #back to initial
                         candidates = np.append(candidates, candidates2)
                     #Second criterion: based on biorthogonality
@@ -426,7 +426,7 @@ class Waveguide:
                                          self.eigenforces[i].getColumnVector(c).tDot(self.eigenvectors[i].getColumnVector(mode))
                                        - self.eigenvectors[i].getColumnVector(c).tDot(self.eigenforces[i].getColumnVector(mode)))
                     #OLD: biorthogonality_test = self.eigenforces[i][:,candidates.tolist()].T @ self.eigenvectors[i][:,mode] - self.eigenvectors[i][:,candidates.tolist()].T @ self.eigenforces[i][:,mode]
-                    criterion2 = np.abs(biorthogonality_test)*self.omega[i]/4
+                    criterion2 = np.abs(biorthogonality_test*self.omega[i]/4)
                     order = np.argsort(criterion2) #sort by ascending order
                     if criterion2[order[-1]]<tol2_rel*criterion2[order[-2]]: #relative criterion
                         raise NotImplementedError(f'Iteration {i}: Lack of biorthogonality between mode {mode} and modes [{candidates[order[-2:]]}], with respective biorthogonality factor [{criterion2[order[-2:]]}]!')
@@ -453,7 +453,7 @@ class Waveguide:
             omega = np.repeat(self.omega.real, [len(egv) for egv in self._biorthogonality_factor])
             biorthogonality_factor = np.concatenate(self._biorthogonality_factor)
             fig, ax = plt.subplots(1, 1)
-            ax.plot(omega, np.abs(biorthogonality_factor)*omega/4, marker="o", markersize=2, linestyle="", color="k")
+            ax.plot(omega, np.abs(biorthogonality_factor*omega/4), marker="o", markersize=2, linestyle="", color="k")
             ax.set_xlabel('Re(omega)')
             ax.set_ylabel('|biorthogonality factor|')
             ax.set_yscale('log')

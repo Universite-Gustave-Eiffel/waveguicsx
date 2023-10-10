@@ -70,7 +70,7 @@ class Waveguide:
     -------
     set_parameters(omega=None, wavenumber=None, two_sided=False):
         Set problem type (problem_type), the parameter range (omega or wavenumber) as well as default parameters of SLEPc eigensolver (evp)
-        Set two_sided to True if left eigenvectors are needed (for response and group velocity computation)
+        Set two_sided to True to compute left eigenvectors also (left eigenvectors are the opposite-going modes)
     solve(nev=1, target=0):
         Solve the eigenvalue problem repeatedly for the parameter range, solutions are stored as attributes (names: eigenvalues,
         eigenvectors)
@@ -85,7 +85,6 @@ class Waveguide:
         Compute the energy velocities for the whole parameter range and store them as an attribute (name: energy_velocity)
     compute_group_velocity():
         Compute the group velocities for the whole parameter range and store them as an attribute (name: energy_velocity)
-        Left eigenvectors are required (two_sided must be set to True)
     compute_traveling_direction():
         Compute the traveling directions for the whole parameter range and store them as an attribute (name: traveling_direction)
     compute_pml_ratio():
@@ -159,14 +158,14 @@ class Waveguide:
         The user must specify the parameter omega or wavenumber, but not both
         This method generates the attributes omega (or wavenumber) and evp
         After this method call, different SLEPc parameters can be set by changing the attribute evp manually
-        Set two_sided=True for solving left eigenvectors also (for response and group velocity computation)
+        Set two_sided=True for solving left eigenvectors also
         
         Parameters
         ----------
         omega or wavenumber : numpy.ndarray
             the parameter range specified by the user
         two_sided : bool
-            False if left eigenvectiors are not needed, True if they must be solved also (for response and group velocity computation)
+            False if left eigenvectiors are not needed, True if they must be solved also
         """
         if len(self.eigenvalues)!=0:
             print('Eigenvalue problem already solved (re-initialize the Waveguide object to solve a new eigenproblem)')
@@ -223,6 +222,9 @@ class Waveguide:
         """
         Solve the dispersion problem, i.e. the eigenvalue problem repeatedly for the parameter range (omega or wavenumber)
         The solutions are stored in the attributes eigenvalues and eigenvectors
+        If two_sided is True, left eigensolutions are also solved
+        Note: left eigensolutions correspond to opposite-going modes and are hence added to the right eigensolutions
+        (i.e. in eigenvalues and eigenvectors) after removing any possible duplicates
         
         Parameters
         ----------
@@ -386,12 +388,13 @@ class Waveguide:
           this mode will be discarded in the computation of group velocity, traveling direction, coefficient and excitability (a NaN value will be stored)
         - if modes with lack of biorthogonality or two many unpaired modes occur, try to recompute the eigenproblem by increasing the accuracy (e.g. reducing the tolerance)
         - lack of biorthogonality may be also due to multiple modes (*): in this case, try to use an unstructured mesh instead
+        - if two_sided is True, lack of biorthogonolity may occur for specific target: try another target (e.g. add a small imaginary part) 
         (*) e.g. flexural modes in a cylinder with structured mesh
         """
         tol1 = 1e-4 #tolerance for relative difference between opposite wavenumbers (wavenumber criterion)
         tol2_rel = 100 #minimum ratio between the first two candidate biorthogonality factors (biorthogonality criterion)
         tol2_abs = 1e-3 #minimum biorthogonality factor to keep a given opposite pair (biorthogonality criterion)
-        if self.problem_type=='wavenumber' or self.target!=0:
+        if self.problem_type=='wavenumber' or (self.target!=0 and not self.two_sided):
             raise NotImplementedError('Computation of biorthogonality factor is not possible: opposite-going modes cannot be paired for this kind of problem (check that the problem is of omega type and that target has been set to 0)')
         if len(self.opposite_going)==len(self.eigenvalues):
             print('Opposite-going pairs already computed')
@@ -443,7 +446,7 @@ class Waveguide:
             if len(unpaired)!=0: #test for unpaired modes
                 print(f'Iteration {i}: unpaired modes found, index={unpaired}')
                 if len(self.traveling_direction)==len(self.eigenvalues): #the traveling direction has already been computed but using energy velocity
-                    self.traveling_direction[i][unpaired] = np.NaN #or 0?! -> try traveling_direction as integer!!!!!
+                    self.traveling_direction[i][unpaired] = np.NaN
             #Store pairs and biorthogonality factors
             self.opposite_going.append(opposite_going)
             self._biorthogonality_factor.append(biorthogonality_factor)
@@ -955,11 +958,9 @@ class Waveguide:
         """
         Return all converged eigenpairs of the current EVP object (for internal use)
         Eigenvectors are stored in a PETSc dense matrix
-        If two_sided is set to True, left eigensolutions are also included in the outputs, avoiding duplicates
+        If two_sided is set to True, left eigensolutions are also included in the outputs, removing any duplicates
         """        
         nconv = self.evp.getConverged()
-        if self.target==0: #round to the nearest lower even integer to get as many positive-going modes as negatige-going ones
-            nconv -= nconv%2 
         #Initialization
         if self.problem_type=='omega' and two_sided: #get rid of one half of complex plane to avoid duplicates
             eigenvalues = np.array([self.evp.getEigenpair(i) for i in range(nconv)])

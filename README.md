@@ -27,7 +27,7 @@ excitation pulses.
 
 ### Citation
 
-Please cite the project (https://github.com/treyssede/waveguicsx) if used for your projects or academic publications
+Please cite the project (https://github.com/treyssede/waveguicsx) if used for your own projects or academic publications
 
 ### Example
 
@@ -43,8 +43,9 @@ wg.compute_energy_velocity()
 # Plot dispersion curves
 wg.plot()
 wg.plot_energy_velocity()
-# Forced response in the frequency domain
+# Forced response in the frequency domain, at degree of freedom dof and axial coordinate z
 wg.compute_response_coefficient(F=F, dof=dof)
+wg.plot_coefficient()
 wg.plot_excitability()
 frequency, response = wg.compute_response(dof=dof, z=[1, 10, 50], spectrum=excitation.spectrum)
 # Transient response
@@ -74,7 +75,10 @@ python3 -c "from waveguicsx.waveguide import Waveguide; print('ok')"
 
 ### A few references by the author about the SAFE modeling of waveguide
 
-F. Treyssède, L. Laguerre, Numerical and analytical calculation of modal excitability for elastic wave generation in lossy waveguides, J. Acoust. Soc. Am. 133 (2013), 3827–3837
+F. Treyssède, L. Laguerre, Numerical and analytical calculation of modal excitability for elastic wave generation in lossy waveguides, Journal of the Acoustical Society of America 133 (2013), 3827–3837
+
 K. L. Nguyen, F. Treyssède, C. Hazard, Numerical modeling of three-dimensional open elastic waveguides combining semi-analytical finite element and perfectly matched layer methods, Journal of Sound and Vibration 344 (2015), 158-178
+
 F. Treyssède, Spectral element computation of high-frequency leaky modes in three-dimensional solid waveguides, Journal of Computational Physics 314 (2016), 341-354
+
 M. Gallezot, F. Treyssède, L. Laguerre, A modal approach based on perfectly matched layers for the forced response of elastic open waveguides, Journal of Computational Physics 356 (2018), 391-409

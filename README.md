@@ -25,9 +25,13 @@ relationship, leading to very fast computations of excited wavefields.
 Another class, the class Signal, is also provided to easily handle the transforms of signals from frequency to time and inversely, as well as the generation of
 excitation pulses.
 
+The loop over the parameter (angular frequency or wavenumber) can be parallelized, as shown in tutorials.
+
+
 ### Citation
 
 Please cite the project (https://github.com/treyssede/waveguicsx) if used for your own projects or academic publications
+
 
 ### Example
 

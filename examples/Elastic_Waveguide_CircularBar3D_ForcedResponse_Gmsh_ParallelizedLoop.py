@@ -6,6 +6,11 @@
 # This eigenproblem is solved with the varying parameter as the frequency (eigenvalues are then wavenumbers).\
 # The forced response is computed for a point force at the center node ot the cross-section.\
 # Results are to be compared with Figs. 5, 6 and 7 of paper: Treyssede, Wave Motion 87 (2019), 75-91.
+# In this example:
+# - the parameter loop (here, the frequency loop) is distributed on all processes
+# - FE mesh and matrices are (therefore) built on each local process
+# Reminder for an execution in parallel mode (e.g. 8 processes):
+#  mpiexec -n 8 python3 Elastic_Waveguide_CircularBar3D_ForcedResponse_Gmsh_ParallelizedLoop.py
 
 import gmsh #full documentation entirely defined in the `gmsh.py' module
 import dolfinx
@@ -15,9 +20,8 @@ from petsc4py import PETSc
 from slepc4py import SLEPc
 import numpy as np
 import matplotlib.pyplot as plt
-import pyvista
+#import pyvista
 
-from waveguicsx.waveguide import Waveguide
 #pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
 
 ##################################
@@ -27,7 +31,7 @@ le = a/8 #finite element characteristic length (m)
 rho, cs, cl = 7800, 3296, 5963 #density (kg/m3), shear and longitudinal wave celerities (m/s)
 kappas, kappal = 0*0.008, 0*0.003 #shear and longitudinal bulk wave attenuations (Np/wavelength)
 omega = np.arange(0.1, 10.1, 0.1)*cs/a #angular frequencies (rad/s)
-nev = 60 #number of eigenvalues
+nev = 300 #number of eigenvalues
 
 ##################################
 # Re-scaling
@@ -63,20 +67,11 @@ gmsh.model.mesh.embed(0, [origin], 2, disk) #ensure node points at the origin
 gmsh.model.mesh.generate(2) #generate a 2D mesh
 gmsh.model.mesh.setOrder(2) #interpolation order for the geometry, here 2nd order
 # From gmsh to fenicsx
-mesh, cell_tags, facet_tags = dolfinx.io.gmshio.model_to_mesh(gmsh.model, MPI.COMM_WORLD, 0, gdim=2)
+mesh, cell_tags, facet_tags = dolfinx.io.gmshio.model_to_mesh(gmsh.model, MPI.COMM_SELF, 0, gdim=2) #MPI.COMM_SELF = FE mesh is built on each local process
 # # Reminder for save & read
 # gmsh.write("Elastic_Waveguide_Bar3D_Open.msh") #save to disk
 # mesh, cell_tags, facet_tags = dolfinx.io.gmshio.read_from_msh("Elastic_Waveguide_Bar3D_Open.msh", MPI.COMM_WORLD, rank=0, gdim=2)
 gmsh.finalize() #called when done using the Gmsh Python API
-# Visualize FE mesh with pyvista
-Vmesh = dolfinx.fem.FunctionSpace(mesh, ufl.FiniteElement("CG", "triangle", 1)) #order 1 is properly handled with pyvista
-plotter = pyvista.Plotter()
-grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(Vmesh))
-grid.cell_data["Marker"] = cell_tags.values
-grid.set_active_scalars("Marker")
-plotter.add_mesh(grid, show_edges=True)
-plotter.view_xy()
-plotter.show()
 # Finite element space
 element = ufl.VectorElement("CG", "triangle", 2, 3) #Lagrange element, triangle, quadratic "P2", 3D vector
 V = dolfinx.fem.FunctionSpace(mesh, element)
@@ -128,19 +123,6 @@ K2 = dolfinx.fem.petsc.assemble_matrix(k3_form, bcs=bcs, diagonal=0.0)
 K2.assemble()
 
 ##################################
-# Solve the eigenproblem with SLEPc (the parameter is omega, the eigenvalue is k)
-wg = Waveguide(MPI.COMM_WORLD, M, K0, K1, K2)
-wg.set_parameters(omega=omega, two_sided=False)
-wg.evp.setTolerances(tol=1e-10, max_it=20)
-wg.solve(nev=nev, target=0) #access to components with: wg.eigenvalues[ik][imode], wg.eigenvectors[ik][idof,imode]
-
-##################################
-# Plot dispersion curves\
-# Results are to be compared with Fig. 5 of Treyssede, Wave Motion 87 (2019), 75-91
-wg.plot_energy_velocity(direction=+1)
-plt.show()
-
-##################################
 # Excitation force definition (point force)
 dof_coords = V.tabulate_dof_coordinates()
 x0 = np.array([0, 0, 0]) #desired coordinate of point force
@@ -148,7 +130,7 @@ dof = int(np.argmin(np.linalg.norm(dof_coords - x0, axis=1))) #find nearest dof
 print(f'Point force coordinates (nearest dof):  {(dof_coords[dof,:])}') #check
 F0 = M.createVecRight()
 dof = dof*3 + 2 #orientation along z
-#dof = dof - 2 #uncomment this line for an orientation along x instead
+dof = dof - 2 #uncomment this line for an orientation along x instead
 F0[dof] = 1
 ##Uncomment lines below for distributed excitation
 #body_force = dolfinx.fem.Constant(mesh, PETSc.ScalarType((0, 0, 1))) #body force of unit amplitude along z
@@ -160,31 +142,58 @@ F0[dof] = 1
 #F.assemble()
 
 ##################################
-# Computation of excitability and forced response\
-# Results are to be compared with Figs. 6 and 7 of Treyssede, Wave Motion 87 (2019), 75-91
-wg.compute_response_coefficient(F=F0, dof=dof)
-wg.plot_coefficient()
-ax = wg.plot_excitability()
-ax.set_yscale('log')
-ax.set_ylim(1e-3,0.5e+1)
-frequency, response, axs = wg.compute_response(dof=dof, z=[5], spectrum=None, plot=True) #spectrum=excitation.spectrum
-axs[0].set_yscale('log')
-axs[0].set_ylim(1e-2,1e+1)
-axs[0].get_lines()[0].set_color("black")
-plt.close()
+# Parallelization
+comm = MPI.COMM_WORLD #use all processes for the loop
+size = comm.Get_size()  #number of processors
+rank = comm.Get_rank()  #returns the rank of the process that called it within comm_world
+# Split the parameter range and scatter to all
+if rank == 0: #define on rank 0 only
+    omega_split = np.array_split(omega, size) #split param in blocks of length size roughly
+else:
+    omega_split = None
+omega_local = comm.scatter(omega_split, root=0) #scatter 1 block per process
 
 ##################################
-# Mode shape visualization
-ik, imode = 50, 1 #parameter index, mode index to visualize
-vec = wg.eigenvectors[ik].getColumnVector(imode)
-u_grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(V))
-u_grid["u"] = np.array(vec).real.reshape(int(np.array(vec).size/V.element.value_shape), int(V.element.value_shape)) #V.element.value_shape is equal to 3
-u_plotter = pyvista.Plotter()
-u_plotter.add_mesh(grid, style="wireframe", color="k") #FE mesh
-u_plotter.add_mesh(u_grid.warp_by_vector("u", factor=0.5), opacity=0.8, show_scalar_bar=True, show_edges=False) #do not show edges of higher order elements with pyvista
-u_plotter.show_axes()
-u_plotter.show()
+# Solve the eigenproblem with SLEPc (the parameter is omega, the eigenvalue is k)
+from waveguicsx.waveguide import Waveguide
+wg = Waveguide(MPI.COMM_SELF, M, K0, K1, K2) #MPI.COMM_SELF = SLEPc will used FE matrices on each local process
+wg.set_parameters(omega=omega_local)
+wg.evp.setTolerances(tol=1e-10, max_it=20)
+wg.solve(nev=nev, target=0) #access to components with: wg.eigenvalues[ik][imode], wg.eigenvectors[ik][idof,imode]
 
+##################################
+# Computation of excitability and forced response
+wg.compute_response_coefficient(F=F0, dof=dof)
+frequency, response = wg.compute_response(dof=dof, z=5, spectrum=None) #spectrum=excitation.spectrum
 
-""
+##################################
+# Gather
+wg.omega = comm.reduce([wg.omega], op=MPI.SUM, root=0) #reduce works for lists: brackets are necessary (wg.omega is not a list but a numpy array)
+wg.eigenvalues = comm.reduce(wg.eigenvalues, op=MPI.SUM, root=0)
+#wg.eigenvectors = comm.reduce(wg.eigenvectors, op=MPI.SUM, root=0) #don't do this line: reduce cannot pickle 'petsc4py.PETSc.Vec' objects (keep the mode shapes distributed on each processor rather than gather them)
+wg.coefficient = comm.reduce(wg.coefficient, op=MPI.SUM, root=0)
+wg.excitability = comm.reduce(wg.excitability, op=MPI.SUM, root=0)
+frequency = comm.reduce([frequency], op=MPI.SUM, root=0)
+response = comm.reduce([response], op=MPI.SUM, root=0)
+
+##################################
+# Plots
+if rank == 0:
+    wg.omega = np.concatenate(wg.omega) #wg.omega is transformed to a numpy array for a proper use of wg.plot()
+    wg.plot()
+    wg.plot_coefficient()
+    ax = wg.plot_excitability()
+    ax.set_yscale('log')
+    ax.set_ylim(1e-3,0.5e+1)
+    frequency = np.concatenate(frequency)
+    response = np.concatenate(response) #use np.concatenate(response, axis=1)  if z contains more than one value
+    fig, ax = plt.subplots(1, 1)  
+    ax.plot(frequency, np.abs(response.T), linewidth=1, linestyle="-", color="k")
+    ax.set_xlabel('frequency')
+    ax.set_ylabel('|u|')
+    ax.set_yscale('log')
+    ax.set_ylim(1e-2,1e+1)
+    fig.tight_layout()
+    #plt.savefig("figure_name.svg")
+    plt.show()
 

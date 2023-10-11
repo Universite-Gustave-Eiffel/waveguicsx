@@ -113,14 +113,20 @@ param_local = comm.scatter(param_split, root=0) #scatter 1 block per process
 wg = Waveguide(MPI.COMM_SELF, M, K0, K1, K2) #MPI.COMM_SELF = SLEPc will used FE matrices on each local process
 wg.set_parameters(omega=param_local)
 wg.solve(nev)
+# Some post-processing
+wg.compute_energy_velocity()
+wg.compute_traveling_direction()
 # Gather
 wg.omega = comm.reduce([wg.omega], op=MPI.SUM, root=0) #reduce works for lists: brackets are necessary (wg.omega is not a list but a numpy array)
 wg.eigenvalues = comm.reduce(wg.eigenvalues, op=MPI.SUM, root=0)
+wg.energy_velocity = comm.reduce(wg.energy_velocity, op=MPI.SUM, root=0)
+wg.traveling_direction = comm.reduce(wg.traveling_direction, op=MPI.SUM, root=0)
 #wg.eigenvectors = comm.reduce(wg.eigenvectors, op=MPI.SUM, root=0) #don't do this line: reduce cannot pickle 'petsc4py.PETSc.Vec' objects (keep the mode shapes distributed on each processor rather than gather them)
 # Plot results
 if rank == 0:
     wg.omega = np.concatenate(wg.omega) #wg.omega is transformed to a numpy array for a proper use of wg.plot()
     wg.plot()
+    wg.plot_energy_velocity(direction=+1)
     #plt.savefig("Elastic_Waveguide_Bar3D_ParallelizedLoop.svg")
     plt.show()
 

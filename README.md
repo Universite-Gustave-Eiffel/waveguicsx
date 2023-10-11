@@ -22,7 +22,7 @@ Various modal properties (energy velocity, group velocity, excitability...) can 
 The forced reponse ($\textbf{F}\neq\textbf{0}$) is solved in the frequency domain by expanding the solution as a sum of eigenmodes using biorthogonality
 relationship, leading to very fast computations of excited wavefields.
 
-Another class, the class Signal, is also provided to easily handle the transforms of signals from time to frequency and inversely, as well as the generation of
+Another class, the class Signal, is also provided to easily handle the transforms of signals from frequency to time and inversely, as well as the generation of
 excitation pulses.
 
 ### Citation
@@ -73,7 +73,7 @@ python3 -m pip install -e .
 python3 -c "from waveguicsx.waveguide import Waveguide; print('ok')"
 ```
 
-### A few references by the author about the SAFE modeling of waveguide
+### A few references by the author about the SAFE modeling of waveguides
 
 F. Treyssède, L. Laguerre, Numerical and analytical calculation of modal excitability for elastic wave generation in lossy waveguides, Journal of the Acoustical Society of America 133 (2013), 3827–3837
 

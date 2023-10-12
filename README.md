@@ -7,10 +7,12 @@ The full documentation is entirely defined in the `waveguide.py' module
 The following matrix problem is considered: $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1+\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{F}$.
 This kind of problem typically stems from the so-called SAFE (Semi-Analytical Finite Element) method. See references below for theoretical details.
 
-The inputs are the matrices $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ (PETSc format).
-In the tutorials, these matrices are built from the open finite element (FE) platform FEniCSX, but any other FE code could be used instead.
+The only necessary inputs are the matrices $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ (PETSc format).
 
-Waveguides can be two-dimensional (e.g. plates), three-dimensional (arbitrarily shaped cross-section), inhomogeneous in the
+In the examples (tutorials), these matrices are built from the open finite element (FE) platform FEniCSX, but any other FE code can be used instead.
+Examples are py files, formatted such that they can be opened in a text editor or in a jupyter notebook.
+
+The code enables to deal with complex waveguides, two-dimensional (e.g. plates) or three-dimensional (arbitrarily shaped cross-section), inhomogeneous in the
 transverse directions, anisotropic. Complex-valued problems can be handled including the effects of non-propagating modes (evanescent, inhomogeneous),
 viscoelastic loss (complex material properties) or perfectly matched layers (PML) to simulate buried waveguides.
 
@@ -25,7 +27,7 @@ relationship, leading to very fast computations of excited wavefields.
 Another class, the class Signal, is also provided to easily handle the transforms of signals from frequency to time and inversely, as well as the generation of
 excitation pulses.
 
-The loop over the parameter (angular frequency or wavenumber) can be parallelized, as shown in tutorials.
+The loops over the parameter (angular frequency or wavenumber) can be parallelized, as shown in some examples.
 
 
 ### Citation

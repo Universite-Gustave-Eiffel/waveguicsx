@@ -21,6 +21,25 @@ extensions = ["sphinx.ext.todo", "sphinx.ext.viewcode", "sphinx.ext.autodoc",
               "myst_parser",
               'nbsphinx']
 
+# myst-parser is used to manage (readme) markdown file
+# ref : https://myst-parser.readthedocs.io/en/latest/syntax/optional.html
+myst_enable_extensions = [
+    "amsmath",
+#    "attrs_inline",
+#    "colon_fence",
+#    "deflist",
+    "dollarmath",   # to allow latex from markdown to be rendered in sphinx
+#    "fieldlist",
+#    "html_admonition",
+#    "html_image",
+#    "linkify",
+#    "replacements",
+#    "smartquotes",
+#    "strikethrough",
+#    "substitution",
+#    "tasklist",
+]
+
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 autodoc_member_order = 'bysource'

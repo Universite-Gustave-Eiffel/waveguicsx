@@ -84,7 +84,7 @@ git clone https://github.com/treyssede/waveguicsx.git
 cd ./waveguicsx
 
 # pip install petsc4py might fail, instead, you may try with conda : 
-# conda install -c conda-forge mpi4py mpich petsc4py
+# conda install -c conda-forge mpi4py mpich petsc4py slepc4py
 
 python3 -m pip install -e .
 

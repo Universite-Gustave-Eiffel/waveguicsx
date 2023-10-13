@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>waveguicsx &mdash; waveguicsx  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Modules" href="modules.html" />
+    <link rel="prev" title="Welcome to waveguicsx’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            waveguicsx
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">waveguicsx</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">0. Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">1. Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">2. Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tutorials">3. Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#authors-and-contributors">4. Authors and contributors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-cite">5. How to cite</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license">6. License</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">waveguicsx</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">waveguicsx</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/readme_link.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="waveguicsx">
+<h1>waveguicsx<a class="headerlink" href="#waveguicsx" title="Link to this heading"></a></h1>
+<p>waveguicsx, a python library for solving complex waveguide problems
+Copyright (C) 2023  Fabien Treyssede</p>
+<p>This file is part of waveguicsx.</p>
+<p>waveguicsx is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</p>
+<p>waveguicsx is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
+<p>You should have received a copy of the GNU General Public License along with waveguicsx. If not, see <a class="reference external" href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses/</a>.</p>
+<p>Contact: fabien.treyssede&#64;univ-eiffel.fr</p>
+<section id="introduction">
+<h2>0. Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h2>
+<p>waveguicsx is a python library for solving complex waveguide problems based on SLEPc eigensolver.</p>
+<p>The full documentation is entirely defined in the `waveguide.py’ module.</p>
+<p>The following matrix problem is considered: $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1+\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{F}$. This kind of problem typically stems from the so-called SAFE (Semi-Analytical Finite Element) method. See references below for theoretical details.</p>
+<p>The library contains two classes. The main class, the class Waveguide, enables to solve the waveguide problem defined by the following inputs: $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ and $\textbf{F}$. The other class, the class Signal, is also provided to easily handle the transforms of signals from frequency to time and inversely, as well as the generation of excitation pulses.</p>
+<p>The code enables to deal with complex waveguides, two-dimensional (e.g. plates) or three-dimensional (arbitrarily shaped cross-section), inhomogeneous in the transverse directions, anisotropic. Complex-valued problems can be handled including the effects of non-propagating modes (evanescent, inhomogeneous), viscoelastic loss (complex material properties) or perfectly matched layers (PML) to simulate buried waveguides.</p>
+<p>The free response ($\textbf{F}=\textbf{0}$) is an eigenvalue problem, solved iteratively by varying the parameter which can be
+the angular frequency $\omega$ or the wavenumber $k$. In the former case, the eigenvalue is $k$, while in the latter case, the eigenvalue is $\omega^2$. The loops over the parameter (angular frequency or wavenumber) can be parallelized, as shown in some tutorials (using mpi4py).</p>
+<p>Various modal properties (energy velocity, group velocity, excitability…) can be post-processed as a function of the frequency and plotted as dispersion curves.</p>
+<p>The forced reponse ($\textbf{F}\neq\textbf{0}$) is solved in the frequency domain by expanding the solution as a sum of eigenmodes using biorthogonality relationship, leading to very fast computations of excited wavefields.</p>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">waveguicsx.waveguide</span> <span class="kn">import</span> <span class="n">Waveguide</span>
+<span class="n">parameter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+<span class="c1"># Initialization</span>
+<span class="n">wg</span> <span class="o">=</span> <span class="n">Waveguide</span><span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">K0</span><span class="p">,</span> <span class="n">K1</span><span class="p">,</span> <span class="n">K2</span><span class="p">)</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">omega</span><span class="o">=</span><span class="n">parameter</span><span class="p">)</span> <span class="c1">#or: wg.set_parameters(wavenumber=parameter)</span>
+<span class="c1"># Solution of eigenvalue problem and post-processing of modal properties (iteration over the parameter)</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">nev</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="c1">#access to components with: wg.eigenvalues[ik][imode], wg.eigenvectors[ik][idof,imode]</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">compute_energy_velocity</span><span class="p">()</span>
+<span class="c1"># Plot dispersion curves</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">plot_energy_velocity</span><span class="p">()</span>
+<span class="c1"># Forced response in the frequency domain, at degree of freedom dof and axial coordinate z</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">compute_response_coefficient</span><span class="p">(</span><span class="n">F</span><span class="o">=</span><span class="n">F</span><span class="p">,</span> <span class="n">dof</span><span class="o">=</span><span class="n">dof</span><span class="p">)</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">plot_coefficient</span><span class="p">()</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">plot_excitability</span><span class="p">()</span>
+<span class="n">frequency</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="n">wg</span><span class="o">.</span><span class="n">compute_response</span><span class="p">(</span><span class="n">dof</span><span class="o">=</span><span class="n">dof</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">],</span> <span class="n">spectrum</span><span class="o">=</span><span class="n">excitation</span><span class="o">.</span><span class="n">spectrum</span><span class="p">)</span>
+<span class="c1"># Transient response</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="n">frequency</span><span class="o">=</span><span class="n">frequency</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="n">response</span><span class="p">)</span>
+<span class="n">response</span><span class="o">.</span><span class="n">plot_spectrum</span><span class="p">()</span>
+<span class="n">response</span><span class="o">.</span><span class="n">ifft</span><span class="p">()</span>
+<span class="n">response</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="prerequisites">
+<h2>1. Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>waveguicsx requires SLEPc and PETSc (slepc4py, petsc4py).</p>
+<p>In the tutorials (examples subfolder), the matrices $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ (and vector $\textbf{F}$ if any) are built from the open finite element (FE) platform FEniCSX. However, any other FE code can be used instead. The only necessary inputs to waveguicsx are the matrices $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ (PETSc matrix format), as well as the vector $\textbf{F}$ for a forced response.</p>
+<p>Tutorials are py files, formatted such that they can be opened in a text editor or in a jupyter notebook.</p>
+</section>
+<section id="installation">
+<h2>2. Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p>Simply clone the waveguicsx public repository</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># move to installation location with cd</span>
+
+<span class="c1"># get the repo from github</span>
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/treyssede/waveguicsx.git
+
+<span class="c1"># move into repository, and install using pip</span>
+<span class="nb">cd</span><span class="w"> </span>./waveguicsx
+python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+
+<span class="c1"># test the installation from any location in the path:</span>
+python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;from waveguicsx.waveguide import Waveguide; print(&#39;ok&#39;)&quot;</span>
+</pre></div>
+</div>
+<p>To run FEniCSX for the tutorials, we recommend using a docker image with the latest stable release of DOLFINx executed in complex mode before running scripts:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>-ti<span class="w"> </span>dolfinx/dolfinx:stable
+<span class="nb">source</span><span class="w"> </span>/usr/local/bin/dolfinx-complex-mode
+</pre></div>
+</div>
+<p>or , instead, a Jupyter Lab environment with the latest stable release of DOLFINx:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>--init<span class="w"> </span>-ti<span class="w"> </span>-p<span class="w"> </span><span class="m">8888</span>:8888<span class="w"> </span>dolfinx/lab:stable
+</pre></div>
+</div>
+<p>See https://fenicsproject.org/ for details.</p>
+</section>
+<section id="tutorials">
+<h2>3. Tutorials<a class="headerlink" href="#tutorials" title="Link to this heading"></a></h2>
+<p>Several tutorials are provided in the examples subfolder.</p>
+</section>
+<section id="authors-and-contributors">
+<h2>4. Authors and contributors<a class="headerlink" href="#authors-and-contributors" title="Link to this heading"></a></h2>
+<p>waveguicsx is currently developed and maintained at Université Gustave Eiffel by Dr. Fabien Treyssède, with some help from Dr. Maximilien Lehujeur (github software management, python formatting, beta testing) and Dr. Pierric Mora (parallelization of loops, beta testing). Please see the AUTHORS file for a list of contributors.</p>
+<p>Feel free to contact me by email for further information or questions about waveguicsx.</p>
+<p>contact: fabien.treyssede&#64;univ-eiffel.fr</p>
+</section>
+<section id="how-to-cite">
+<h2>5. How to cite<a class="headerlink" href="#how-to-cite" title="Link to this heading"></a></h2>
+<p>Please cite the software project as follows if used for your own projects or academic publications:</p>
+<p>F. Treyssède, waveguicsx (a python library for solving complex waveguides problems), 2023; software available at https://github.com/treyssede/waveguicsx.</p>
+<p>For theoretical details about finite element modeling of waveguide problems, here are also a few references by the author about the SAFE modeling of waveguides:</p>
+<p>F. Treyssède, L. Laguerre, Numerical and analytical calculation of modal excitability for elastic wave generation in lossy waveguides, Journal of the Acoustical Society of America 133 (2013), 3827–3837</p>
+<p>K. L. Nguyen, F. Treyssède, C. Hazard, Numerical modeling of three-dimensional open elastic waveguides combining semi-analytical finite element and perfectly matched layer methods, Journal of Sound and Vibration 344 (2015), 158-178</p>
+<p>F. Treyssède, Spectral element computation of high-frequency leaky modes in three-dimensional solid waveguides, Journal of Computational Physics 314 (2016), 341-354</p>
+<p>M. Gallezot, F. Treyssède, L. Laguerre, A modal approach based on perfectly matched layers for the forced response of elastic open waveguides, Journal of Computational Physics 356 (2018), 391-409</p>
+</section>
+<section id="license">
+<h2>6. License<a class="headerlink" href="#license" title="Link to this heading"></a></h2>
+<p>waveguicsx is freely available under the GNU GPL, version 3.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to waveguicsx’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="modules.html" class="btn btn-neutral float-right" title="Modules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Fabien Treyssede.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

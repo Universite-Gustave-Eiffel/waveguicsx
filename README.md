@@ -65,7 +65,7 @@ plt.show()
 
 waveguicsx requires SLEPc and PETSc (slepc4py, petsc4py).
 
-In the tutorials (examples subfolder), the matrices $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$ and $\textbf{M}$ are built from the open finite element (FE) platform FEniCSX. However, any other FE code can be used instead. The only necessary inputs to waveguicsx are the matrices $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ (PETSc matrix format).
+In the tutorials (examples subfolder), the matrices $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ (and vector $\textbf{F}$ if any) are built from the open finite element (FE) platform FEniCSX. However, any other FE code can be used instead. The only necessary inputs to waveguicsx are the matrices $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ (PETSc matrix format), as well as the vector $\textbf{F}$ for a forced response.
 
 Tutorials are py files, formatted such that they can be opened in a text editor or in a jupyter notebook.
 

@@ -2,4 +2,9 @@
 waveguicsx.egg-info/
 waveguicsx/__pycache__/
 .idea/*
+/docs/_build/
+/docs/_static/
+/docs/_templates/
+/docs/*.ipynb
+/docs/Waveguicsx_documentation.html
 

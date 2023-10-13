@@ -1,15 +1,15 @@
 # waveguicsx
 
-Waveguicsx, a python library for solving complex waveguide problems
+waveguicsx, a python library for solving complex waveguide problems
 Copyright (C) 2023  Fabien Treyssede
 
-This file is part of Waveguicsx.
+This file is part of waveguicsx.
 
-Waveguicsx is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+waveguicsx is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-Waveguicsx is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+waveguicsx is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with Waveguicsx. If not, see <https://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License along with waveguicsx. If not, see <https://www.gnu.org/licenses/>.
 
 Contact: fabien.treyssede@univ-eiffel.fr
 
@@ -22,18 +22,16 @@ The full documentation is entirely defined in the `waveguide.py' module.
 
 The following matrix problem is considered: $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1+\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{F}$. This kind of problem typically stems from the so-called SAFE (Semi-Analytical Finite Element) method. See references below for theoretical details.
 
+The library contains two classes. The main class, the class Waveguide, enables to solve the waveguide problem defined by the following inputs: $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ and $\textbf{F}$. The other class, the class Signal, is also provided to easily handle the transforms of signals from frequency to time and inversely, as well as the generation of excitation pulses.
+
 The code enables to deal with complex waveguides, two-dimensional (e.g. plates) or three-dimensional (arbitrarily shaped cross-section), inhomogeneous in the transverse directions, anisotropic. Complex-valued problems can be handled including the effects of non-propagating modes (evanescent, inhomogeneous), viscoelastic loss (complex material properties) or perfectly matched layers (PML) to simulate buried waveguides.
 
 The free response ($\textbf{F}=\textbf{0}$) is an eigenvalue problem, solved iteratively by varying the parameter which can be
-the angular frequency $\omega$ or the wavenumber $k$. In the former case, the eigenvalue is $k$, while in the latter case, the eigenvalue is $\omega^2$.
+the angular frequency $\omega$ or the wavenumber $k$. In the former case, the eigenvalue is $k$, while in the latter case, the eigenvalue is $\omega^2$. The loops over the parameter (angular frequency or wavenumber) can be parallelized, as shown in some tutorials (using mpi4py).
 
 Various modal properties (energy velocity, group velocity, excitability...) can be post-processed as a function of the frequency and plotted as dispersion curves.
 
 The forced reponse ($\textbf{F}\neq\textbf{0}$) is solved in the frequency domain by expanding the solution as a sum of eigenmodes using biorthogonality relationship, leading to very fast computations of excited wavefields.
-
-Another class, the class Signal, is also provided to easily handle the transforms of signals from frequency to time and inversely, as well as the generation of excitation pulses.
-
-The loops over the parameter (angular frequency or wavenumber) can be parallelized, as shown in some tutorials.
 
 Example:
 
@@ -120,7 +118,7 @@ contact: fabien.treyssede@univ-eiffel.fr
 
 Please cite the software project as follows if used for your own projects or academic publications:
 
-F. Treyssède, Waveguicsx (a python library for solving complex waveguides problems), 2023; software available at https://github.com/treyssede/waveguicsx.
+F. Treyssède, waveguicsx (a python library for solving complex waveguides problems), 2023; software available at https://github.com/treyssede/waveguicsx.
 
 For theoretical details about finite element modeling of waveguide problems, here are also a few references by the author about the SAFE modeling of waveguides:
 

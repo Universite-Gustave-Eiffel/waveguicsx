@@ -82,10 +82,12 @@ git clone https://github.com/treyssede/waveguicsx.git
 
 # move into repository, and install using pip
 cd ./waveguicsx
+
+# pip install petsc4py might fail, instead, you may try with conda : 
+# conda install -c conda-forge mpi4py mpich petsc4py
+
 python3 -m pip install -e .
 
-# test the installation from any location in the path:
-python3 -c "from waveguicsx.waveguide import Waveguide; print('ok')"
 ```
 
 To run FEniCSX for the tutorials, we recommend using a docker image with the latest stable release of DOLFINx executed in complex mode before running scripts:
@@ -104,6 +106,7 @@ See https://fenicsproject.org/ for details.
 
 Several tutorials are provided in the examples subfolder.
 
+To build the documentation, use `python setup.py doc`, and open the front page in `./doc/Waveguicsx_documentation.html`.
 
 ### 4. Authors and contributors
 

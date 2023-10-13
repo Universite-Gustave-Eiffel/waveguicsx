@@ -18,9 +18,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pyvista
 
-#from waveguicsx.waveguide import Waveguide
-from waveguide import Waveguide
-pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
+from waveguicsx.waveguide import Waveguide, Signal
+#For proper use with a jupyter notebook, uncomment the following line:
+#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #try also: "static", "pythreejs", "ipyvtklink"...
 
 ##################################
 # Input parameters
@@ -32,7 +32,6 @@ nev = 20 #number of eigenvalues
 
 ##################################
 # Excitation spectrum
-from wavesignal import Signal
 excitation = Signal(alpha=0*np.log(50)/5e-3)
 excitation.toneburst(fs=1000e3, T=5e-3, fc=250e3, n=5)
 excitation.plot()

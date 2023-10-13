@@ -20,7 +20,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 #import pyvista
 
-#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
+from waveguicsx.waveguide import Waveguide
+#For proper use with a jupyter notebook, uncomment the following line:
+#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #try also: "static", "pythreejs", "ipyvtklink"...
 
 ##################################
 # Input parameters
@@ -98,7 +100,6 @@ K2.assemble()
 # Solve the eigenproblem with SLEPc\
 # The parameter is k, the eigenvalue is omega**2
 # The parameter loop is parallelized
-from waveguicsx.waveguide import Waveguide
 # Parallelization
 comm = MPI.COMM_WORLD #use all processes for the loop
 size = comm.Get_size()  #number of processors

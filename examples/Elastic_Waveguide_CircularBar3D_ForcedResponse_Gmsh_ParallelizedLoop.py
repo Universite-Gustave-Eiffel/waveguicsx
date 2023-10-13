@@ -22,7 +22,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 #import pyvista
 
-#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
+from waveguicsx.waveguide import Waveguide
+#For proper use with a jupyter notebook, uncomment the following line:
+#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #try also: "static", "pythreejs", "ipyvtklink"...
 
 ##################################
 # Input parameters
@@ -155,7 +157,6 @@ omega_local = comm.scatter(omega_split, root=0) #scatter 1 block per process
 
 ##################################
 # Solve the eigenproblem with SLEPc (the parameter is omega, the eigenvalue is k)
-from waveguicsx.waveguide import Waveguide
 wg = Waveguide(MPI.COMM_SELF, M, K0, K1, K2) #MPI.COMM_SELF = SLEPc will used FE matrices on each local process
 wg.set_parameters(omega=omega_local)
 wg.evp.setTolerances(tol=1e-10, max_it=20)

@@ -20,7 +20,8 @@ import matplotlib.pyplot as plt
 import pyvista
 
 from waveguicsx.waveguide import Waveguide
-#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #uncomment with jupyter notebook (try also: "static", "pythreejs", "ipyvtklink")
+#For proper use with a jupyter notebook, uncomment the following line:
+#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #try also: "static", "pythreejs", "ipyvtklink"...
 
 ##################################
 # Input parameters

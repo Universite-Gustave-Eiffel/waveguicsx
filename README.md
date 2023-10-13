@@ -1,41 +1,41 @@
 # waveguicsx
 
-A class for solving complex waveguide problems based on SLEPc eigensolver
+Waveguicsx, a python library for solving complex waveguide problems
+Copyright (C) 2023  Fabien Treyssede
 
-The full documentation is entirely defined in the `waveguide.py' module
+This file is part of Waveguicsx.
 
-The following matrix problem is considered: $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1+\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{F}$.
-This kind of problem typically stems from the so-called SAFE (Semi-Analytical Finite Element) method. See references below for theoretical details.
+Waveguicsx is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-The only necessary inputs are the matrices $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ (PETSc format).
+Waveguicsx is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-In the examples (tutorials), these matrices are built from the open finite element (FE) platform FEniCSX, but any other FE code can be used instead.
-Examples are py files, formatted such that they can be opened in a text editor or in a jupyter notebook.
+You should have received a copy of the GNU General Public License along with Waveguicsx. If not, see <https://www.gnu.org/licenses/>.
 
-The code enables to deal with complex waveguides, two-dimensional (e.g. plates) or three-dimensional (arbitrarily shaped cross-section), inhomogeneous in the
-transverse directions, anisotropic. Complex-valued problems can be handled including the effects of non-propagating modes (evanescent, inhomogeneous),
-viscoelastic loss (complex material properties) or perfectly matched layers (PML) to simulate buried waveguides.
+Contact: fabien.treyssede@univ-eiffel.fr
+
+
+### 0. Introduction
+
+waveguicsx is a python library for solving complex waveguide problems based on SLEPc eigensolver.
+
+The full documentation is entirely defined in the `waveguide.py' module.
+
+The following matrix problem is considered: $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1+\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{F}$. This kind of problem typically stems from the so-called SAFE (Semi-Analytical Finite Element) method. See references below for theoretical details.
+
+The code enables to deal with complex waveguides, two-dimensional (e.g. plates) or three-dimensional (arbitrarily shaped cross-section), inhomogeneous in the transverse directions, anisotropic. Complex-valued problems can be handled including the effects of non-propagating modes (evanescent, inhomogeneous), viscoelastic loss (complex material properties) or perfectly matched layers (PML) to simulate buried waveguides.
 
 The free response ($\textbf{F}=\textbf{0}$) is an eigenvalue problem, solved iteratively by varying the parameter which can be
 the angular frequency $\omega$ or the wavenumber $k$. In the former case, the eigenvalue is $k$, while in the latter case, the eigenvalue is $\omega^2$.
 
 Various modal properties (energy velocity, group velocity, excitability...) can be post-processed as a function of the frequency and plotted as dispersion curves.
 
-The forced reponse ($\textbf{F}\neq\textbf{0}$) is solved in the frequency domain by expanding the solution as a sum of eigenmodes using biorthogonality
-relationship, leading to very fast computations of excited wavefields.
+The forced reponse ($\textbf{F}\neq\textbf{0}$) is solved in the frequency domain by expanding the solution as a sum of eigenmodes using biorthogonality relationship, leading to very fast computations of excited wavefields.
 
-Another class, the class Signal, is also provided to easily handle the transforms of signals from frequency to time and inversely, as well as the generation of
-excitation pulses.
+Another class, the class Signal, is also provided to easily handle the transforms of signals from frequency to time and inversely, as well as the generation of excitation pulses.
 
-The loops over the parameter (angular frequency or wavenumber) can be parallelized, as shown in some examples.
+The loops over the parameter (angular frequency or wavenumber) can be parallelized, as shown in some tutorials.
 
-
-### Citation
-
-Please cite the project (https://github.com/treyssede/waveguicsx) if used for your own projects or academic publications
-
-
-### Example
+Example:
 
 ```python
 from waveguicsx.waveguide import Waveguide
@@ -62,16 +62,27 @@ response.plot()
 plt.show()
 ```
 
-### Installation
+
+### 1. Prerequisites
+
+waveguicsx requires SLEPc and PETSc (slepc4py, petsc4py).
+
+In the tutorials (examples subfolder), the matrices $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$ and $\textbf{M}$ are built from the open finite element (FE) platform FEniCSX. However, any other FE code can be used instead. The only necessary inputs to waveguicsx are the matrices $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ (PETSc matrix format).
+
+Tutorials are py files, formatted such that they can be opened in a text editor or in a jupyter notebook.
+
+
+### 2. Installation
  
-Install preferably inside a Docker Container (dolfinx/dolfinx:latest)
+Simply clone the waveguicsx public repository
+
 ```bash
 # move to installation location with cd
 
 # get the repo from github
 git clone https://github.com/treyssede/waveguicsx.git
 
-# move into to repository, and install using pip
+# move into repository, and install using pip
 cd ./waveguicsx
 python3 -m pip install -e .
 
@@ -79,7 +90,39 @@ python3 -m pip install -e .
 python3 -c "from waveguicsx.waveguide import Waveguide; print('ok')"
 ```
 
-### A few references by the author about the SAFE modeling of waveguides
+To run FEniCSX for the tutorials, we recommend using a docker image with the latest stable release of DOLFINx executed in complex mode before running scripts:
+```bash
+docker run -ti dolfinx/dolfinx:stable
+source /usr/local/bin/dolfinx-complex-mode
+```
+or , instead, a Jupyter Lab environment with the latest stable release of DOLFINx:
+```bash
+docker run --init -ti -p 8888:8888 dolfinx/lab:stable
+```
+See https://fenicsproject.org/ for details.
+
+
+### 3. Tutorials
+
+Several tutorials are provided in the examples subfolder.
+
+
+### 4. Authors and contributors
+
+waveguicsx is currently developed and maintained at Université Gustave Eiffel by Dr. Fabien Treyssède, with some help from Dr. Maximilien Lehujeur (github software management, python formatting, beta testing) and Dr. Pierric Mora (parallelization of loops, beta testing). Please see the AUTHORS file for a list of contributors.
+
+Feel free to contact me by email for further information or questions about waveguicsx.
+
+contact: fabien.treyssede@univ-eiffel.fr
+
+
+### 5. How to cite
+
+Please cite the software project as follows if used for your own projects or academic publications:
+
+F. Treyssède, Waveguicsx (a python library for solving complex waveguides problems), 2023; software available at https://github.com/treyssede/waveguicsx.
+
+For theoretical details about finite element modeling of waveguide problems, here are also a few references by the author about the SAFE modeling of waveguides:
 
 F. Treyssède, L. Laguerre, Numerical and analytical calculation of modal excitability for elastic wave generation in lossy waveguides, Journal of the Acoustical Society of America 133 (2013), 3827–3837
 
@@ -88,3 +131,9 @@ K. L. Nguyen, F. Treyssède, C. Hazard, Numerical modeling of three-dimensional 
 F. Treyssède, Spectral element computation of high-frequency leaky modes in three-dimensional solid waveguides, Journal of Computational Physics 314 (2016), 341-354
 
 M. Gallezot, F. Treyssède, L. Laguerre, A modal approach based on perfectly matched layers for the forced response of elastic open waveguides, Journal of Computational Physics 356 (2018), 391-409
+
+
+### 6. License
+
+waveguicsx is freely available under the GNU GPL, version 3.
+

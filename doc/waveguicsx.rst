@@ -1,5 +1,5 @@
-waveguicsx.waveguide module
----------------------------
+waveguicsx.waveguide
+--------------------
 
 .. automodule:: waveguicsx
    :members:

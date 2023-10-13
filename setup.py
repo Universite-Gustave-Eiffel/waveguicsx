@@ -44,6 +44,6 @@ setuptools.setup(
     install_requires=[
         'numpy', 'matplotlib',  # 'pyvista, 'scipy',... ?
         # packages required for sphinx
-        'sphinx', 'sphinx-rtd-theme', 'myst-parser',  
+        'sphinx', 'sphinx-rtd-theme', 'myst-parser',  'nbsphinx',
         ], # list the python packages to install with python -m pip install
     python_requires='>=3')

@@ -16,11 +16,12 @@ class MakeTheDoc(setuptools.Command):
     def run(self):
         """The command to run when users invoke python setup.py doc"""
         subprocess.run(
-            ['sphinx-build doc doc/_build'], shell=True)
-
+            ['sphinx-build docsrc docs'], shell=True)
+        
 
 with open('README.md', 'r') as fid:
     long_description = fid.read()
+
 
 setuptools.setup(
     name='waveguicsx',

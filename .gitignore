@@ -2,4 +2,19 @@
 waveguicsx.egg-info/
 waveguicsx/__pycache__/
 .idea/*
+/docs/.buildinfo
+/docs/.doctrees/
+/docs/_images/
+/docs/_modules/
+/docs/_sources/
+/docs/_static/
+/docs/genindex.html
+/docs/index.html
+/docs/modules.html
+/docs/objects.inv
+/docs/py-modindex.html
+/docs/readme_link.html
+/docs/search.html
+/docs/searchindex.js
+/docs/waveguicsx.html
 

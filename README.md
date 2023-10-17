@@ -1,6 +1,6 @@
 # waveguicsx
 
-waveguicsx, a python library for solving complex waveguide problems
+waveguicsx, a python library for solving complex waveguide problems  
 Copyright (C) 2023  Fabien Treyssede
 
 This file is part of waveguicsx.
@@ -36,9 +36,9 @@ The forced reponse ($\textbf{F}\neq\textbf{0}$) is solved in the frequency domai
 Example:
 
 ```python
+# Initialization
 from waveguicsx.waveguide import Waveguide
 parameter = np.arange(0.1, 5, 0.1)
-# Initialization
 wg = Waveguide(MPI.COMM_WORLD, M, K0, K1, K2)
 wg.set_parameters(omega=parameter) #or: wg.set_parameters(wavenumber=parameter)
 # Solution of eigenvalue problem and post-processing of modal properties (iteration over the parameter)
@@ -110,7 +110,7 @@ To build the documentation, use `python setup.py doc`, and open the front page i
 
 ### 4. Authors and contributors
 
-waveguicsx is currently developed and maintained at Université Gustave Eiffel by Dr. Fabien Treyssède, with some help from Dr. Maximilien Lehujeur (github software management, python formatting, beta testing) and Dr. Pierric Mora (parallelization of loops, beta testing). Please see the AUTHORS file for a list of contributors.
+waveguicsx is currently developed and maintained at Université Gustave Eiffel by Dr. Fabien Treyssède, with some help from Dr. Maximilien Lehujeur (github software management, python formatting, beta testing) and Dr. Pierric Mora (parallelization of loops in tutorials, beta testing). Please see the AUTHORS file for a list of contributors.
 
 Feel free to contact me by email for further information or questions about waveguicsx.
 

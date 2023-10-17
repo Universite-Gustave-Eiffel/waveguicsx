@@ -36,22 +36,36 @@ The forced reponse ($\textbf{F}\neq\textbf{0}$) is solved in the frequency domai
 Example:
 
 ```python
-# Initialization
+
 from waveguicsx.waveguide import Waveguide
-parameter = np.arange(0.1, 5, 0.1)
+
+# Definition of the excitation signal (here, a toneburst)
+excitation = Signal()
+excitation.toneburst(fs=8/(2*np.pi), T=49.75*(2*np.pi), fc=2/(2*np.pi), n=5) #here, 
+excitation.plot()
+excitation.plot_spectrum()
+omega = 2*np.pi*excitation.frequency  #omega = np.linspace(0.02, 4, 200)
+
+# Initialization of waveguide
 wg = Waveguide(MPI.COMM_WORLD, M, K0, K1, K2)
-wg.set_parameters(omega=parameter) #or: wg.set_parameters(wavenumber=parameter)
-# Solution of eigenvalue problem and post-processing of modal properties (iteration over the parameter)
-wg.solve(nev=50, target=0) #access to components with: wg.eigenvalues[ik][imode], wg.eigenvectors[ik][idof,imode]
-wg.compute_energy_velocity()
+wg.set_parameters(omega=omega)
+
+# Solution of eigenvalue problem (iteration over the parameter omega)
+wg.solve(nev=50, target=0) #access to components with: wg.eigenvalues[iomega][imode], wg.eigenvectors[iomega][idof,imode]
+
 # Plot dispersion curves
 wg.plot()
+wg.compute_energy_velocity()
 wg.plot_energy_velocity()
-# Forced response in the frequency domain, at degree of freedom dof and axial coordinate z
+
+# Computation of modal coefficients and excitabilities
 wg.compute_response_coefficient(F=F, dof=dof)
 wg.plot_coefficient()
 wg.plot_excitability()
-frequency, response = wg.compute_response(dof=dof, z=[1, 10, 50], spectrum=excitation.spectrum)
+
+# Forced response in the frequency domain, due to a toneburst excitation, at degree of freedom dof and axial coordinates z
+frequency, response = wg.compute_response(dof=dof, z=[50, 100, 150, 200], spectrum=excitation.spectrum)
+
 # Transient response
 response = Signal(frequency=frequency, spectrum=response)
 response.plot_spectrum()

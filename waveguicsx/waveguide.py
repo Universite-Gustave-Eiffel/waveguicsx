@@ -1,5 +1,6 @@
 #####################################################################
 # waveguicsx, a python library for solving complex waveguide problems
+# 
 # Copyright (C) 2023  Fabien Treyssede
 # 
 # This file is part of waveguicsx.
@@ -49,30 +50,30 @@ class Waveguide:
     eigenmodes using biorthogonality relationship, leading to very fast computations of excited wavefields.
     
     
-    Example:
- 
-    from waveguicsx.waveguide import Waveguide
-    parameter = np.arange(0.1, 5, 0.1)
-    # Initialization
-    wg = Waveguide(MPI.COMM_WORLD, M, K0, K1, K2)
-    wg.set_parameters(omega=parameter) #or: wg.set_parameters(wavenumber=parameter)
-    # Solution of eigenvalue problem and post-processing of modal properties (iteration over the parameter)
-    wg.solve(nev=50, target=0) #access to components with: wg.eigenvalues[ik][imode], wg.eigenvectors[ik][idof,imode]
-    wg.compute_energy_velocity()
-    # Plot dispersion curves
-    wg.plot()
-    wg.plot_energy_velocity()
-    # Forced response in the frequency domain, at degree of freedom dof and axial coordinate z
-    wg.compute_response_coefficient(F=F, dof=dof)
-    wg.plot_coefficient()
-    wg.plot_excitability()
-    frequency, response = wg.compute_response(dof=dof, z=[1, 10, 50], spectrum=excitation.spectrum)
-    # Transient response
-    response = Signal(frequency=frequency, spectrum=response)
-    response.plot_spectrum()
-    response.ifft()
-    response.plot()
-    plt.show()
+    Example::
+    
+        # Initialization
+        from waveguicsx.waveguide import Waveguide
+        parameter = np.arange(0.1, 5, 0.1)
+        wg = Waveguide(MPI.COMM_WORLD, M, K0, K1, K2)
+        wg.set_parameters(omega=parameter) #or: wg.set_parameters(wavenumber=parameter)
+        # Solution of eigenvalue problem and post-processing of modal properties (iteration over the parameter)
+        wg.solve(nev=50, target=0) #access to components with: wg.eigenvalues[ik][imode], wg.eigenvectors[ik][idof,imode]
+        wg.compute_energy_velocity()
+        # Plot dispersion curves
+        wg.plot()
+        wg.plot_energy_velocity()
+        # Forced response in the frequency domain, at degree of freedom dof and axial coordinate z
+        wg.compute_response_coefficient(F=F, dof=dof)
+        wg.plot_coefficient()
+        wg.plot_excitability()
+        frequency, response = wg.compute_response(dof=dof, z=[1, 10, 50], spectrum=excitation.spectrum)
+        # Transient response
+        response = Signal(frequency=frequency, spectrum=response)
+        response.plot_spectrum()
+        response.ifft()
+        response.plot()
+        plt.show()
     
     
     Attributes
@@ -88,16 +89,16 @@ class Waveguide:
     two_sided : bool
         if True, left eigenvectors will be also computed (otherwise, only right eigenvectors are computed)
     target: complex number or user-defined function of the parameter
-        target around which eigenpairs are looked for and set from solve(...)
+        target around which eigenpairs are looked for (see method solve)
     omega or wavenumber : numpy.ndarray
-        the parameter range specified by the user (see method setParameters)
+        the parameter range specified by the user (see method set_parameters)
     evp : PEP or EPS instance (SLEPc object)
-        eigensolver parameters (EPS if problem_type is "wavenumber", PEP otherwise)
+        eigensolver parameters
     eigenvalues : list of numpy arrays
-        list of wavenumbers or angular frequencies
+        list of wavenumbers or angular frequencies,
         access to components with eigenvalues[ip][imode] (ip: parameter index, imode: mode index)
     eigenvectors : list of PETSc matrices
-        list of mode shapes
+        list of mode shapes,
         access to components with eigenvectors[ik][idof,imode] (ip: parameter index, imode: mode index, idof: dof index)
         or eigenvectors[ik].getColumnVector(imode)
     eigenforces : list of PETSc matrices
@@ -119,9 +120,11 @@ class Waveguide:
     
     Methods
     -------
+    __init__(comm:'_MPI.Comm', M:PETSc.Mat, K0:PETSc.Mat, K1:PETSc.Mat, K2:PETSc.Mat):
+        Constructor, initialization of waveguide
     set_parameters(omega=None, wavenumber=None, two_sided=False):
-        Set problem type (problem_type), the parameter range (omega or wavenumber) as well as default parameters of SLEPc eigensolver (evp)
-        Set two_sided to True to compute left eigenvectors also (left eigenvectors are the opposite-going modes)
+        Set problem type (problem_type), the parameter range (omega or wavenumber) as well as default parameters of SLEPc eigensolver (evp);
+        set two_sided to True to compute left eigenvectors also (left eigenvectors are the opposite-going modes)
     solve(nev=1, target=0):
         Solve the eigenvalue problem repeatedly for the parameter range, solutions are stored as attributes (names: eigenvalues,
         eigenvectors)
@@ -130,9 +133,9 @@ class Waveguide:
     compute_poynting_normalization():
         Normalization of eigenvectors and eigenforces, so that U'=U/sqrt(|P|), where P is the normal component of complex Poynting vector
     compute_opposite_going(plot=False):
-        Compute opposite-going mode pairs based on on wavenumber and biorthogonality for the whole parameter range and store them as
-        attributes (name: opposite_going), set plot to True to visualize the biorthogonality values of detected pairs        
-    compute_energy_velocity():    
+        Compute opposite-going mode pairs based on on wavenumber and biorthogonality for the whole parameter range and store
+        them as attributes (name: opposite_going), set plot to True to visualize the biorthogonality values of detected pairs        
+    compute_energy_velocity():
         Compute the energy velocities for the whole parameter range and store them as an attribute (name: energy_velocity)
     compute_group_velocity():
         Compute the group velocities for the whole parameter range and store them as an attribute (name: energy_velocity)
@@ -141,7 +144,8 @@ class Waveguide:
     compute_pml_ratio():
         Compute the pml ratios for the whole parameter range and store them as an attribute (name: pml_ratio)
     compute_response_coefficient(F, spectrum=None, wavenumber_function=None, dof=None):
-        Compute the response coefficients due to excitation vector F for the whole parameter range and store them as an attribute (name: coefficient)
+        Compute the response coefficients due to excitation vector F for the whole parameter range and store them as
+        an attribute (name: coefficient)
     compute_response(dof, z, spectrum=None, wavenumber_function=None, plot=False):
         Compute the response at the degree of freedom dof and the axial coordinate z for the whole frequency range
     plot(direction=None, pml_threshold=None, ax=None, color="k",  marker="o", markersize=2, linestyle="", **kwargs):
@@ -205,11 +209,11 @@ class Waveguide:
 
     def set_parameters(self, omega: Union[np.ndarray, None]=None, wavenumber:Union[np.ndarray, None]=None, two_sided=False):
         """
-        Set the parameter range (omega or wavenumber) as well as default parameters of the SLEPc eigensolver (evp)
-        The user must specify the parameter omega or wavenumber, but not both
-        This method generates the attributes omega (or wavenumber) and evp
-        After this method call, different SLEPc parameters can be set by changing the attribute evp manually
-        Set two_sided=True for solving left eigenvectors also
+        Set the parameter range (omega or wavenumber) as well as default parameters of the SLEPc eigensolver (evp).
+        The user must specify the parameter omega or wavenumber, but not both.
+        This method generates the attributes omega (or wavenumber) and evp.
+        After calling this method, various SLEPc parameters can be set by changing the attribute evp manually.
+        Set two_sided=True for solving left eigenvectors also.
         
         Parameters
         ----------
@@ -271,11 +275,12 @@ class Waveguide:
 
     def solve(self, nev=1, target=0):
         """
-        Solve the dispersion problem, i.e. the eigenvalue problem repeatedly for the parameter range (omega or wavenumber)
-        The solutions are stored in the attributes eigenvalues and eigenvectors
-        If two_sided is True, left eigensolutions are also solved
+        Solve the dispersion problem, i.e. the eigenvalue problem repeatedly for the parameter range (omega or wavenumber).
+        The solutions are stored in the attributes eigenvalues and eigenvectors.
+        If two_sided is True, left eigensolutions are also solved.
+        
         Note: left eigensolutions correspond to opposite-going modes and are hence added to the right eigensolutions
-        (i.e. in eigenvalues and eigenvectors) after removing any possible duplicates
+        (i.e. in eigenvalues and eigenvectors) after removing any possible duplicates.
         
         Parameters
         ----------
@@ -358,9 +363,9 @@ class Waveguide:
     def compute_poynting_normalization(self):
         """
         Post-process the normalization of eigenvectors and eigenforces, so that U'=U/sqrt(|P|),
-        where P is the normal component of complex Poynting vector
-        After normalization, every mode is such that |P|=1 and the attribute _poynting_normalization is set to True
-        Normalization is not mandatory but, when applied, has to be done before any response coefficient computation
+        where P is the normal component of complex Poynting vector (P=-1j*omega/2*U^H*F).
+        After normalization, every mode is such that |P|=1 and the attribute _poynting_normalization is set to True.
+        Normalization is not mandatory but, when applied, has to be done before any response coefficient computation.
         """
         if len(self.coefficient)!=0: #response already computed
             raise NotImplementedError('Normalization has to be applied before response coefficient computation')
@@ -428,18 +433,24 @@ class Waveguide:
     def compute_opposite_going(self, plot=False):
         """
         Post-process the pairing of opposite-going modes, based on wavenumber and biorthogonality criteria, and store them
-        as a an attribute (name: opposite_going, -1 value for unpaired modes)
+        as a an attribute (name: opposite_going, -1 value for unpaired modes).
         Compute their biorthogonality normalization factors, Um^T*F-m - U-m^T*Fm, where m and -m denote opposite-going
-        modes, for the whole parameter range and store them as an attribute (name: _biorthogonality_factor)
+        modes, for the whole parameter range and store them as an attribute (name: _biorthogonality_factor).
         If plot is set to True, the biorthogonality factors found by the algorithm are plotted in magnitude as a function
         of frequency, allowing visual check that there is no values close to zero (a factor close to zero probably means
-        a lack of biorthogonality)
+        a lack of biorthogonality).
+        
         Notes:
-        - when an unpaired mode is found, the value -1 is stored in opposite_going (and NaN value in _biorthogonality_factor), meaning that
-          this mode will be discarded in the computation of group velocity, traveling direction, coefficient and excitability (a NaN value will be stored)
-        - if modes with lack of biorthogonality or two many unpaired modes occur, try to recompute the eigenproblem by increasing the accuracy (e.g. reducing the tolerance)
-        - lack of biorthogonality may be also due to multiple modes (*): in this case, try to use an unstructured mesh instead
-        - if two_sided is True, lack of biorthogonolity may occur for specific target: try another target (e.g. add a small imaginary part) 
+        
+        - when an unpaired mode is found, the value -1 is stored in opposite_going (and NaN value in _biorthogonality_factor),
+          meaning that this mode will be discarded in the computation of group velocity, traveling direction, coefficient and
+          excitability (NaN values stored)
+        - if modes with lack of biorthogonality or two many unpaired modes occur, try to recompute the eigenproblem by
+          increasing the accuracy (e.g. reducing the tolerance)
+        - lack of biorthogonality may be also due to multiple modes (*); in this case, try to use an unstructured mesh instead
+        - if two_sided is True, lack of biorthogonolity may occur for specific target: try another target (e.g. add a small
+          imaginary part)
+           
         (*) e.g. flexural modes in a cylinder with structured mesh
         """
         tol1 = 1e-4 #tolerance for relative difference between opposite wavenumbers (wavenumber criterion)
@@ -518,9 +529,8 @@ class Waveguide:
 
     def compute_group_velocity(self):
         """
-        Post-process the group velocity, vg=1/Re(dk/domega) for every mode in the whole parameter range (opposite-going modes required)
-        For unpaired modes, NaN values are set
-        The traveling direction is also determined
+        Post-process the group velocity, vg=1/Re(dk/domega) for every mode in the whole parameter range (opposite-going modes
+        required). For unpaired modes, NaN values are set.
         """
         if len(self.group_velocity)==len(self.eigenvalues):
             print('Group velocity already computed')
@@ -553,10 +563,9 @@ class Waveguide:
         """
         Post-process the traveling direction, +1 or -1, for every mode in the whole parameter range,
         using the sign of Im(k + 1j*delta/v) where delta is the imaginary shift used for analytical
-        continuation of k, and v is the group velocity (or, if not available, the energy velocity)
+        continuation of k, and v is the group velocity (or, if not available, the energy velocity).
         This criterion is based on the limiting absorption principle (theoretically, vg should be used
-        instead of ve)
-        For unpaired modes, NaN values are set 
+        instead of ve). For unpaired modes, NaN values are set.
         """
         if len(self.traveling_direction)==len(self.eigenvalues):
             print('Traveling direction already computed')
@@ -583,8 +592,8 @@ class Waveguide:
     def compute_pml_ratio(self):
         """
         Post-process the pml ratio (useful to filter out PML mode), given by 1-Im(Ek)/|Ek| where Ek denotes
-        the "complex" kinetic energy, for every mode in the whole parameter range        
-        Note that in the absence of PML, the pml ratio is equal to 1
+        the "complex" kinetic energy, for every mode in the whole parameter range.      
+        Reminder: the pml ratio tends to 1 for mode shapes vanishing inside the PML.
         """
         if len(self.pml_ratio)==len(self.eigenvalues):
             print('PML ratio already computed')
@@ -598,26 +607,31 @@ class Waveguide:
 
     def compute_response_coefficient(self, F, spectrum=None, wavenumber_function=None, dof=None):
         """
-        Computation of modal coefficients due to the excitation vector F for every mode in the whole omega range (opposite-going eigenvectors are required)
-        Modal coefficients qm are defined from: U(z,omega) = sum qm(omega)*Um(omega)*exp(i*km*z), m=1...M, omega denotes the angular frequency
-        For unpaired modes, NaN values are set
-        Assumption: the source is centred at z=0
-        Note: spectrum and wavenumber_function can be specified in compute_response(...) instead of compute_response_coefficient(...),
-        but not in both functions in the same time (otherwise the excitation would be modulated twice)
+        Computation of modal coefficients due to the excitation vector F for every mode in the whole omega range (opposite-going
+        eigenvectors are required).
+        Modal coefficients qm are defined from: U(z,omega) = sum qm(omega)*Um(omega)*exp(i*km*z), m=1...M, omega denotes the
+        angular frequency.
+        For unpaired modes, NaN values are set.
+        Assumption: the source is centred at z=0.
+        
+        Note: spectrum and wavenumber_function can be specified in compute_response(...) instead of     
+        compute_response_coefficient(...), but not in both functions in the same time (otherwise the excitation will be
+        modulated twice)
         
         Parameters
         ----------
         F : PETSc vector
             SAFE excitation vector
         spectrum : numpy.ndarray
-            when specified, spectrum is a vector of length omega  used to modulate F in terms of frequency (default: 1 for all frequencies)
+            when specified, spectrum is a vector of length omega  used to modulate F in terms of frequency (default: 1 for
+            all frequencies)
         wavenumber_function: python function
             when specified, wavenumber_function is a python function used to modulate F in terms of wavenumber (example:
             wavenumber_function = lambda x: np.sin(x), default: 1 for all wavenumbers, i.e. source localized at z=0)
         dof : int
-            when specified, it calculates the modal contribution qm*Um at the degree of freedom dof (equal to the so-defined modal excitability
-            if spectrum and wavenumber_function are equal to 1, i.e. unit force localized at a single degree of freedom),
-            stored in the attribute excitability  
+            when specified, it calculates the modal contribution qm*Um at the degree of freedom dof (equal to the so-defined
+            modal excitability if spectrum and wavenumber_function are equal to 1, i.e. unit force localized at a single
+            degree of freedom), stored in the attribute excitability  
         """
         #Initialization
         if self.problem_type=='wavenumber':
@@ -657,19 +671,26 @@ class Waveguide:
 
     def compute_response(self, dof, z, omega_index=None, spectrum=None, wavenumber_function=None, plot=False):
         """
-        Post-process the response (modal expansion) at the degree of freedom dof and the axial coordinate z, for the whole frequency range
-        The outputs are frequency, a numpy 1d array of size len(omega), and response, a numpy 2d array of size len(dof or z)*len(omega)
-        dof and z cannot be both vectors, except if omega_index is specified or omega is scalar (single frequency computation): in that case,
-        the array response is of size len(z)*len(dof), which can be useful to plot the whole field at a single frequency
+        Post-process the response (modal expansion) at the degree of freedom dof and the axial coordinate z, for the whole
+        frequency range.
+        The outputs are frequency, a numpy 1d array of size len(omega), and response, a numpy 2d array of size len(dof or
+        z)*len(omega).
+        dof and z cannot be both vectors, except if omega_index is specified or omega is scalar (single frequency computation):
+        in that case, the array response is of size len(z)*len(dof), which can be useful to plot the whole field at a single
+        frequency.
+        
         The response at each frequency omega is calculated from:
         U(z,omega) = sum qm(omega)*Um(omega)*exp(i*km*z), m=1...M,
-        where z is the receiver position along the waveguide axis
-        M is the number of modes traveling in the proper direction, positive if z is positive, negative if z is negative
-        The pairing of opposite-going eigenvectors is required, unpaired modes are discarded from the expansion
-        Assumption: the source is assumed to be centred at z=0
-        Warning: the response calculation is only valid if z lies oustide the source region
+        where z is the receiver position along the waveguide axis.
+        M is the number of modes traveling in the proper direction, positive if z is positive, negative if z is negative.
+        The pairing of opposite-going eigenvectors is required, unpaired modes are discarded from the expansion.
+        
+        Assumption: the source is assumed to be centred at z=0.
+        
+        Warning: the response calculation is only valid if z lies oustide the source region.
+        
         Note: spectrum and wavenumber_function can be specified in compute_response_coefficient(...) instead
-        of compute_response(...), but not in both functions in the same time (otherwise the excitation would be modulated twice)
+        of compute_response(...), but not in both functions in the same time (otherwise the excitation will be modulated twice).
         
         Parameters
         ----------
@@ -680,7 +701,8 @@ class Waveguide:
         omega_index : int
             omega index to compute the response at a single frequency, allowing the consideration of multiple dof and z
         spectrum : numpy.ndarray
-            when specified, spectrum is a vector of length omega  used to modulate F in terms of frequency (default: 1 for all frequencies)
+            when specified, spectrum is a vector of length omega  used to modulate F in terms of frequency (default: 1 for
+            all frequencies)
         wavenumber_function: python function
             when specified, wavenumber_function is a python function used to modulate F in terms of wavenumber (example:
             wavenumber_function = lambda x: np.sin(x), default: 1 for all wavenumbers, i.e. source localized at z=0)
@@ -689,9 +711,12 @@ class Waveguide:
         
         Returns
         -------
-        frequency: numpy 1d array, the frequency vector, i.e. omega/(2*pi)
-        response : numpy array, the matrix response
-        ax : when plot is set to True, ax[0] is the matplotlib axes used for magnitude, ax[1] is the matplotlib axes used for phase
+        frequency: numpy 1d array
+            the frequency vector, i.e. omega/(2*pi)
+        response : numpy array (1d or 2d)
+            the matrix response
+        ax : matplotlib axes when plot is set to True
+            ax[0] is the matplotlib axes used for magnitude, ax[1] is the matplotlib axes used for phase
         """
         
         #Initialization
@@ -771,9 +796,13 @@ class Waveguide:
         
         Parameters
         ----------
-        direction: +1 for positive-going modes, -1 for negative-going modes, None for plotting all modes
-        pml_threshold: threshold to filter out PML modes (modes such that pml_ratio<pml_threshold)
-        ax: the matplotlib axes on which to plot data (created if None)
+        direction: int
+            +1 for positive-going modes, -1 for negative-going modes, None for plotting all modes
+        pml_threshold: float
+            threshold to filter out PML modes (modes such that pml_ratio<pml_threshold)
+        ax: matplotlib axis
+            the matplotlib axis on which to plot data (created if None)
+        
         color: str, marker: str, markersize: int, linestyle: str, **kwargs are passed to ax.plot
 
         Returns
@@ -801,7 +830,7 @@ class Waveguide:
  
     def plot_phase_velocity(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
         """
-        Plot phase velocity dispersion curves, vp=Re(omega)/Re(wavenumber) vs. Re(omega)
+        Plot phase velocity dispersion curves, vp=Re(omega)/Re(wavenumber) vs. Re(omega).
         Parameters and Returns: see plot(...)
         """
         # Initialization
@@ -828,7 +857,7 @@ class Waveguide:
     def plot_attenuation(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
         """
         Plot attenuation dispersion curves, Im(wavenumber) vs. Re(omega) if omega is the parameter,
-        or Im(omega) vs. Re(omega) if wavenumber is the parameter
+        or Im(omega) vs. Re(omega) if wavenumber is the parameter.
         Parameters and Returns: see plot(...)
         """
         # Initialization
@@ -857,7 +886,7 @@ class Waveguide:
 
     def plot_energy_velocity(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
         """
-        Plot energy velocity dispersion curves, ve vs. Re(omega)
+        Plot energy velocity dispersion curves, ve vs. Re(omega).
         Parameters and Returns: see plot(...)
         """
         # Initialization
@@ -883,7 +912,7 @@ class Waveguide:
 
     def plot_group_velocity(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
         """
-        Plot group velocity dispersion curves, ve vs. Re(omega)
+        Plot group velocity dispersion curves, ve vs. Re(omega).
         Parameters and Returns: see plot(...)
         """
         # Initialization
@@ -908,7 +937,7 @@ class Waveguide:
 
     def plot_coefficient(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
         """
-        Plot response coefficients as a function of frequency, |q| vs. Re(omega)
+        Plot response coefficients as a function of frequency, |q| vs. Re(omega).
         Parameters and Returns: see plot(...)
         """
         if len(self.coefficient)==0:
@@ -935,7 +964,7 @@ class Waveguide:
 
     def plot_excitability(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
         """
-        Plot excitability as a function of frequency, |e| vs. Re(omega)
+        Plot excitability as a function of frequency, |e| vs. Re(omega).
         Parameters and Returns: see plot(...)
         """
         if len(self.excitability)==0:
@@ -964,12 +993,15 @@ class Waveguide:
                         marker="o", markersize=2, linestyle="", **kwargs):
         """
         Plot the spectrum, Im(k) vs. Re(k) computed for omega[index] (if the parameter is the frequency),
-        or Im(omega) vs. Re(omega) for wavenumber[index] (if the parameter is the wavenumber)
+        or Im(omega) vs. Re(omega) for wavenumber[index] (if the parameter is the wavenumber).
         
         Parameters
         ----------
-        index: parameter index
-        ax: the matplotlib axe on which to plot data (created if None)
+        index: int
+            parameter index
+        ax: matplotlib axis
+            the matplotlib axis on which to plot data (created if None)
+        
         color: str, marker: str, markersize: int, linestyle: str, **kwargs are passed to ax.plot
 
         Returns
@@ -1007,9 +1039,9 @@ class Waveguide:
 
     def _get_eigenpairs(self, two_sided=False):
         """
-        Return all converged eigenpairs of the current EVP object (for internal use)
-        Eigenvectors are stored in a PETSc dense matrix
-        If two_sided is set to True, left eigensolutions are also included in the outputs, removing any duplicates
+        Return all converged eigenpairs of the current EVP object (for internal use).
+        Eigenvectors are stored in a PETSc dense matrix.
+        If two_sided is set to True, left eigensolutions are also included in the outputs, removing any duplicates.
         """        
         nconv = self.evp.getConverged()
         #Initialization
@@ -1045,12 +1077,12 @@ class Waveguide:
 
     def _concatenate(self, *args, direction: Union[int, None]=None, pml_threshold: Union[int, None]=None, i: Union[int, None]=None):
         """
-        Return concatenated wavenumber and omega in the whole parameter range as 1D numpy arrays (for internal use)
-        The arguments *args are optional strings to concatenate additional results (attribute names, e.g. 'energy_velocity')
-        The parameter value (omega or wavenumber) is repeated as many as times as the number of eigenvalues
-        If direction is specified (+1 or -1), eigenmodes traveling in the non-desired direction are filtered out 
-        If pml_threshold is specified, eigenmodes such that pml_ratio<pml_threshold are filtered out
-        If i is specified, then the function returns the results for the ith parameter only
+        Return concatenated wavenumber and omega in the whole parameter range as 1D numpy arrays (for internal use).
+        The arguments *args are optional strings to concatenate additional results (attribute names, e.g. 'energy_velocity').
+        The parameter value (omega or wavenumber) is repeated as many as times as the number of eigenvalues.
+        If direction is specified (+1 or -1), eigenmodes traveling in the non-desired direction are filtered out. 
+        If pml_threshold is specified, eigenmodes such that pml_ratio<pml_threshold are filtered out.
+        If i is specified, then the function returns the results for the ith parameter only.
         """
         argout = []
         index = slice(None) if i is None else slice(i, i+1)
@@ -1092,7 +1124,8 @@ class Waveguide:
 
     def _dot_eigenvectors(self, i, eigenfield):
         """
-        Return the dot product, mode by mode, between eigenvectors[i] (taking their conjugate) and a given eigenfield (for internal use)
+        Return the dot product, mode by mode, between eigenvectors[i] (taking their conjugate) and a given
+        eigenfield (for internal use).
         The matrix eigenfield must have the same size as eigenvectors[i]
         """
         res = []
@@ -1124,34 +1157,39 @@ class Signal:
     A class for handling signals in the time domain and in the frequency domain
     
     Reminder:
+    
     - the sampling frequency fs must be at least twice the highest excited frequency (fs>=2fmax)
     - the time duration T must be large enough to capture the slowest wave at z, the source-receiver distance
     
     Fourier transform definition used: X(f) = 2/T * integral of x(t)*exp(+i*omega*t)*dt
+    
     Two remarks:
-    1. this is not the fft function convention, which is in exp(-i*omega*t)
+    
+    1. this is not the numpy fft function convention, which is in exp(-i*omega*t)
     2. the true amplitude of the Fourier transform, when needed, has to be obtained by
        multiplying the output (spectrum) by the scalar T/2, where T is the duration of the time signal
        (with the above definition: the division by T simplifies dimensionless analyses,
        and the factor 2 is used because only the positive part of the spectrum is considered)
     
     Complex Fourier transform:
-    A complex Fourier transform is applied if alpha is set to a nonzero value
-    The frequency vector has then an imaginary part, constant and equal to alpha/(2*pi)
-    Complex frequency computations can be useful for the analysis of long time duration signals (avoids aliasing)
-    A good choice is alpha = log(50)/T
-    Note that the first frequency component is kept in that case (the frequency has a zero real part
-    but non-zero imaginary part)
     
-    Example:
-    mysignal = Signal(alpha=0*np.log(50)/5e-4)
-    mysignal.toneburst(fs=5000e3, T=5e-4, fc=100e3, n=5)
-    mysignal.plot()
-    mysignal.fft()
-    mysignal.plot_spectrum()
-    mysignal.ifft(coeff=1)
-    mysignal.plot()
-    plt.show()
+    A complex Fourier transform is applied if alpha is set to a nonzero value.
+    The frequency vector has then an imaginary part, constant and equal to alpha/(2*pi).
+    Complex frequency computations can be useful for the analysis of long time duration signals (avoids aliasing).
+    A good choice is alpha = log(50)/T.
+    Note that the first frequency component is kept in that case (the frequency has a zero real part
+    but non-zero imaginary part).
+    
+    Example::
+    
+        mysignal = Signal(alpha=0*np.log(50)/5e-4)
+        mysignal.toneburst(fs=5000e3, T=5e-4, fc=100e3, n=5)
+        mysignal.plot()
+        mysignal.fft()
+        mysignal.plot_spectrum()
+        mysignal.ifft(coeff=1)
+        mysignal.plot()
+        plt.show()
     
     Attributes
     ----------
@@ -1163,12 +1201,13 @@ class Signal:
         frequency vector
     spectrum : numpy nd array
         spectrum vectors stacked as rows (spectrum is an array of size number_of_signals*len(frequency))
-    alpha : decaying parameter to apply complex Fourier transform (useful for long time duration signal)
+    alpha : float
+        decaying parameter to apply complex Fourier transform (useful for long time duration signal)
     
     Methods
     -------
     __init__(time=None, waveform=None, frequency=None, spectrum=None, alpha=0):
-        Initialization of signal
+        Constructor, initialization of signal (specify either waveform vs. time or spectrum vs. frequency)
     fft():
         Compute Fourier transform, results are stored as attributes (names: frequency, spectrum) 
     ifft(coeff=1):
@@ -1190,7 +1229,16 @@ class Signal:
         
         Parameters
         ----------
-        ...
+        time : numpy 1d array
+            time vector
+        waveform : numpy array (1d or 2d)
+            amplitude of signals in the time domain
+        frequency : numpy 1d array
+            frequency vector
+        spectrum : numpy array (1d or 2d)
+            amplitude of signals in the frequency domain
+        alpha : float
+            decaying parameter to apply complex Fourier transform (useful for long time duration signal)
         """
         self.time = time
         self.waveform = waveform
@@ -1205,10 +1253,10 @@ class Signal:
 
     def fft(self):
         """
-        Compute Fourier transform (positive frequency part only, time waveform are assumed to be real)
-        If the number of time steps is odd, one point is added
-        The zero frequency, if any, is suppressed
-        Results are stored as attributes (names: frequency, spectrum)
+        Compute Fourier transform (positive frequency part only, time waveform are assumed to be real).
+        If the number of time steps is odd, one point is added.
+        The zero frequency, if any, is suppressed.
+        Results are stored as attributes (names: frequency, spectrum).
         spectrum is an array of size number_of_signals*len(frequency)
         """
         # Check waveform
@@ -1241,11 +1289,11 @@ class Signal:
 
     def ifft(self, coeff=1):
         """
-        Compute inverse Fourier transform (only the positive frequency part is needed, time waveform are assumed to be real)
-        Zero padding is applied in the low-frequency range (if missing) and in the high-frequency range (if coeff is greater than 1)
-        Zero padding in the high frequency range is applied up to the frequency coeff*max(frequency)
-        Results are stored as attributes (names: time, waveform)
-        waveform is an array of size number_of_signals*len(time)
+        Compute inverse Fourier transform (only the positive frequency part is needed, time waveform are assumed to be real).
+        Zero padding is applied in the low-frequency range (if missing) and in the high-frequency range (if coeff is greater than 1).
+        Zero padding in the high frequency range is applied up to the frequency coeff*max(frequency).
+        Results are stored as attributes (names: time, waveform).
+        waveform is an array of size number_of_signals*len(time).
         """    
         # Check spectrum
         if self.frequency is None:
@@ -1285,7 +1333,9 @@ class Signal:
     def ricker(self, fs, T, fc):
         """
         Generate a Ricker wavelet signal of unit amplitude (fs: sampling frequency, T: time duration, fc: Ricker central frequency)
+        
         Note that for better accuracy:
+        
         - fs is rounded up so that fs/fc is an integer
         - T is adjusted so that the number of points is even
         """
@@ -1303,10 +1353,12 @@ class Signal:
 
     def toneburst(self, fs, T, fc, n):
         """
-        Generate a toneburst signal (fs: sampling frequency, T: time duration, fc: central frequency, n: number of cycles)
-        This signal is a Hanning-modulated n cycles sinusoidal toneburst centred at fc Hz (with unit amplitude)
-        For this kind of excitation, fmax can be considered as 2*fc roughly, hence one should choose fs>=4fc
+        Generate a toneburst signal (fs: sampling frequency, T: time duration, fc: central frequency, n: number of cycles).
+        This signal is a Hanning-modulated n cycles sinusoidal toneburst centred at fc Hz (with unit amplitude).
+        For this kind of excitation, fmax can be considered as 2*fc roughly, hence one should choose fs>=4fc.
+        
         Note that for better accuracy:
+        
         - fs is rounded up so that fs/fc is an integer
         - T is adjusted so that the number of points is even
         """
@@ -1327,8 +1379,8 @@ class Signal:
 
     def chirp(self, fs, T, f0, f1, chirp_duration):
         """
-        Generate a chirp of unit amplitude (fs: sampling frequency, T: time duration, f0: first frequency, f1: last frequency, chirp_duration: time to sweep from f0 to f1)
-        Note that for better accuracy, T is adjusted so that the number of points is even
+        Generate a chirp of unit amplitude (fs: sampling frequency, T: time duration, f0: first frequency, f1: last frequency, chirp_duration: time to sweep from f0 to f1).
+        Note that for better accuracy, T is adjusted so that the number of points is even.
         """
         # Time
         dt = 1/fs  #time step

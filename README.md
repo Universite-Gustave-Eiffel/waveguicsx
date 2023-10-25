@@ -124,7 +124,7 @@ To build the documentation, use `python setup.py doc`, and open the front page i
 
 ### 4. Authors and contributors
 
-waveguicsx is currently developed and maintained at Université Gustave Eiffel by Dr. Fabien Treyssède, with some help from Dr. Maximilien Lehujeur (github software management, python formatting, beta testing) and Dr. Pierric Mora (parallelization of loops in tutorials, beta testing). Please see the AUTHORS file for a list of contributors.
+waveguicsx is currently developed and maintained at Université Gustave Eiffel by Dr. Fabien Treyssède, with some contributions from Dr. Maximilien Lehujeur (github software management, python formatting, beta testing) and Dr. Pierric Mora (parallelization of loops in tutorials, beta testing). Please see the AUTHORS file for a list of contributors.
 
 Feel free to contact me by email for further information or questions about waveguicsx.
 

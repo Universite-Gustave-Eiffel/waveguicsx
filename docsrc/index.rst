@@ -6,14 +6,15 @@
 Welcome to waveguicsx's documentation!
 ======================================
 
-.. image:: image.png
+.. image:: logo.png
    :alt: Image
-   :scale: 75%
+   :scale: 25%
    
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    :caption: Contents:
 
    readme_link
    modules
+   examples
 

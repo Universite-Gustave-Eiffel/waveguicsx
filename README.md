@@ -41,7 +41,7 @@ from waveguicsx.waveguide import Waveguide
 
 # Definition of the excitation signal (here, a toneburst)
 excitation = Signal()
-excitation.toneburst(fs=8/(2*np.pi), T=49.75*(2*np.pi), fc=2/(2*np.pi), n=5) #here, 
+excitation.toneburst(fs=8/(2*np.pi), T=49.75*(2*np.pi), fc=2/(2*np.pi), n=5) 
 excitation.plot()
 excitation.plot_spectrum()
 omega = 2*np.pi*excitation.frequency  #omega = np.linspace(0.02, 4, 200)

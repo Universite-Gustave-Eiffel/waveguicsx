@@ -1,5 +1,5 @@
 Examples
-=======
+========
 
 Elastic_Waveguide_SquareBar3D.py
 --------------------------------

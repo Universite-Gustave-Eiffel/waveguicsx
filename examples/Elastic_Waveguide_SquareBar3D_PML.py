@@ -191,12 +191,19 @@ wg.solve(nev, target=target)
 ##################################
 # Plot dispersion curves\
 # Results are to be compared with Fig. 8 of Treyssede, Journal of Computational Physics 314 (2016), 341–354
-ax = wg.plot_energy_velocity()
-ax.set_xlim([0, 2*np.pi*26e3/3260])
-ax.set_ylim([0, 6000/3260])
-ax = wg.plot_attenuation()
-ax.set_xlim([0, 2*np.pi*26e3/3260])
-ax.set_ylim([0, 2000/(8.686*1000)])
+wg.plot_scaler["energy_velocity"] = L0/T0/1000 #units in m/ms
+wg.plot_scaler["omega"] = L0/T0/1000 #frequency units in MHz-mm
+sc = wg.plot_energy_velocity()
+sc.axes.set_xlim([0, 26])
+sc.axes.set_ylim([0, 6])
+sc.axes.set_xlabel('Frequency-halfwidth (MHz-mm)')
+sc.axes.set_ylabel('Energy velocity (m/ms)')
+wg.plot_scaler["wavenumber"] = 8.686*1000 #units in dB-mm/m
+sc = wg.plot_attenuation()
+sc.axes.set_xlim([0, 26])
+sc.axes.set_ylim([0, 2000])
+sc.axes.set_xlabel('Frequency-halfwidth (MHz-mm)')
+sc.axes.set_ylabel('Attenuation (dB-mm/m)')
 plt.show()
 #wg.plot_spectrum(index=0)
 #plt.show()
@@ -212,6 +219,3 @@ u_plotter.add_mesh(grid, style="wireframe", color="k") #FE mesh
 u_plotter.add_mesh(u_grid.warp_by_vector("u", factor=2.0), opacity=0.8, show_scalar_bar=True, show_edges=False) #do not show edges of higher order elements with pyvista
 u_plotter.show_axes()
 u_plotter.show()
-
-""
-

@@ -175,9 +175,9 @@ F0[dof] = 1
 # Results are to be compared with Figs. 6 and 7 of Treyssede, Wave Motion 87 (2019), 75-91
 wg.compute_response_coefficient(F=F0, dof=dof)
 wg.plot_coefficient()
-ax = wg.plot_excitability()
-ax.set_yscale('log')
-ax.set_ylim(1e-3,0.5e+1)
+sc = wg.plot_excitability()
+sc.axes.set_yscale('log')
+sc.axes.set_ylim(1e-3,0.5e+1)
 frequency, response, axs = wg.compute_response(dof=dof, z=[5], spectrum=None, plot=True) #spectrum=excitation.spectrum
 axs[0].set_yscale('log')
 axs[0].set_ylim(1e-2,1e+1)

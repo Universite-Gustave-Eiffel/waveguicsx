@@ -56,7 +56,7 @@ class Waveguide:
         
         # Definition of the excitation signal (here, a toneburst)
         excitation = Signal()
-        excitation.toneburst(fs=8/(2*np.pi), T=49.75*(2*np.pi), fc=2/(2*np.pi), n=5) #here, 
+        excitation.toneburst(fs=8/(2*np.pi), T=49.75*(2*np.pi), fc=2/(2*np.pi), n=5) 
         excitation.plot()
         excitation.plot_spectrum()
         omega = 2*np.pi*excitation.frequency  #omega = np.linspace(0.02, 4, 200)
@@ -130,6 +130,8 @@ class Waveguide:
         list of response coefficient to excitation vector F (access to component: see eigenvalues)
     excitability : list of numpy arrays
         list of excitability to excitation vector F (access to component: see eigenvalues)
+    plot_scaler : dictionnary
+        dictionnary containing the scaling factors of various modal properties, useful to plot results in a dimensional form
     
     Methods
     -------
@@ -178,6 +180,9 @@ class Waveguide:
         Plot excitability as a function of frequency, |e| vs. Re(omega)
     plot_spectrum(index=0, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
         Plot the spectrum, Im(eigenvalues) vs. Re(eigenvalues), for the parameter index specified by the user
+    set_plot_scaler(length=1, time=1, mass=1, dim=3):
+        Define the characteristic length, time, mass, as well as dim, and calculate the scaling factors of modal
+        properties, which are stored in the attribute name plot_scaler (useful to visualize plots in a dimensional form)
     """
     def __init__(self, comm:'_MPI.Comm', M:PETSc.Mat, K0:PETSc.Mat, K1:PETSc.Mat, K2:PETSc.Mat):
         """
@@ -214,6 +219,8 @@ class Waveguide:
         self.pml_ratio: list = []
         self.coefficient: list = []
         self.excitability: list = []
+        self.plot_scaler = dict.fromkeys(['omega','wavenumber','energy_velocity','group_velocity','pml_ratio',
+                                          'coefficient','excitability','displacement','force'], 1)
         self._poynting_normalization = None
         self._biorthogonality_factor: list = []
         
@@ -368,7 +375,7 @@ class Waveguide:
         start = time.perf_counter()
         K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
         for i, eigenvectors in enumerate(self.eigenvectors):
-            wavenumber, _ = self._concatenate(i=i) #repeat parameter as many times as the number of eigenvalues
+            wavenumber = self._concatenate('wavenumber', i=i) #repeat parameter as many times as the number of eigenvalues
             self.eigenforces.append(K1T*eigenvectors+1j*self.K2*eigenvectors*self._diag(wavenumber))
         K1T.destroy()
         print(f'Computation of eigenforces, elapsed time : {(time.perf_counter() - start):.2f}s')
@@ -391,7 +398,7 @@ class Waveguide:
         index = range(self.eigenvectors[0].getSize()[0])
         for i in range(len(self.eigenvalues)):
             #repeat parameter as many times as the number of eigenvalues
-            _, omega = self._concatenate(i=i)
+            omega = self._concatenate('omega', i=i)
             #Normalization
             normalization = []
             for mode in range(self.eigenvalues[i].size):
@@ -422,7 +429,7 @@ class Waveguide:
         K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
         for i, eigenvectors in enumerate(self.eigenvectors):
             #repeat parameter as many times as the number of eigenvalues
-            wavenumber, omega = self._concatenate(i=i)
+            wavenumber, omega = self._concatenate('wavenumber', 'omega', i=i)
             #time averaged kinetic energy
             E = 0.25*np.abs(omega**2)*np.real(self._dot_eigenvectors(i, self.M*eigenvectors)) 
             #add time averaged potential energy
@@ -555,7 +562,7 @@ class Waveguide:
         K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
         for i, (eigenvalues, eigenvectors) in enumerate(zip(self.eigenvalues, self.eigenvectors)):
             #Computation of group velocity
-            wavenumber, omega = self._concatenate(i=i) #repeat parameter as many times as the number of eigenvalues
+            wavenumber, omega = self._concatenate('wavenumber', 'omega', i=i) #repeat parameter as many times as the number of eigenvalues
             group_velocity = np.zeros(eigenvalues.size) + np.NaN
             numerator = self.M*eigenvectors
             denominator = 2*self.K2*eigenvectors #note: computing the denominator can probably be avoided if _compute_biorthogonality_factor() has already been done
@@ -590,7 +597,7 @@ class Waveguide:
                 self.compute_group_velocity()
         start = time.perf_counter()
         for i in range(len(self.eigenvalues)):
-            wavenumber, _ = self._concatenate(i=i)
+            wavenumber = self._concatenate('wavenumber', i=i)
             temp = delta/(self.energy_velocity[i] if len(self.group_velocity)==0 else self.group_velocity[i])
             temp[np.abs(wavenumber.imag)+np.abs(temp)>np.abs(wavenumber.real)] = 0 #do not use the LAP if |Im(k)| + |delta/ve| is significant
             traveling_direction = np.sign((wavenumber+1j*temp).imag)
@@ -613,7 +620,7 @@ class Waveguide:
             return
         start = time.perf_counter()
         for i, eigenvectors in enumerate(self.eigenvectors):
-            _, omega = self._concatenate(i=i)
+            omega = self._concatenate('omega', i=i)
             Ek = 0.25*np.abs(omega**2)*self._dot_eigenvectors(i, self.M*eigenvectors) #"complex" kinetic energy
             self.pml_ratio.append(1-np.imag(Ek)/np.abs(Ek))
         print(f'Computation of pml ratio, elapsed time : {(time.perf_counter() - start):.2f}s')
@@ -642,9 +649,9 @@ class Waveguide:
             when specified, wavenumber_function is a python function used to modulate F in terms of wavenumber (example:
             wavenumber_function = lambda x: np.sin(x), default: 1 for all wavenumbers, i.e. source localized at z=0)
         dof : int
-            when specified, it calculates the modal contribution qm*Um at the degree of freedom dof (equal to the so-defined
-            modal excitability if spectrum and wavenumber_function are equal to 1, i.e. unit force localized at a single
-            degree of freedom), stored in the attribute excitability  
+            when specified, it calculates the modal excitability (stored in the attribute excitability), i.e. qm*Um at
+            the degree of freedom dof and for a unit excitation vector (i.e. such that the sum of the elements of F is
+            equal to 1)
         """
         #Initialization
         if self.problem_type=='wavenumber':
@@ -656,6 +663,8 @@ class Waveguide:
             spectrum = np.ones(self.omega.size)
         if wavenumber_function is None:
             wavenumber_function = lambda k: 1+0*k
+        if dof is not None:
+            force = self.F.sum() #summing elements of F amounts to integrate the (normal) stress over the cross-section 
         
         #Check
         if len(spectrum) != self.omega.size:
@@ -679,7 +688,7 @@ class Waveguide:
             coefficient = coefficient*spectrum[i]*wavenumber_function(self.eigenvalues[i])
             self.coefficient.append(coefficient)
             if dof is not None:
-                self.excitability.append(self.coefficient[-1]*self.eigenvectors[i][dof,:])
+                self.excitability.append(coefficient*self.eigenvectors[i][dof,:]/force)
         print(f'Computation of response coefficient, elapsed time : {(time.perf_counter() - start):.2f}s')
 
     def compute_response(self, dof, z, omega_index=None, spectrum=None, wavenumber_function=None, plot=False):
@@ -785,25 +794,33 @@ class Waveguide:
         print(f'Computation of response, elapsed time : {(time.perf_counter() - start):.2f}s')
         frequency = self.omega[omega_index]/(2*np.pi)
         
+        # Scaling
+        xscale, yscale = self.plot_scaler['omega'], 1/self.plot_scaler['wavenumber']
+        frequency, response = frequency*xscale, response*yscale
+        
         #Plots
         if plot:
+            if all(np.array(list(self.plot_scaler.values()))==1): #the dictionnary variables are equal to 1
+                xlabel, ylabel = "normalized angular frequency", "|normalized displacement|"
+            else:
+                xlabel, ylabel, xscale = "frequency", "|displacement|", xscale/(2*np.pi)
             #Magnitude
             fig, ax_abs = plt.subplots(1, 1)
-            ax_abs.plot(self.omega.real, np.abs(response.T), linewidth=1, linestyle="-") #color="k"
-            ax_abs.set_xlabel('Re(omega)')
-            ax_abs.set_ylabel('|u|')
+            ax_abs.plot(self.omega.real*xscale, np.abs(response.T), linewidth=1, linestyle="-") #color="k"
+            ax_abs.set_xlabel(xlabel)
+            ax_abs.set_ylabel(ylabel)
             fig.tight_layout()
             #Phase
             fig, ax_angle = plt.subplots(1, 1)
-            ax_angle.plot(self.omega.real, np.angle(response.T), linewidth=1, linestyle="-") #color="k"
-            ax_angle.set_xlabel('Re(omega)')
-            ax_angle.set_ylabel('arg(u)')
+            ax_angle.plot(self.omega.real*xscale, np.angle(response.T), linewidth=1, linestyle="-") #color="k"
+            ax_angle.set_xlabel(xlabel)
+            ax_angle.set_ylabel('phase')
             fig.tight_layout()
             return frequency, response, [ax_abs, ax_angle]
         else:
             return frequency, response
 
-    def plot(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+    def plot(self, direction=None, pml_threshold=None, colors=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
         """
         Plot dispersion curves Re(omega) vs. Re(wavenumber)
         
@@ -813,14 +830,16 @@ class Waveguide:
             +1 for positive-going modes, -1 for negative-going modes, None for plotting all modes
         pml_threshold: float
             threshold to filter out PML modes (modes such that pml_ratio<pml_threshold)
+        colors: str
+            the modal property used for marker colors (e.g. 'pml_ratio', 'coefficient', 'excitability', etc.),
+            a single color (given by the input variable color) is used if colors is set to None
         ax: matplotlib axis
             the matplotlib axis on which to plot data (created if None)
-        
         color: str, marker: str, markersize: int, linestyle: str, **kwargs are passed to ax.plot
-
+        
         Returns
         -------
-        ax: the matplotlib axes used for display
+        sc: the matplotlib collection
         """
         # Initialization
         self._compute_if_necessary(direction, pml_threshold) #compute traveling direction and pml ratio if necessary
@@ -828,76 +847,102 @@ class Waveguide:
             fig, ax = plt.subplots(1, 1)
         
         # Build concatenaded arrays
-        wavenumber, omega = self._concatenate(direction=direction, pml_threshold=pml_threshold)
+        wavenumber, omega = self._concatenate('wavenumber', 'omega', direction=direction, pml_threshold=pml_threshold)
+        c = self._concatenate_colors(direction=direction, pml_threshold=pml_threshold, colors=colors, color=color) #colors for scatter
+        
+        # Scaling
+        xscale, yscale = self.plot_scaler['wavenumber'], self.plot_scaler['omega']
+        if all(np.array(list(self.plot_scaler.values()))==1): #the dictionnary variables are equal to 1
+            xlabel, ylabel = "normalized wavenumber", "normalized angular frequency"
+        else:
+            xlabel, ylabel = "wavenumber", "angular frequency"
         
         # Re(omega) vs. Re(k)
-        ax.plot(wavenumber.real, omega.real, color=color, marker=marker, markersize=markersize, linestyle=linestyle, **kwargs)
-        ax.set_xlim(wavenumber.real.min(), wavenumber.real.max())
-        ax.set_ylim(omega.real.min(), omega.real.max())
-        ax.set_xlabel('Re(k)')
-        ax.set_ylabel('Re(omega)')
-        
+        sc = ax.scatter(wavenumber.real*xscale, omega.real*yscale, s=markersize, c=c, marker=marker, **kwargs)
+        sc.axes.set_xlim(wavenumber.real.min()*xscale, wavenumber.real.max()*xscale)
+        sc.axes.set_ylim(omega.real.min()*yscale, omega.real.max()*yscale)
+        sc.axes.set_xlabel(xlabel)
+        sc.axes.set_ylabel(ylabel)
         fig.tight_layout()
         # plt.show()  #let user decide whether he wants to interrupt the execution for display, or save to figure...
-        return ax
+        if colors is not None:
+            plt.colorbar(sc) #label=colors
+        return sc
  
-    def plot_phase_velocity(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+    def plot_phase_velocity(self, direction=None, pml_threshold=None, colors=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
         """
         Plot phase velocity dispersion curves, vp=Re(omega)/Re(wavenumber) vs. Re(omega).
         Parameters and Returns: see plot(...)
         """
+        
         # Initialization
         self._compute_if_necessary(direction, pml_threshold) #compute traveling direction and pml ratio if necessary
         if ax is None:
             fig, ax = plt.subplots(1, 1)
         
         # Build concatenaded arrays
-        wavenumber, omega = self._concatenate(direction=direction, pml_threshold=pml_threshold)
+        wavenumber, omega = self._concatenate('wavenumber', 'omega', direction=direction, pml_threshold=pml_threshold)
+        c = self._concatenate_colors(direction=direction, pml_threshold=pml_threshold, colors=colors, color=color) #colors for scatter
+        
+        # Scaling
+        xscale, yscale = self.plot_scaler['omega'], self.plot_scaler['omega']/self.plot_scaler['wavenumber']
+        if all(np.array(list(self.plot_scaler.values()))==1): #the dictionnary variables are equal to 1
+            xlabel, ylabel = "normalized angular frequency", "normalized phase velocity"
+        else:
+            xlabel, ylabel, xscale = "frequency", "phase velocity", xscale/(2*np.pi)
         
         # vp vs. Re(omega)
         vp = omega.real/wavenumber.real
-        ax.plot(omega.real, vp, color=color, marker=marker, markersize=markersize, linestyle=linestyle, **kwargs)
-        ax.set_xlim(omega.real.min(), omega.real.max())
-        ylim = omega.real.max()/np.abs(wavenumber.real).mean()
-        ax.set_ylim(-ylim, ylim)
-        ax.set_xlabel('Re(omega)')
-        ax.set_ylabel('vp')
-        
+        sc = ax.scatter(omega.real*xscale, vp*yscale, s=markersize, c=c, marker=marker, **kwargs)
+        sc.axes.set_xlim(omega.real.min()*xscale, omega.real.max()*xscale)
+        ylim = omega.real.max()/np.abs(wavenumber.real).mean()*yscale
+        sc.axes.set_ylim(-ylim*(direction==-1 or direction is None), ylim*(direction==+1 or direction is None))
+        sc.axes.set_xlabel(xlabel)
+        sc.axes.set_ylabel(ylabel)        
         fig.tight_layout()
         # plt.show()  #let user decide whether he wants to interrupt the execution for display, or save to figure...
-        return ax
+        if colors is not None:
+            plt.colorbar(sc) #label=colors
+        return sc
 
-    def plot_attenuation(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+    def plot_attenuation(self, direction=None, pml_threshold=None, colors=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
         """
         Plot attenuation dispersion curves, Im(wavenumber) vs. Re(omega) if omega is the parameter,
-        or Im(omega) vs. Re(omega) if wavenumber is the parameter.
+        or Im(omega) vs. Re(wavenumber) if wavenumber is the parameter.
         Parameters and Returns: see plot(...)
         """
         # Initialization
         self._compute_if_necessary(direction, pml_threshold) #compute traveling direction and pml ratio if necessary
         if ax is None:
             fig, ax = plt.subplots(1, 1)
+        normalized = all(np.array(list(self.plot_scaler.values()))==1) #test if the dictionnary variables are equal to 1
         
         # Build concatenaded arrays
-        wavenumber, omega = self._concatenate(direction=direction, pml_threshold=pml_threshold)
+        wavenumber, omega = self._concatenate('wavenumber', 'omega', direction=direction, pml_threshold=pml_threshold)
+        c = self._concatenate_colors(direction=direction, pml_threshold=pml_threshold, colors=colors, color=color) #colors for scatter
         
-        # Im(k) vs Re(omega)
+        # Attenuation
         if self.problem_type == "wavenumber":
-            ax.plot(omega.real, omega.imag, color=color, marker=marker, markersize=markersize, linestyle=linestyle, **kwargs)
-            ax.set_ylim(omega.imag.min(), omega.imag.max()+1e-6)
-            ax.set_ylabel('Im(omega)')
+            xscale, yscale = self.plot_scaler['wavenumber'], self.plot_scaler['omega']
+            (xlabel, ylabel) = ("normalized wavenumber", "normalized attenuation") if normalized else ("wavenumber", "attenuation")
+            sc = ax.scatter(wavenumber.real*xscale, omega.imag*yscale, s=markersize, c=c, marker=marker, **kwargs)
+            sc.axes.set_xlim(wavenumber.real.min()*xscale, wavenumber.real.max()*xscale)
+            sc.axes.set_ylim(omega.imag.min()*yscale-1e-6, omega.imag.max()*yscale+1e-6)
         elif self.problem_type == "omega":
-            ax.plot(omega.real, wavenumber.imag, color=color, marker=marker, markersize=markersize, linestyle=linestyle, **kwargs)
-            ax.set_ylim(wavenumber.imag.min(), wavenumber.imag.max()+1e-6)
-            ax.set_ylabel('Im(k)')
-        ax.set_xlim(omega.real.min(), omega.real.max())
-        ax.set_xlabel('Re(omega)')
-        
+            xscale, yscale = self.plot_scaler['omega'], self.plot_scaler['wavenumber']
+            (xlabel, ylabel, xscale) = ("normalized angular frequency", "normalized attenuation", xscale) if normalized else ("frequency", "attenuation", xscale/(2*np.pi))
+            sc = ax.scatter(omega.real*xscale, wavenumber.imag*yscale, s=markersize, c=c, marker=marker, **kwargs)
+            sc.axes.set_xlim(omega.real.min()*xscale, omega.real.max()*xscale)
+            sc.axes.set_ylim(wavenumber.imag.min()*yscale-1e-6, wavenumber.imag.max()*yscale+1e-6)
+        sc.axes.set_xlabel(xlabel)
+        sc.axes.set_ylabel(ylabel)
         fig.tight_layout()
         # plt.show()  #let user decide whether he wants to interrupt the execution for display, or save to figure...
-        return ax
+        if colors is not None:
+            plt.colorbar(sc) #label=colors
+        return sc
 
-    def plot_energy_velocity(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+    def plot_energy_velocity(self, direction=None, pml_threshold=None, colors=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
         """
         Plot energy velocity dispersion curves, ve vs. Re(omega).
         Parameters and Returns: see plot(...)
@@ -910,20 +955,29 @@ class Waveguide:
             fig, ax = plt.subplots(1, 1)
         
         # Build concatenaded arrays
-        _, omega, ve = self._concatenate('energy_velocity', direction=direction, pml_threshold=pml_threshold)
+        omega, ve = self._concatenate('omega', 'energy_velocity', direction=direction, pml_threshold=pml_threshold)
+        c = self._concatenate_colors(direction=direction, pml_threshold=pml_threshold, colors=colors, color=color) #colors for scatter
+        
+        # Scaling
+        xscale, yscale = self.plot_scaler['omega'], self.plot_scaler['energy_velocity']
+        if all(np.array(list(self.plot_scaler.values()))==1): #the dictionnary variables are equal to 1
+            xlabel, ylabel = "normalized angular frequency", "normalized energy velocity"
+        else:
+            xlabel, ylabel, xscale = "frequency", "energy velocity", xscale/(2*np.pi)
         
         # vp vs. Re(omega)
-        ax.plot(omega.real, ve, color=color, marker=marker, markersize=markersize, linestyle=linestyle, **kwargs)
-        ax.set_xlim(omega.real.min(), omega.real.max())
-        ax.set_ylim(ve.min(), ve.max())
-        ax.set_xlabel('Re(omega)')
-        ax.set_ylabel('ve')
-        
+        sc = ax.scatter(omega.real*xscale, ve*yscale, s=markersize, c=c, marker=marker, **kwargs)
+        sc.axes.set_xlim(omega.real.min()*xscale, omega.real.max()*xscale)
+        sc.axes.set_ylim(ve.min()*yscale, ve.max()*yscale)
+        sc.axes.set_xlabel(xlabel)
+        sc.axes.set_ylabel(ylabel)        
         fig.tight_layout()
         # plt.show()  #let user decide whether he wants to interrupt the execution for display, or save to figure...
-        return ax
+        if colors is not None:
+            plt.colorbar(sc) #label=colors
+        return sc
 
-    def plot_group_velocity(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+    def plot_group_velocity(self, direction=None, pml_threshold=None, colors=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
         """
         Plot group velocity dispersion curves, ve vs. Re(omega).
         Parameters and Returns: see plot(...)
@@ -936,19 +990,28 @@ class Waveguide:
             fig, ax = plt.subplots(1, 1)
         
         # Build concatenaded arrays
-        _, omega, vg = self._concatenate('group_velocity', direction=direction, pml_threshold=pml_threshold)
+        omega, vg = self._concatenate('omega', 'group_velocity', direction=direction, pml_threshold=pml_threshold)
+        c = self._concatenate_colors(direction=direction, pml_threshold=pml_threshold, colors=colors, color=color) #colors for scatter
+        
+        # Scaling
+        xscale, yscale = self.plot_scaler['omega'], self.plot_scaler['group_velocity']
+        if all(np.array(list(self.plot_scaler.values()))==1): #the dictionnary variables are equal to 1
+            xlabel, ylabel = "normalized angular frequency", "normalized group velocity"
+        else:
+            xlabel, ylabel, xscale = "frequency", "group velocity", xscale/(2*np.pi)
         
         # vp vs. Re(omega)
-        ax.plot(omega.real, vg, color=color, marker=marker, markersize=markersize, linestyle=linestyle, **kwargs)
-        ax.set_xlim(omega.real.min(), omega.real.max())
-        ax.set_xlabel('Re(omega)')
-        ax.set_ylabel('vg')
-        
+        sc = ax.scatter(omega.real*xscale, vg*yscale, s=markersize, c=c, marker=marker, **kwargs)
+        sc.axes.set_xlim(omega.real.min()*xscale, omega.real.max()*xscale)
+        sc.axes.set_xlabel(xlabel)
+        sc.axes.set_ylabel(ylabel)
         fig.tight_layout()
         # plt.show()  #let user decide whether he wants to interrupt the execution for display, or save to figure...
-        return ax
+        if colors is not None:
+            plt.colorbar(sc) #label=colors
+        return sc
 
-    def plot_coefficient(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+    def plot_coefficient(self, direction=None, pml_threshold=None, colors=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
         """
         Plot response coefficients as a function of frequency, |q| vs. Re(omega).
         Parameters and Returns: see plot(...)
@@ -962,20 +1025,29 @@ class Waveguide:
             fig, ax = plt.subplots(1, 1)
         
         # Build concatenaded arrays
-        _, omega, coefficient = self._concatenate('coefficient', direction=direction, pml_threshold=pml_threshold)
+        omega, coefficient = self._concatenate('omega', 'coefficient', direction=direction, pml_threshold=pml_threshold)
+        c = self._concatenate_colors(direction=direction, pml_threshold=pml_threshold, colors=colors, color=color) #colors for scatter
+        
+        # Scaling
+        xscale, yscale = self.plot_scaler['omega'], self.plot_scaler['coefficient']
+        if all(np.array(list(self.plot_scaler.values()))==1): #the dictionnary variables are equal to 1
+            xlabel, ylabel = "normalized angular frequency", "normalized coefficient"
+        else:
+            xlabel, ylabel, xscale = "frequency", "coefficient", xscale/(2*np.pi)
         
         # vp vs. Re(omega)
         coefficient = np.abs(coefficient) #np.angle(coefficient)
-        ax.plot(omega.real, coefficient, color=color, marker=marker, markersize=markersize, linestyle=linestyle, **kwargs)
-        ax.set_xlim(omega.real.min(), omega.real.max())
-        ax.set_xlabel('Re(omega)')
-        ax.set_ylabel('|q|')
-        
+        sc = ax.scatter(omega.real*xscale, coefficient*yscale, s=markersize, c=c, marker=marker, **kwargs)
+        sc.axes.set_xlim(omega.real.min()*xscale, omega.real.max()*xscale)
+        sc.axes.set_xlabel(xlabel)
+        sc.axes.set_ylabel(ylabel)        
         fig.tight_layout()
         # plt.show()  #let user decide whether he wants to interrupt the execution for display, or save to figure...
-        return ax
+        if colors is not None:
+            plt.colorbar(sc) #label=colors
+        return sc
 
-    def plot_excitability(self, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
+    def plot_excitability(self, direction=None, pml_threshold=None, colors=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
         """
         Plot excitability as a function of frequency, |e| vs. Re(omega).
         Parameters and Returns: see plot(...)
@@ -989,21 +1061,30 @@ class Waveguide:
             fig, ax = plt.subplots(1, 1)
         
         # Build concatenaded arrays
-        _, omega, excitability = self._concatenate('excitability', direction=direction, pml_threshold=pml_threshold)
+        omega, excitability = self._concatenate('omega', 'excitability', direction=direction, pml_threshold=pml_threshold)
+        c = self._concatenate_colors(direction=direction, pml_threshold=pml_threshold, colors=colors, color=color) #colors for scatter
+        
+        # Scaling
+        xscale, yscale = self.plot_scaler['omega'], self.plot_scaler['excitability']
+        if all(np.array(list(self.plot_scaler.values()))==1): #the dictionnary variables are equal to 1
+            xlabel, ylabel = "normalized angular frequency", "normalized excitability"
+        else:
+            xlabel, ylabel, xscale = "frequency", "excitability", xscale/(2*np.pi)
         
         # vp vs. Re(omega)
         excitability = np.abs(excitability) #np.angle(excitability)
-        ax.plot(omega.real, excitability, color=color, marker=marker, markersize=markersize, linestyle=linestyle, **kwargs)
-        ax.set_xlim(omega.real.min(), omega.real.max())
-        ax.set_xlabel('Re(omega)')
-        ax.set_ylabel('|e|')
-        
+        sc = ax.scatter(omega.real*xscale, excitability*yscale, s=markersize, c=c, marker=marker, **kwargs)
+        sc.axes.set_xlim(omega.real.min()*xscale, omega.real.max()*xscale)
+        sc.axes.set_xlabel(xlabel)
+        sc.axes.set_ylabel(ylabel)        
         fig.tight_layout()
         # plt.show()  #let user decide whether he wants to interrupt the execution for display, or save to figure...
-        return ax
+        if colors is not None:
+            plt.colorbar(sc) #label=colors
+        return sc
 
-    def plot_spectrum(self, index=0, ax=None, color="k",
-                        marker="o", markersize=2, linestyle="", **kwargs):
+    def plot_spectrum(self, index=0, colors=None, ax=None, color="k",
+                        marker="o", markersize=2, **kwargs):
         """
         Plot the spectrum, Im(k) vs. Re(k) computed for omega[index] (if the parameter is the frequency),
         or Im(omega) vs. Re(omega) for wavenumber[index] (if the parameter is the wavenumber).
@@ -1012,9 +1093,11 @@ class Waveguide:
         ----------
         index: int
             parameter index
+        colors: str
+            the modal property used for marker colors (e.g. 'pml_ratio', 'coefficient', 'excitability', etc.),
+            a single color (given by the input variable color) is used if colors is set to None
         ax: matplotlib axis
             the matplotlib axis on which to plot data (created if None)
-        
         color: str, marker: str, markersize: int, linestyle: str, **kwargs are passed to ax.plot
 
         Returns
@@ -1023,15 +1106,41 @@ class Waveguide:
         """
         if ax is None:
             fig, ax = plt.subplots(1, 1)
-        ax.plot(self.eigenvalues[index].real, self.eigenvalues[index].imag, color=color, marker=marker, markersize=markersize, linestyle=linestyle, **kwargs)
+        normalized = all(np.array(list(self.plot_scaler.values()))==1)
         if self.problem_type == "wavenumber":
-            ax.set_xlabel('Re(omega)')
-            ax.set_ylabel('Im(omega)')
+            scale = self.plot_scaler['omega']
+            title = "normalized angular frequency" if normalized else "angular frequency"
         elif self.problem_type == "omega":
-            ax.set_xlabel('Re(k)')
-            ax.set_ylabel('Im(k)')
+            scale = self.plot_scaler['wavenumber']
+            title = "normalized wavenumber" if normalized else "wavenumber"
+        c = np.abs(getattr(self,colors)[index])*self.plot_scaler[colors] if colors is not None else color
+        sc = ax.scatter(self.eigenvalues[index].real*scale, self.eigenvalues[index].imag*scale, s=markersize, c=c, marker=marker, **kwargs)
+        sc.axes.set_xlabel('real part')
+        sc.axes.set_ylabel('imaginary part')
+        sc.axes.set_title(title)
         fig.tight_layout()
-        return ax
+        if colors is not None:
+            plt.colorbar(sc) #label=colors
+        return sc
+
+    def set_plot_scaler(self, length=1, time=1, mass=1, dim=3):
+        """
+        Define the characteristic length, time and mass in order to visualize plots in a dimensional form (by default, they are equal to 1).
+        Set dim=3 for three-dimensional waveguides, dim=2 for two-dimensional waveguides (e.g. plates).
+        Scaling factors for 'omega', 'wavenumber', 'energy_velocity', 'group_velocity', 'pml_ratio', 'eigenvalues', 'excitability',
+        'eigenvectors', 'eigenforces', 'coefficient' are stored in the attribute name plot_scaler.
+        If poynting normalization has already been applied, then the scalers for 'eigenvectors', 'eigenforces' and 'coefficient' are such that
+        the dimensional cross-section power flow of eigenmodes is equal to 1 Watt (if no poynting normalization applied, these scalers are left to 1).
+        Reminder: while the dimension of U (displacement) is in meter, the dimension of F (force) is in Newton for 3D waveguides
+        and in Newton/meter for 2D waveguides (F is in mass*length**(dim-2)/time**2).
+        """
+        force = mass*length**(dim-2)/time**2
+        self.plot_scaler = {'omega':1/time, 'wavenumber':1/length, 'energy_velocity':length/time, 'group_velocity':length/time, 'pml_ratio':1,
+                            'eigenvalues':1/length if self.problem_type=='omega' else 1/time, 'excitability':length/force,
+                            'eigenvectors':1, 'eigenforces':1, 'coefficient':1}
+        if self._poynting_normalization:
+            normalization_factor_1W = 1/np.sqrt(force*length/time) #factor to normalize eigenmodes such that their dimensional cross-section power flow is equal to 1 Watt
+            self.plot_scaler.update({'eigenvectors':normalization_factor_1W*length, 'eigenforces':normalization_factor_1W*force, 'coefficient':1/normalization_factor_1W})
 
     def _check_biorthogonality(self, i):
         """ Return and plot, for the ith parameter, the Modal Assurance Criterion (MAC) matrix based on the (bi)-orthogonality relation (for internal use)"""
@@ -1090,8 +1199,8 @@ class Waveguide:
 
     def _concatenate(self, *args, direction: Union[int, None]=None, pml_threshold: Union[int, None]=None, i: Union[int, None]=None):
         """
-        Return concatenated wavenumber and omega in the whole parameter range as 1D numpy arrays (for internal use).
-        The arguments *args are optional strings to concatenate additional results (attribute names, e.g. 'energy_velocity').
+        Return concatenated modal properties in the whole parameter range as 1D numpy arrays (for internal use).
+        The arguments *args are strings corresponding to attribute names (e.g. 'omega', 'eigenvalues', 'energy_velocity'...).
         The parameter value (omega or wavenumber) is repeated as many as times as the number of eigenvalues.
         If direction is specified (+1 or -1), eigenmodes traveling in the non-desired direction are filtered out. 
         If pml_threshold is specified, eigenmodes such that pml_ratio<pml_threshold are filtered out.
@@ -1099,26 +1208,45 @@ class Waveguide:
         """
         argout = []
         index = slice(None) if i is None else slice(i, i+1)
-        if self.problem_type == "wavenumber":
-            wavenumber = np.repeat(self.wavenumber[index], [len(egv) for egv in self.eigenvalues[index]])
-            omega = np.concatenate(self.eigenvalues[index])
-        elif self.problem_type == "omega":
-            omega = np.repeat(self.omega[index], [len(egv) for egv in self.eigenvalues[index]])
-            wavenumber = np.concatenate(self.eigenvalues[index])
-        argout.extend([wavenumber, omega])
         for arg in args:
-            argout.append(np.concatenate(getattr(self, arg)[index])) 
+            if arg=="omega" and self.problem_type=="omega":
+                array = np.repeat(self.omega[index], [len(egv) for egv in self.eigenvalues[index]])
+            elif arg=="wavenumber" and self.problem_type == "wavenumber":
+                array = np.repeat(self.wavenumber[index], [len(egv) for egv in self.eigenvalues[index]])
+            elif arg is None:
+                array = None
+            else:
+                if (arg=="wavenumber" and self.problem_type=="omega") or (arg=="omega" and self.problem_type=="wavenumber"):
+                    arg = "eigenvalues"
+                array = np.concatenate(getattr(self, arg)[index])
+            argout.append(array) 
         if direction is not None:
             traveling_direction = np.concatenate(self.traveling_direction[index])
             imode = traveling_direction==direction #indices of modes traveling in the desired direction
-            argout = [argout[j][imode] for j in range(len(argout))]
+            argout = [argout[j][imode] if argout[j] is not None else None for j in range(len(argout))]
         else:
             imode = slice(None)
         if pml_threshold is not None:
             pml_ratio = np.concatenate(self.pml_ratio[index])
             iphysical = pml_ratio[imode]>=pml_threshold #indices of physical modes (i.e. excluding PML modes)
-            argout = [argout[j][iphysical] for j in range(len(argout))]
+            argout = [argout[j][iphysical] if argout[j] is not None else None for j in range(len(argout))]
+        if len(argout)==1:
+            argout = argout[0]
         return argout
+
+    def _concatenate_colors(self, direction=None, pml_threshold=None, colors=None, color='k'):
+        """
+        Same as _concatenate but for colors (colors is a string corresponding to a modal property in attribute name).
+        The complex modulus of the property is returned. If colors is None, color is returned.
+        """
+        if colors is not None:
+            assert getattr(self, colors, None) is not None, print(f'The colors string {colors} is not an attribute of Waveguide object')
+            assert len(getattr(self, colors))>0, print(f'{colors} has not been computed: please compute it before plotting')
+            c = self._concatenate(colors, direction=direction, pml_threshold=pml_threshold)
+            c = np.abs(c) * self.plot_scaler[colors]
+        else:
+            c = color
+        return c
 
     def _compute_if_necessary(self, direction, pml_threshold):
         """ Compute traveling direction and pml ratio if necessary before plot (for internal use) """

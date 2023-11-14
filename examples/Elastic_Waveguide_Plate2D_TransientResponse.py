@@ -132,20 +132,26 @@ F[dof] = 1
 # Computation of excitabilities and forced response\
 # Results are to be compared with Figs. 5b and 7a of Treyssede and Laguerre, JASA 133 (2013), 3827-3837
 wg.compute_response_coefficient(F=F, dof=dof)
-ax = wg.plot_excitability()
-ax.set_yscale('log')
-ax.set_ylim(1e-3,1e2)
+wg.set_plot_scaler()
+sc = wg.plot_excitability()
+sc.axes.set_yscale('log')
+sc.axes.set_ylim(1e-3,1e2)
+wg.set_plot_scaler(length=L0, time=T0, mass=M0, dim=2) #to visualize dimensional results
 frequency, response, axs = wg.compute_response(dof=dof, z=h/2, spectrum=excitation.spectrum, plot=True)
 axs[0].get_lines()[0].set_color("black")
+axs[0].set_xlim([0, 0.5e6])
+axs[0].set_ylim([0, 1e-4])
 plt.close()
 
 ###############################################################################
 # Time response\
 # Results are to be compared with Fig. 8a of Treyssede and Laguerre, JASA 133 (2013), 3827-3837
 response = Signal(frequency=frequency, spectrum=response, alpha=0*np.log(50)/5e-3*T0)
-response.plot_spectrum()
+#response.plot_spectrum()
 response.ifft(coeff=1)
-response.plot()
+ax = response.plot()
+ax.set_xlim([0, 5e-3])
+ax.set_ylim([-2e-3, 2e-3])
 plt.show()
 
 ##################################
@@ -160,7 +166,7 @@ plotter.show()
 ##################################
 # Mode shape visualization
 ik, imode = 100, 5 #parameter index, mode index to visualize
-vec = wg.eigenvectors[ik].getColumnVector(imode)
+vec = wg.eigenvectors[ik].getColumnVector(imode)*wg.plot_scaler["eigenvectors"] #note: multiplying by wg.plot_scaler["eigenvectors"] enables to normalize the cross-section power flow of eigenmodes to 1 Watt(/m)
 u_grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(V))
 u_grid["u"] = np.array(vec).real.reshape(int(np.array(vec).size/V.element.value_shape), int(V.element.value_shape)) #V.element.value_shape is equal to 2
 u_grid["u"] = np.insert(u_grid["u"], 1, 0, axis=1) #insert a zero column to the second component (the y component)

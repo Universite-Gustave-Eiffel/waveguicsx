@@ -193,9 +193,9 @@ if rank == 0:
     wg.omega = np.concatenate(wg.omega) #wg.omega is transformed to a numpy array for a proper use of wg.plot()
     wg.plot()
     wg.plot_coefficient()
-    ax = wg.plot_excitability()
-    ax.set_yscale('log')
-    ax.set_ylim(1e-3,0.5e+1)
+    sc = wg.plot_excitability()
+    sc.axes.set_yscale('log')
+    sc.axes.set_ylim(1e-3,0.5e+1)
     frequency = np.concatenate(frequency)
     response = np.concatenate(response) #use np.concatenate(response, axis=1)  if z contains more than one value
     fig, ax = plt.subplots(1, 1)  

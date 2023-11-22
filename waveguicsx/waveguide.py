@@ -1003,14 +1003,6 @@ class Waveguide:
         if c is not color:
             plt.colorbar(sc) #label=colors
         return sc
-    
-    # Scaling and labels
-        xscale, yscale, cscale = self.plot_scaler[x[0]], self.plot_scaler[y[0]], self.plot_scaler[c[0]] if c[0] is not None else 1
-        xlabel = 'angular frequency' if x[0]=='omega' else x[0].replace("_", " ") #take the string x and replace underscores with whitespaces
-        ylabel = 'angular frequency' if y[0]=='omega' else y[0].replace("_", " ") #id
-        if normalized: #add string "normalized" to labels
-            xlabel, ylabel = "normalized " + xlabel, "normalized " + ylabel
-            
 
     def _check_biorthogonality(self, i):
         """ Return and plot, for the ith parameter, the Modal Assurance Criterion (MAC) matrix based on the (bi)-orthogonality relation (for internal use)"""

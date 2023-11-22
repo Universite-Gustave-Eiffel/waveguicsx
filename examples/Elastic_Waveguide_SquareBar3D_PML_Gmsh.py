@@ -230,13 +230,13 @@ wg.solve(nev, target=target)
 # Plot dispersion curves\
 # Results are to be compared with Fig. 8 of Treyssede, Journal of Computational Physics 314 (2016), 341–354
 wg.plot_scaler["energy_velocity"] = L0/T0/1000 #units in m/ms
-wg.plot_scaler["omega"] = L0/T0/1000 #frequency units in MHz-mm
+wg.plot_scaler["frequency"] = L0/T0/1000 #frequency units in MHz-mm
 sc = wg.plot_energy_velocity()
 sc.axes.set_xlim([0, 26])
 sc.axes.set_ylim([0, 6])
 sc.axes.set_xlabel('Frequency-halfwidth (MHz-mm)')
 sc.axes.set_ylabel('Energy velocity (m/ms)')
-wg.plot_scaler["wavenumber"] = 8.686*1000 #units in dB-mm/m
+wg.plot_scaler["attenuation"] = 8.686*1000 #units in dB-mm/m
 sc = wg.plot_attenuation()
 sc.axes.set_xlim([0, 26])
 sc.axes.set_ylim([0, 2000])

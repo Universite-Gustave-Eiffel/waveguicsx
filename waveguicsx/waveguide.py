@@ -824,54 +824,51 @@ class Waveguide:
         else:
             return frequency, response
 
-    def plot_phase_velocity(self, c=None, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
+    def plot_phase_velocity(self, **kwargs):
         """
         Plot phase velocity dispersion curves, vp vs. Re(omega), where omega is replaced with frequency
         for dimensional results. Parameters and Returns: see plot(...).
         """
-        sc = self.plot(y=['phase_velocity', np.real], c=c, direction=direction, pml_threshold=pml_threshold, ax=ax, color=color, marker=marker, markersize=markersize, **kwargs)
-        return sc
+        return self.plot(y=['phase_velocity', np.real], **kwargs)
 
-    def plot_attenuation(self, c=None, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
+    def plot_attenuation(self, **kwargs):
         """
         Plot attenuation dispersion curves, Im(wavenumber) vs. Re(omega) if omega is the parameter,
         or Im(omega) vs. Re(wavenumber) if wavenumber is the parameter, where omega is replaced with frequency
         for dimensional results. Parameters and Returns: see plot(...).
         """
-        sc = self.plot(x=['omega' if self.problem_type=='omega' else 'wavenumber', np.real], y=['attenuation', np.real], c=c, direction=direction, pml_threshold=pml_threshold, ax=ax, color=color, marker=marker, markersize=markersize, **kwargs)
-        return sc
+        return self.plot(
+            x=['omega' if self.problem_type=='omega' else 'wavenumber', np.real],
+            y=['attenuation', np.real],
+            **kwargs)
 
-    def plot_energy_velocity(self, c=None, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
+    def plot_energy_velocity(self, **kwargs):
         """
         Plot energy velocity dispersion curves, ve vs. Re(omega), where omega is replaced with frequency
         for dimensional results. Parameters and Returns: see plot(...).
         """
-        sc = self.plot(y=['energy_velocity', np.real], c=c, direction=direction, pml_threshold=pml_threshold, ax=ax, color=color, marker=marker, markersize=markersize, **kwargs)
-        return sc
+        return self.plot(y=['energy_velocity', np.real], **kwargs)
 
-    def plot_group_velocity(self, c=None, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
+    def plot_group_velocity(self, **kwargs):
         """
         Plot group velocity dispersion curves, vg vs. Re(omega), where omega is replaced with frequency
         for dimensional results. Parameters and Returns: see plot(...).
         """
-        sc = self.plot(y=['group_velocity', np.real], c=c, direction=direction, pml_threshold=pml_threshold, ax=ax, color=color, marker=marker, markersize=markersize, **kwargs)
-        return sc
+        return self.plot(y=['group_velocity', np.real], **kwargs)
 
-    def plot_coefficient(self, c=None, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
+    def plot_coefficient(self, **kwargs):
         """
         Plot response coefficients as a function of frequency, |q| vs. Re(omega), where omega is replaced with frequency
         for dimensional results. Parameters and Returns: see plot(...).
         """
-        sc = self.plot(y=['coefficient', np.abs], c=c, direction=direction, pml_threshold=pml_threshold, ax=ax, color=color, marker=marker, markersize=markersize, **kwargs)
-        return sc
+        return self.plot(y=['coefficient', np.abs], **kwargs)
 
-    def plot_excitability(self, c=None, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
+    def plot_excitability(self, **kwargs):
         """
         Plot excitability as a function of frequency, |e| vs. Re(omega), where omega is replaced with frequency
         for dimensional results. Parameters and Returns: see plot(...).
         """
-        sc = self.plot(y=['excitability', np.abs], c=c, direction=direction, pml_threshold=pml_threshold, ax=ax, color=color, marker=marker, markersize=markersize, **kwargs)
-        return sc
+        return self.plot(y=['excitability', np.abs], **kwargs)
 
     def plot(self, x=None, y=None, c=None, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
         """
@@ -936,9 +933,9 @@ class Waveguide:
         
         # Re(omega) vs. Re(k)
         sc = ax.scatter(x_array, y_array, s=markersize, c=c_array, marker=marker, **kwargs)
-        sc.axes.set_xlabel(xlabel)
-        sc.axes.set_ylabel(ylabel)
-        fig.tight_layout()
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.figure.tight_layout()
         # plt.show()  #let user decide whether he wants to interrupt the execution for display, or save to figure...
         if c[0] is not None:
             plt.colorbar(sc) #label=colors
@@ -996,10 +993,10 @@ class Waveguide:
             title = "normalized wavenumber" if normalized else "wavenumber"
         c = c[1](getattr(self,c[0])[index])*self.plot_scaler[c[0]] if c is not None else color
         sc = ax.scatter(self.eigenvalues[index].real*scale, self.eigenvalues[index].imag*scale, s=markersize, c=c, marker=marker, **kwargs)
-        sc.axes.set_xlabel('real part')
-        sc.axes.set_ylabel('imaginary part')
-        sc.axes.set_title(title)
-        fig.tight_layout()
+        ax.set_xlabel('real part')
+        ax.set_ylabel('imaginary part')
+        ax.set_title(title)
+        ax.figure.tight_layout()
         if c is not color:
             plt.colorbar(sc) #label=colors
         return sc
@@ -1407,7 +1404,7 @@ class Signal:
         ax.plot(self.time, self.waveform.T, color=color, linewidth=linewidth, linestyle=linestyle, **kwargs)
         ax.set_xlabel('t')
         ax.set_ylabel('x')
-        fig.tight_layout()
+        ax.figure.tight_layout()
         return ax
 
     def plot_spectrum(self, color="k", linewidth=2, linestyle="-", **kwargs):

@@ -11,13 +11,13 @@
 ##################################
 # 3D (visco-)elastic waveguide example\
 # The cross-section is a 2D square with free boundary conditions on its 1D boundaries\
-# material: viscoelastic steel\
+# Material: viscoelastic steel\
 # The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\
 # $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\
 # Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities\
 # In this example:
 # - the parameter loop (here, the frequency loop) is distributed on all processes
-# - FE mesh and matrices are (therefore) built on each local process
+# - FE mesh and matrices are built on each local process
 # Reminder for an execution in parallel mode (e.g. 4 processes):
 #  mpiexec -n 4 python3 Elastic_Waveguide_SquareBar3D_ParallelizedLoop.py
 

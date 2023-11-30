@@ -11,7 +11,7 @@
 ##################################
 # 3D (visco-)elastic waveguide example\
 # The cross-section is a 2D square with free boundary conditions on its boundaries\
-# material: viscoelastic steel\
+# Material: viscoelastic steel\
 # The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\
 # $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\
 # This eigenproblem is solved with the varying parameter as the wavenumber (eigenvalues are then frequencies) or as the frequency (eigenvalues are then wavenumbers)\

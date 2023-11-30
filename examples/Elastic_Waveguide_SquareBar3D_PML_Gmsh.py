@@ -11,7 +11,7 @@
 ##################################
 # 3D (visco-)elastic waveguide example\
 # The cross-section is a 2D square buried into a PML external elastic medium\
-# material: viscoelastic steel into cement grout\
+# Material: viscoelastic steel into cement grout\
 # The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\
 # $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\
 # Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities\
@@ -36,15 +36,17 @@ from waveguicsx.waveguide import Waveguide
 ##################################
 # Input parameters
 a = 2.7e-3 #core half-length (m)
-b, le = 1.5*a, a/16 #half-length including PML (m), finite element characteristic length (m)
+b, le = 1.5*a, a/4 #half-length including PML (m), finite element characteristic length (m)
 rho_core, cs_core, cl_core = 7932, 3260, 5960 #core density (kg/m3), shear and longitudinal wave celerities (m/s)
 kappas_core, kappal_core = 0.008, 0.003 #core shear and longitudinal bulk wave attenuations (Np/wavelength)
 rho_ext, cs_ext, cl_ext = 1600, 1700, 2810 #for the external medium
 kappas_ext, kappal_ext = 0.100, 0.043 #for the external medium
 alpha = 2+4j #average value of the absorbing function inside the PML
-omega = 2*np.pi*np.linspace(0, 26e6/(a*1e3), num=200) #angular frequencies (rad/s)
+omega = 2*np.pi*np.linspace(0, 26e6/(a*1e3), num=400) #angular frequencies (rad/s)
 nev = 10 #number of eigenvalues
 target = lambda omega: omega/cl_core.real #target set at the longitudinal wavenumber of core to find L(0,n) modes
+cell_type = 'quadrilateral' #'triangle', 'quadrilateral'
+gll = True #False: Lagrange 2nd order element, True: 8th order element with Gauss-Lobatto-Legendre points (spectral-like)
 
 ##################################
 # Re-scaling
@@ -90,25 +92,37 @@ gmsh.model.addPhysicalGroup(2, [exterior], tag=2) #2: for 2D (surface)
 gmsh.model.addPhysicalGroup(1, [5, 6, 7, 8], tag=21) #1: for 1D (line)
 # Generate mesh
 gmsh.model.mesh.generate(2) #generate a 2D mesh
-gmsh.model.mesh.setOrder(2) #interpolation order for the geometry, here 2nd order
+if cell_type == 'quadrilateral':
+    gmsh.model.mesh.recombine() #recombine into quadrilaterals
+#gmsh.model.mesh.setOrder(2) #interpolation order for the geometry, here 2nd order
 # From gmsh to fenicsx
 mesh, cell_tags, facet_tags = dolfinx.io.gmshio.model_to_mesh(gmsh.model, MPI.COMM_WORLD, 0, gdim=2)
 # # Reminder for save & read
 # gmsh.write("Elastic_Waveguide_Bar3D_Open.msh") #save to disk
 # mesh, cell_tags, facet_tags = dolfinx.io.gmshio.read_from_msh("Elastic_Waveguide_Bar3D_Open.msh", MPI.COMM_WORLD, rank=0, gdim=2)
 gmsh.finalize() #called when done using the Gmsh Python API
+# Finite element space
+if not gll:
+    element = ufl.VectorElement("CG", cell_type, 2, 3) #Lagrange element, triangle, quadratic "P2", 3D vector
+else: #spectral element-like
+    import basix
+    element = basix.create_element(basix.ElementFamily.P, basix.CellType.quadrilateral if cell_type=='quadrilateral' else basix.CellType.triangle, 8,
+                                   basix.LagrangeVariant.gll_warped)
+    element = basix.ufl_wrapper.BasixElement(element)
+    element = basix.ufl_wrapper.VectorElement(element, 3)
+V = dolfinx.fem.FunctionSpace(mesh, element)
 # Visualize FE mesh with pyvista
-Vmesh = dolfinx.fem.FunctionSpace(mesh, ufl.FiniteElement("CG", "triangle", 1)) #order 1 is properly handled with pyvista
+Vmesh = dolfinx.fem.FunctionSpace(mesh, ufl.FiniteElement("CG", cell_type, 1)) #cell of order 1 is properly handled with pyvista
 plotter = pyvista.Plotter()
 grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(Vmesh))
 grid.cell_data["Marker"] = cell_tags.values
 grid.set_active_scalars("Marker")
 plotter.add_mesh(grid, show_edges=True)
+grid_nodes = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(V)) #add higher-order nodes
+plotter.add_mesh(grid_nodes, style='points', render_points_as_spheres=True, point_size=2)
 plotter.view_xy()
 plotter.show()
-# Finite element space
-element = ufl.VectorElement("CG", "triangle", 2, 3) #Lagrange element, triangle, quadratic "P2", 3D vector
-V = dolfinx.fem.FunctionSpace(mesh, element)
+
 
 ##################################
 # Create Material properties, discontinuous between core and exterior
@@ -127,7 +141,7 @@ def isotropic_law(rho, cs, cl):
     return PETSc.ScalarType(C)
 C_core = isotropic_law(rho_core, cs_core, cl_core)
 C_ext = isotropic_law(rho_ext, cs_ext, cl_ext)
-Q = dolfinx.fem.FunctionSpace(mesh, ufl.TensorElement("DG", "triangle", 0, (6,6), symmetry=True)) #symmetry enables to store 21 elements instead of 36
+Q = dolfinx.fem.FunctionSpace(mesh, ufl.TensorElement("DG", cell_type, 0, (6,6), symmetry=True)) #symmetry enables to store 21 elements instead of 36
 C = dolfinx.fem.Function(Q)
 cells = cell_tags.find(1) #core (tag=1)
 C.x.array[[range(21*c,21*c+21) for c in cells]] = np.tile(C_core, (len(cells),1))
@@ -158,7 +172,7 @@ def eval_gamma(x): #pml profile: continuous and parabolic
     values = [1+3*(alpha-1)*((abs(x[0])-a)/(b-a))**2*(abs(x[0])>=a), #gammax
               1+3*(alpha-1)*((abs(x[1])-a)/(b-a))**2*(abs(x[1])>=a)] #gammay
     return values
-Q = dolfinx.fem.FunctionSpace(mesh, ufl.VectorElement("CG", "triangle", 2, 2))
+Q = dolfinx.fem.FunctionSpace(mesh, ufl.VectorElement("CG", cell_type, 2, 2))
 gamma = dolfinx.fem.Function(Q)
 gamma.interpolate(eval_gamma)
 # Vizualization
@@ -236,25 +250,31 @@ sc.axes.set_xlim([0, 26])
 sc.axes.set_ylim([0, 6])
 sc.axes.set_xlabel('Frequency-halfwidth (MHz-mm)')
 sc.axes.set_ylabel('Energy velocity (m/ms)')
+#plt.savefig("buried_bar_energy_velocity.png")
 wg.plot_scaler["attenuation"] = 8.686*1000 #units in dB-mm/m
 sc = wg.plot_attenuation()
 sc.axes.set_xlim([0, 26])
 sc.axes.set_ylim([0, 2000])
 sc.axes.set_xlabel('Frequency-halfwidth (MHz-mm)')
 sc.axes.set_ylabel('Attenuation (dB-mm/m)')
+#plt.savefig("buried_bar_attenuation.png")
 plt.show()
 #wg.plot_spectrum(index=0)
 #plt.show()
 
 ##################################
 # Mode shape visualization
-ik, imode = 50, 1 #parameter index, mode index to visualize
+ik, imode = 345, 0 #parameter index, mode index to visualize
+print(f"f={wg.omega[ik]*L0/T0/1000/(2*np.pi):1.1f}MHz-mm, attenuation={8.686*1000*wg.eigenvalues[ik][imode].imag:1.2f}dB-mm/m")
 vec = wg.eigenvectors[ik].getColumnVector(imode)
 u_grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(V))
 u_grid["u"] = np.array(vec).real.reshape(int(np.array(vec).size/V.element.value_shape), int(V.element.value_shape)) #V.element.value_shape is equal to 3
 u_plotter = pyvista.Plotter()
 u_plotter.add_mesh(grid, style="wireframe", color="k") #FE mesh
-u_plotter.add_mesh(u_grid.warp_by_vector("u", factor=2.0), opacity=0.8, show_scalar_bar=True, show_edges=False) #do not show edges of higher order elements with pyvista
-u_plotter.show_axes()
+u_plotter.add_mesh(u_grid.warp_by_vector("u", factor=1), opacity=1, show_scalar_bar=False, show_edges=False, cmap='viridis') #do not show edges of higher order elements with pyvista
+#u_plotter.show_axes()
+u_plotter.screenshot('buried_bar_mode_shape.png', transparent_background=True)
 u_plotter.show()
+
+""
 

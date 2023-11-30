@@ -837,10 +837,7 @@ class Waveguide:
         or Im(omega) vs. Re(wavenumber) if wavenumber is the parameter, where omega is replaced with frequency
         for dimensional results. Parameters and Returns: see plot(...).
         """
-        return self.plot(
-            x=['omega' if self.problem_type=='omega' else 'wavenumber', np.real],
-            y=['attenuation', np.real],
-            **kwargs)
+        return self.plot(y=['attenuation', np.real], **kwargs)
 
     def plot_energy_velocity(self, **kwargs):
         """
@@ -900,9 +897,13 @@ class Waveguide:
         # Initialization
         self._compute_if_necessary(direction, pml_threshold) #compute traveling direction and pml ratio if necessary
         normalized = all(np.array(list(self.plot_scaler.values()))==1) #test if the dictionnary variables are equal to 1 (results will be normalized) or not (results will be dimensional)
-        if x is None:
+        if x is None: #particular cases
             if y is None:
                 x, y = ['wavenumber', np.real], ['omega' if normalized else 'frequency', np.real]
+            elif y[0] == 'attenuation':
+                x = ['omega' if self.problem_type=='omega' else 'wavenumber', np.real]
+                if self.problem_type=='omega' and not normalized:
+                    x[0] = 'frequency'
             else:
                 x = ['omega' if normalized else 'frequency', np.real]
         if x[0] in ('coefficient', 'excitability') and len(getattr(self, x[0]))==0:

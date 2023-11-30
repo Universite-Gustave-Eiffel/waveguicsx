@@ -18,7 +18,7 @@
 # Results are to be compared with Figs. 5, 6 and 7 of paper: Treyssede, Wave Motion 87 (2019), 75-91.
 # In this example:
 # - the parameter loop (here, the frequency loop) is distributed on all processes
-# - FE mesh and matrices are (therefore) built on each local process
+# - FE mesh and matrices are built on each local process
 # Reminder for an execution in parallel mode (e.g. 8 processes):
 #  mpiexec -n 8 python3 Elastic_Waveguide_CircularBar3D_ForcedResponse_Gmsh_ParallelizedLoop.py
 

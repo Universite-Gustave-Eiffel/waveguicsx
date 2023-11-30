@@ -11,7 +11,7 @@
 ##################################
 # 3D (visco-)elastic waveguide example\
 # The cross-section is a 2D square buried into a PML external elastic medium\
-# material: viscoelastic steel into cement grout\
+# Material: viscoelastic steel into cement grout\
 # The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\
 # $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\
 # Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities\

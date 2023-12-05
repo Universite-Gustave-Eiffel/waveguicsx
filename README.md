@@ -98,31 +98,39 @@ git clone https://github.com/treyssede/waveguicsx.git
 # move into repository
 cd ./waveguicsx
 
-# #[optional] create a conda environment dedicated to waveguicsx
-# conda create -n wgx-env python=3.10 --yes
-# conda activate wgx-env
+# [recommended] create a conda environment dedicated to waveguicsx
+conda create -n wgx-env python=3.10 --yes
+conda activate wgx-env
 
-# #[optional] petsc slepc might fail to install with pip, try conda  
-# conda install -c conda-forge mpi4py mpich petsc4py slepc4py
+# petsc slepc might fail to install with pip, try with conda first :  
+conda install -c conda-forge mpi4py mpich petsc4py slepc4py --yes
 
-# install waveguicsx in the current environment
+# install waveguicsx in the current environment (add -e to install in editable mode)
 python3 -m pip install .
 ```
 
 ### 2.2 Fenicsx Environment
 
-FEniCSX is not a dependency of Waveguicsx. Nevertheless it is required to run the examples.
-To run FEniCSX for the tutorials, we recommend using a docker image with the latest stable release of DOLFINx executed in complex mode before running scripts:
+FEniCSX is not a dependency of Waveguicsx. Nevertheless it is required to run the tutorials.
+We recommend using a docker image of DOLFINx sourced in complex mode before running scripts:
+
 ```bash
 docker run -ti dolfinx/dolfinx:v0.6.0
 source /usr/local/bin/dolfinx-complex-mode
+## NOTE you need to install waveguicsx inside the container now
 ```
 or , instead, a Jupyter Lab environment with the latest stable release of DOLFINx:
 ```bash
 docker run --init -ti -p 8888:8888 dolfinx/lab:v0.6.0
+## NOTE you need to install waveguicsx inside the container now
 ```
 See https://fenicsproject.org/ for details.
 
+### 2.3 Fenicsx environment, using Penguinx
+
+Penguinx is a github project that let you create a persistent 
+and shared docker-container to run the waveguicsx tutorials with the right version fenicsx installed.  
+See : https://github.com/mlehujeur/penguinx.git
 
 ## 3. Tutorials
 

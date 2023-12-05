@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Examples &mdash; waveguicsx  documentation</title>
+  <title>Examples &mdash; waveguicsx 0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,8 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> waveguicsx
+            <a href="index.html">
+            <img src="_static/logo_doc.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -41,8 +42,20 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="readme_link.html">waveguicsx</a></li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme_link.html">waveguicsx</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#introduction">0. Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#prerequisites">1. Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#installation">2. Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#tutorials">3. Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#authors-and-contributors">4. Authors and contributors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#how-to-cite">5. How to cite</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#license">6. License</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="waveguicsx.html">waveguicsx.waveguide</a></li>
+</ul>
+</li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#d-elastic-bar-of-square-cross-section">3D elastic bar of square cross-section</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#d-elastic-bar-of-square-cross-section-with-parallelization">3D elastic bar of square cross-section with parallelization</a></li>
@@ -918,14 +931,14 @@ Results are to be compared with Fig. 8 of paper: Treyssede, Journal of Computati
 <span class="n">sc</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">])</span>
 <span class="n">sc</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Frequency-halfwidth (MHz-mm)&#39;</span><span class="p">)</span>
 <span class="n">sc</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Energy velocity (m/ms)&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;buried_bar_energy_velocity.png&quot;</span><span class="p">)</span>
+<span class="c1">#plt.savefig(&quot;buried_bar_energy_velocity.png&quot;)</span>
 <span class="n">wg</span><span class="o">.</span><span class="n">plot_scaler</span><span class="p">[</span><span class="s2">&quot;attenuation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">8.686</span><span class="o">*</span><span class="mi">1000</span> <span class="c1">#units in dB-mm/m</span>
 <span class="n">sc</span> <span class="o">=</span> <span class="n">wg</span><span class="o">.</span><span class="n">plot_attenuation</span><span class="p">()</span>
 <span class="n">sc</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">26</span><span class="p">])</span>
 <span class="n">sc</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2000</span><span class="p">])</span>
 <span class="n">sc</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Frequency-halfwidth (MHz-mm)&#39;</span><span class="p">)</span>
 <span class="n">sc</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Attenuation (dB-mm/m)&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;buried_bar_attenuation.png&quot;</span><span class="p">)</span>
+<span class="c1">#plt.savefig(&quot;buried_bar_attenuation.png&quot;)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 <span class="c1">#wg.plot_spectrum(index=0)</span>
 <span class="c1">#plt.show()</span>
@@ -1553,7 +1566,7 @@ Note: the depth direction is x, the axis of propagation is z.</p>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;time (s)&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2e-3</span><span class="p">,</span> <span class="mf">2e-3</span><span class="p">])</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;displacement (m)&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;plate_zgv_transient.png&#39;</span><span class="p">)</span>
+<span class="c1">#plt.savefig(&#39;plate_zgv_transient.png&#39;)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
 <span class="c1">##################################</span>
@@ -1743,7 +1756,7 @@ if False:
     sc.axes.set_ylim([0, 12000])
     sc.axes.set_xlabel(&#39;frequency (kHz)&#39;)
     sc.axes.set_ylabel(&#39;phase velocity (m/s)&#39;)
-    plt.savefig(&#39;rail_phase_velocity.png&#39;)
+    #plt.savefig(&#39;rail_phase_velocity.png&#39;)
     plt.show()
 
 ##################################

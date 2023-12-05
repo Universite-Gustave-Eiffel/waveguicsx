@@ -2,7 +2,13 @@ import setuptools
 import os
 import subprocess
 
+# ================================= 
+# Installation folder
+WAVEGUICSXHOME = os.path.dirname(__file__)
 
+# =================================
+# Add command to build the doc from sources with
+# python setup.py doc
 class MakeTheDoc(setuptools.Command):
     description = "Generate Documentation Pages using Sphinx"
     user_options = []
@@ -18,16 +24,38 @@ class MakeTheDoc(setuptools.Command):
         subprocess.run(
             ['sphinx-build docsrc docs'], shell=True)
         
+# =================================
+# Get the version variable 
+def read_version_number():
+    # read the variable manually, skip distutils2-boolshit
+    version_file = os.path.join(WAVEGUICSXHOME, 'waveguicsx', 'version.py')
+    if not os.path.isfile(version_file):
+        raise IOError(version_file)
 
+    with open(version_file, "r") as fid:
+        for line in fid:
+            if line.strip('\n').strip().startswith('__version__'):
+                version_number = line.strip('\n').split('=')[-1].split()[0].strip().strip('"').strip("'")
+                break
+        else:
+            raise Exception(f'could not detect __version__ affectation in {version_file}')
+    return version_number
+    
+__version__ = read_version_number()
+
+
+# =================================
+# Load the README Content
 with open('README.md', 'r') as fid:
     long_description = fid.read()
 
-
+# =================================
+# Install the package
 setuptools.setup(
     name='waveguicsx',
     author="Fabien Treyssede",
     # author_email="", TODO add mail adress if useful
-    version="0.0",
+    version=__version__,
     packages=setuptools.find_packages(),
     url='https://github.com/treyssede/waveguicsx',
     license='COPYING',

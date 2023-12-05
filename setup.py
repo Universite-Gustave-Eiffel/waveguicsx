@@ -43,8 +43,9 @@ setuptools.setup(
         'doc': MakeTheDoc,  # allow user to build the doc with python setup.py doc
         },
     install_requires=[
-        'numpy', 'matplotlib',  # 'pyvista, 'scipy',... ?
-        'petsc4py', 'slepc4py',
+        'numpy', 'matplotlib',
+        'pyvista',  # 'scipy'
+        'petsc4py', 'slepc4py',  # <- may fail with pip, see readme
         # packages required for sphinx
         'sphinx', 'sphinx-rtd-theme', 'myst-parser',  'nbsphinx',
         ], # list the python packages to install with python -m pip install

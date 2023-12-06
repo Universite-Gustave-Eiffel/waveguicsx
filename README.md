@@ -14,7 +14,7 @@ You should have received a copy of the GNU General Public License along with wav
 Contact: fabien.treyssede@univ-eiffel.fr
 
 
-### 0. Introduction
+## 0. Introduction
 
 waveguicsx is a python library for solving complex waveguide problems based on SLEPc eigensolver.
 
@@ -75,18 +75,19 @@ plt.show()
 ```
 
 
-### 1. Prerequisites
+## 1. Prerequisites
 
-waveguicsx requires SLEPc and PETSc (slepc4py, petsc4py).
+Waveguicsx requires SLEPc and PETSc (slepc4py, petsc4py).
 
 In the tutorials (examples subfolder), the matrices $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ (and vector $\textbf{F}$ if any) are built from the open finite element (FE) platform FEniCSX. However, any other FE code can be used instead. The only necessary inputs to waveguicsx are the matrices $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ (PETSc matrix format), as well as the vector $\textbf{F}$ for a forced response.
 
 Tutorials are py files, formatted such that they can be opened in a text editor or in a jupyter notebook.
 
 
-### 2. Installation
- 
-Simply clone the waveguicsx public repository
+## 2. Installation
+
+### 2.1 Waveguicsx package
+Clone the waveguicsx public repository
 
 ```bash
 # move to installation location with cd
@@ -94,35 +95,50 @@ Simply clone the waveguicsx public repository
 # get the repo from github
 git clone https://github.com/treyssede/waveguicsx.git
 
-# move into repository, and install using pip
+# move into repository
 cd ./waveguicsx
 
-# pip install petsc4py might fail, instead, you may try with conda : 
-# conda install -c conda-forge mpi4py mpich petsc4py slepc4py
+# [recommended] create a conda environment dedicated to waveguicsx
+conda create -n wgx-env python=3.10 --yes
+conda activate wgx-env
 
-python3 -m pip install -e .
+# petsc slepc might fail to install with pip, try with conda first :  
+conda install -c conda-forge mpi4py mpich petsc4py slepc4py --yes
 
+# install waveguicsx in the current environment (add -e to install in editable mode)
+python3 -m pip install .
 ```
 
-To run FEniCSX for the tutorials, we recommend using a docker image with the latest stable release of DOLFINx executed in complex mode before running scripts:
+### 2.2 Fenicsx Environment
+
+FEniCSX is not a dependency of Waveguicsx. Nevertheless it is required to run the tutorials.
+We recommend using a docker image of DOLFINx sourced in complex mode before running scripts:
+
 ```bash
-docker run -ti dolfinx/dolfinx:stable
+docker run -ti dolfinx/dolfinx:v0.6.0
 source /usr/local/bin/dolfinx-complex-mode
+## NOTE you need to install waveguicsx inside the container now
 ```
 or , instead, a Jupyter Lab environment with the latest stable release of DOLFINx:
 ```bash
-docker run --init -ti -p 8888:8888 dolfinx/lab:stable
+docker run --init -ti -p 8888:8888 dolfinx/lab:v0.6.0
+## NOTE you need to install waveguicsx inside the container now
 ```
 See https://fenicsproject.org/ for details.
 
+### 2.3 Fenicsx environment, using Penguinx
 
-### 3. Tutorials
+Penguinx is a github project that let you create a persistent 
+and shared docker-container to run the waveguicsx tutorials with the right version fenicsx installed.  
+See : https://github.com/mlehujeur/penguinx.git
+
+## 3. Tutorials
 
 Several tutorials are provided in the examples subfolder.
 
 To build the documentation, use `python setup.py doc`, and open the front page in `./doc/Waveguicsx_documentation.html`.
 
-### 4. Authors and contributors
+## 4. Authors and contributors
 
 waveguicsx is currently developed and maintained at Université Gustave Eiffel by Dr. Fabien Treyssède, with some contributions from Dr. Maximilien Lehujeur (github software management, python formatting, beta testing) and Dr. Pierric Mora (parallelization of loops in tutorials, beta testing). Please see the AUTHORS file for a list of contributors.
 
@@ -131,7 +147,7 @@ Feel free to contact me by email for further information or questions about wave
 contact: fabien.treyssede@univ-eiffel.fr
 
 
-### 5. How to cite
+## 5. How to cite
 
 Please cite the software project as follows if used for your own projects or academic publications:
 
@@ -148,7 +164,7 @@ F. Treyssède, Spectral element computation of high-frequency leaky modes in thr
 M. Gallezot, F. Treyssède, L. Laguerre, A modal approach based on perfectly matched layers for the forced response of elastic open waveguides, Journal of Computational Physics 356 (2018), 391-409
 
 
-### 6. License
+## 6. License
 
 waveguicsx is freely available under the GNU GPL, version 3.
 

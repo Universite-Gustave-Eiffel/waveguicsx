@@ -1117,10 +1117,10 @@ class Waveguide:
 
     def _diag(self, vec):
         """ Return the PETSc diagonal matrix with diagonal entries given by vector vec (for internal use)"""
-        diag = PETSc.Mat().createAIJ(len(vec), comm=self.comm)
+        diag = PETSc.Mat().createAIJ(vec.size, nnz=1, comm=self.comm)
         diag.setUp()
-        diag.assemble()
         diag.setDiagonal(PETSc.Vec().createWithArray(vec, comm=self.comm))
+        diag.assemble()
         return diag
 
     def _dot_eigenvectors(self, i, eigenfield):

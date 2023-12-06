@@ -123,7 +123,6 @@ plotter.add_mesh(grid_nodes, style='points', render_points_as_spheres=True, poin
 plotter.view_xy()
 plotter.show()
 
-
 ##################################
 # Create Material properties, discontinuous between core and exterior
 def isotropic_law(rho, cs, cl):
@@ -205,6 +204,7 @@ bcs = [dolfinx.fem.dirichletbc(value=np.zeros(3, dtype=PETSc.ScalarType), dofs=b
 
 ##################################
 # Define variational problem (SAFE method)
+#ufl.dx = ufl.dx(metadata={"quadrature_rule": "GLL", "quadrature_degree": 2*(8-1)}) if gll else ufl.dx #uncomment to build diagonal mass matrix
 u = ufl.TrialFunction(V)
 v = ufl.TestFunction(V)
 Lx = lambda u: ufl.as_vector([u[0].dx(0), 0, 0, u[1].dx(0), u[2].dx(0), 0])
@@ -212,12 +212,12 @@ Ly = lambda u: ufl.as_vector([0, u[1].dx(1), 0, u[0].dx(1), 0, u[2].dx(1)])
 Lz  = lambda u: ufl.as_vector([0, 0, u[2], 0, u[0], u[1]])
 gammax = gamma[0]
 gammay = gamma[1]
-k1 = (ufl.inner(C*(gammay/gammax*Lx(u)+Ly(u)), Lx(v)) + ufl.inner(C*(Lx(u)+gammax/gammay*Ly(u)), Ly(v))) * ufl.dx
+k0 = (ufl.inner(C*(gammay/gammax*Lx(u)+Ly(u)), Lx(v)) + ufl.inner(C*(Lx(u)+gammax/gammay*Ly(u)), Ly(v))) * ufl.dx
+k0_form = dolfinx.fem.form(k0)
+k1 = (gammay*ufl.inner(C*Lz(u), Lx(v))+gammax*ufl.inner(C*Lz(u), Ly(v))) * ufl.dx
 k1_form = dolfinx.fem.form(k1)
-k2 = (gammay*ufl.inner(C*Lz(u), Lx(v))+gammax*ufl.inner(C*Lz(u), Ly(v))) * ufl.dx
+k2 = ufl.inner(C*Lz(u), Lz(v)) * gammax * gammay * ufl.dx
 k2_form = dolfinx.fem.form(k2)
-k3 = ufl.inner(C*Lz(u), Lz(v)) * gammax * gammay * ufl.dx
-k3_form = dolfinx.fem.form(k3)
 m = rho * ufl.inner(u, v) * gammax * gammay * ufl.dx
 mass_form = dolfinx.fem.form(m)
 
@@ -225,17 +225,18 @@ mass_form = dolfinx.fem.form(m)
 # Build PETSc matrices
 M = dolfinx.fem.petsc.assemble_matrix(mass_form, bcs=bcs, diagonal=0.0)
 M.assemble()
-K0 = dolfinx.fem.petsc.assemble_matrix(k1_form, bcs=bcs)
+K0 = dolfinx.fem.petsc.assemble_matrix(k0_form, bcs=bcs)
 K0.assemble()
-K1 = dolfinx.fem.petsc.assemble_matrix(k2_form, bcs=bcs, diagonal=0.0)
+K1 = dolfinx.fem.petsc.assemble_matrix(k1_form, bcs=bcs, diagonal=0.0)
 K1.assemble()
-K2 = dolfinx.fem.petsc.assemble_matrix(k3_form, bcs=bcs, diagonal=0.0)
+K2 = dolfinx.fem.petsc.assemble_matrix(k2_form, bcs=bcs, diagonal=0.0)
 K2.assemble()
 
 ##################################
 # Solve the eigenproblem with SLEPc\
 # The parameter is omega, the eigenvalue is k
 wg = Waveguide(MPI.COMM_WORLD, M, K0, K1, K2)
+#(K2, M) = (wg._diag(K2.getDiagonal()), wg._diag(M.getDiagonal())) if gll else (K2, M) ##uncomment to save allocated memory of K2 and M if they are to be diagonal
 wg.set_parameters(omega=omega)
 wg.evp.setWhichEigenpairs(SLEPc.PEP.Which.TARGET_MAGNITUDE) #here, preferred to TARGET_IMAGINARY
 wg.solve(nev, target=target)

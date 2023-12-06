@@ -89,12 +89,12 @@ u = ufl.TrialFunction(V)
 v = ufl.TestFunction(V)
 Lxy = lambda u: ufl.as_vector([u[0].dx(0), 0, u[1].dx(0)])
 Lz = lambda u: ufl.as_vector([0, u[1], u[0]])
-k1 = ufl.inner(C*Lxy(u), Lxy(v)) * ufl.dx
+k0 = ufl.inner(C*Lxy(u), Lxy(v)) * ufl.dx
+k0_form = dolfinx.fem.form(k0)
+k1 = ufl.inner(C*Lz(u), Lxy(v)) * ufl.dx
 k1_form = dolfinx.fem.form(k1)
-k2 = ufl.inner(C*Lz(u), Lxy(v)) * ufl.dx
+k2 = ufl.inner(C*Lz(u), Lz(v)) * ufl.dx
 k2_form = dolfinx.fem.form(k2)
-k3 = ufl.inner(C*Lz(u), Lz(v)) * ufl.dx
-k3_form = dolfinx.fem.form(k3)
 m = rho*ufl.inner(u, v) * ufl.dx
 mass_form = dolfinx.fem.form(m)
 
@@ -102,11 +102,11 @@ mass_form = dolfinx.fem.form(m)
 # Build PETSc matrices
 M = dolfinx.fem.petsc.assemble_matrix(mass_form, bcs=bcs, diagonal=0.0)
 M.assemble()
-K0 = dolfinx.fem.petsc.assemble_matrix(k1_form, bcs=bcs)
+K0 = dolfinx.fem.petsc.assemble_matrix(k0_form, bcs=bcs)
 K0.assemble()
-K1 = dolfinx.fem.petsc.assemble_matrix(k2_form, bcs=bcs, diagonal=0.0)
+K1 = dolfinx.fem.petsc.assemble_matrix(k1_form, bcs=bcs, diagonal=0.0)
 K1.assemble()
-K2 = dolfinx.fem.petsc.assemble_matrix(k3_form, bcs=bcs, diagonal=0.0)
+K2 = dolfinx.fem.petsc.assemble_matrix(k2_form, bcs=bcs, diagonal=0.0)
 K2.assemble()
 
 ##################################

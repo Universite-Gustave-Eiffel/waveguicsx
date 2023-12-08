@@ -35,7 +35,7 @@ from waveguicsx.waveguide import Waveguide
 # Input parameters
 a = 2.7e-3 #core half-length (m)
 b = 1.5*a #half-length including PML (m)
-N = 24 #number of finite elements along one half-side
+N = 6 #24 #number of finite elements along one half-side
 if not (a*N/b).is_integer():
     raise NotImplementedError("The ratio a/b*N must be an integer, please adjust N")
 rho_core, cs_core, cl_core = 7932, 3260, 5960 #core density (kg/m3), shear and longitudinal wave celerities (m/s)
@@ -60,10 +60,15 @@ cs_core, cl_core = cs_core/(1+1j*kappas_core/2/np.pi), cl_core/(1+1j*kappal_core
 cs_ext, cl_ext = cs_ext/(1+1j*kappas_ext/2/np.pi), cl_ext/(1+1j*kappal_ext/2/np.pi) #complex celerities (exterior)
 
 ##################################
-# Create mesh and finite elements (P2 quadrilaterals with three dofs per node for the three components of displacement)
+# Create mesh and finite elements (P2 quadrilaterals or order 8 GLL, with three dofs per node for the three components of displacement)
 mesh = dolfinx.mesh.create_rectangle(MPI.COMM_WORLD, [np.array([-b, -b]), np.array([b, b])], 
                                [2*N, 2*N], dolfinx.mesh.CellType.quadrilateral)
-element = ufl.VectorElement("CG", "quadrilateral", 2, 3) #Lagrange element, quadrilateral, quadratic "P2", 3D vector
+#element = ufl.VectorElement("CG", "quadrilateral", 2, 3) #Lagrange element, quadrilateral, quadratic "P2", 3D vector
+import basix
+element = basix.create_element(basix.ElementFamily.P, basix.CellType.quadrilateral, 8,
+                               basix.LagrangeVariant.gll_warped)
+element = basix.ufl_wrapper.BasixElement(element)
+element = basix.ufl_wrapper.VectorElement(element, 3)
 V = dolfinx.fem.FunctionSpace(mesh, element)
 
 ##################################
@@ -160,12 +165,12 @@ Ly = lambda u: ufl.as_vector([0, u[1].dx(1), 0, u[0].dx(1), 0, u[2].dx(1)])
 Lz  = lambda u: ufl.as_vector([0, 0, u[2], 0, u[0], u[1]])
 gammax = gamma[0]
 gammay = gamma[1]
-k1 = (ufl.inner(C*(gammay/gammax*Lx(u)+Ly(u)), Lx(v)) + ufl.inner(C*(Lx(u)+gammax/gammay*Ly(u)), Ly(v))) * ufl.dx
+k0 = (ufl.inner(C*(gammay/gammax*Lx(u)+Ly(u)), Lx(v)) + ufl.inner(C*(Lx(u)+gammax/gammay*Ly(u)), Ly(v))) * ufl.dx
+k0_form = dolfinx.fem.form(k0)
+k1 = (gammay*ufl.inner(C*Lz(u), Lx(v))+gammax*ufl.inner(C*Lz(u), Ly(v))) * ufl.dx
 k1_form = dolfinx.fem.form(k1)
-k2 = (gammay*ufl.inner(C*Lz(u), Lx(v))+gammax*ufl.inner(C*Lz(u), Ly(v))) * ufl.dx
+k2 = ufl.inner(C*Lz(u), Lz(v)) * gammax * gammay * ufl.dx
 k2_form = dolfinx.fem.form(k2)
-k3 = ufl.inner(C*Lz(u), Lz(v)) * gammax * gammay * ufl.dx
-k3_form = dolfinx.fem.form(k3)
 m = rho*ufl.inner(u, v) * gammax * gammay * ufl.dx
 mass_form = dolfinx.fem.form(m)
 
@@ -173,11 +178,11 @@ mass_form = dolfinx.fem.form(m)
 # Build PETSc matrices
 M = dolfinx.fem.petsc.assemble_matrix(mass_form, bcs=bcs, diagonal=0.0)
 M.assemble()
-K0 = dolfinx.fem.petsc.assemble_matrix(k1_form, bcs=bcs)
+K0 = dolfinx.fem.petsc.assemble_matrix(k0_form, bcs=bcs)
 K0.assemble()
-K1 = dolfinx.fem.petsc.assemble_matrix(k2_form, bcs=bcs, diagonal=0.0)
+K1 = dolfinx.fem.petsc.assemble_matrix(k1_form, bcs=bcs, diagonal=0.0)
 K1.assemble()
-K2 = dolfinx.fem.petsc.assemble_matrix(k3_form, bcs=bcs, diagonal=0.0)
+K2 = dolfinx.fem.petsc.assemble_matrix(k2_form, bcs=bcs, diagonal=0.0)
 K2.assemble()
 
 ##################################

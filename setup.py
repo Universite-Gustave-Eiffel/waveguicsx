@@ -2,12 +2,12 @@ import setuptools
 import os
 import subprocess
 
-# ================================= 
+# =================================
 # Installation folder
 WAVEGUICSXHOME = os.path.dirname(__file__)
 
-# =================================
-# Add command to build the doc from sources with
+# =================================
+# Add command to build the doc from sources with
 # python setup.py doc
 class MakeTheDoc(setuptools.Command):
     description = "Generate Documentation Pages using Sphinx"
@@ -24,7 +24,7 @@ class MakeTheDoc(setuptools.Command):
         subprocess.run(
             ['sphinx-build docsrc docs'], shell=True)
         
-# =================================
+# =================================
 # Get the version variable 
 def read_version_number():
     # read the variable manually, skip distutils2-boolshit
@@ -44,12 +44,12 @@ def read_version_number():
 __version__ = read_version_number()
 
 
-# =================================
+# =================================
 # Load the README Content
 with open('README.md', 'r') as fid:
     long_description = fid.read()
 
-# =================================
+# =================================
 # Install the package
 setuptools.setup(
     name='waveguicsx',

@@ -406,7 +406,7 @@ class Waveguide:
             for mode in range(self.eigenvalues[i].size):
                 U = self.eigenvectors[i].getColumnVector(mode)
                 F = self.eigenforces[i].getColumnVector(mode)
-                normalization.append(1/np.sqrt(np.abs(-1j*omega[mode]/2*F.dot(U))))
+                normalization = np.append(normalization, 1/np.sqrt(np.abs(-1j*omega[mode]/2*F.dot(U))))
             self.eigenvectors[i] = self.eigenvectors[i]*self._diag(normalization)
             self.eigenforces[i] = self.eigenforces[i]*self._diag(normalization)
         self._poynting_normalization = True

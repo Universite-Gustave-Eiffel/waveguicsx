@@ -9,5 +9,9 @@ RUN apt-get update && \
 RUN groupadd -g $GID waveguicsxuser && \
     useradd -m -u $UID -g $GID waveguicsxuser && \
     echo "waveguicsxuser:waveguicsxuser" | chpasswd
+# add an env variable from complex/real mode of dolfinx
+RUN \
+    echo "export DOLFINX_MODE='real'" >> /usr/local/bin/dolfinx-real-mode && \
+    echo "export DOLFINX_MODE='complex'" >> /usr/local/bin/dolfinx-complex-mode
 USER waveguicsxuser
 WORKDIR /home/waveguicsxuser

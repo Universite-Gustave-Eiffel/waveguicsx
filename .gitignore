@@ -21,3 +21,11 @@ waveguicsx/__pycache__/
 /docs/examples.html
 
 /build/
+
+# ignore skeleton files due to the mounting of . in the docker container
+.bash_history
+.cache/
+.fltk/
+.local/
+.python_history
+

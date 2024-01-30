@@ -1,0 +1,13 @@
+FROM dolfinx/dolfinx:v0.6.0
+ARG DEBIAN_FRONTEND=noninteractive
+ARG UID=1000
+ARG GID=1000
+ENV TZ=Europe/Paris
+RUN apt-get update && \
+    apt-get install -y python3-tk vim && \
+    apt-get install -y libgl1-mesa-glx xvfb
+RUN groupadd -g $GID waveguicsxuser && \
+    useradd -m -u $UID -g $GID waveguicsxuser && \
+    echo "waveguicsxuser:waveguicsxuser" | chpasswd
+USER waveguicsxuser
+WORKDIR /home/waveguicsxuser

@@ -34,7 +34,7 @@ The forced reponse ($\textbf{F}\neq\textbf{0}$) is solved in the frequency domai
 The library contains two classes. The main class, the class Waveguide, enables to solve the waveguide problem defined by the following inputs: $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ and $\textbf{F}$. The other class, the class Signal, is provided to easily handle the transforms of signals from frequency to time and inversely, as well as the generation of excitation pulses.
 
 
-Basic example 1: dispersion curves of a homogeneous plate
+**Basic example 1: dispersion curves of a homogeneous plate**
 
 ```python
 ###########################################
@@ -101,7 +101,7 @@ sc.axes.set_ylabel('Energy velocity (m/ms)')
 plt.show()
 ```
 
-Basic example 2: forced response of a homogeneous plate
+**Basic example 2: forced response of a homogeneous plate**
 
 ```python
 ###########################################

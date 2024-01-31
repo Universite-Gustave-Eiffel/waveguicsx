@@ -5,7 +5,9 @@ ARG GID=1000
 ENV TZ=Europe/Paris
 RUN apt-get update && \
     apt-get install -y python3-tk vim && \
-    apt-get install -y libgl1-mesa-glx xvfb
+    apt-get install -y libgl1-mesa-glx xvfb && \
+    apt install -y jupyter-notebook 
+
 RUN groupadd -g $GID waveguicsxuser && \
     useradd -m -u $UID -g $GID waveguicsxuser && \
     echo "waveguicsxuser:waveguicsxuser" | chpasswd
@@ -15,3 +17,7 @@ RUN \
     echo "export DOLFINX_MODE='complex'" >> /usr/local/bin/dolfinx-complex-mode
 USER waveguicsxuser
 WORKDIR /home/waveguicsxuser
+
+# python3 -m pip install -e . is pointless here
+# because at the moment this dockerfile is run, 
+# the waveguicsx folder is not yet mounted in the container

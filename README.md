@@ -231,19 +231,22 @@ We recommend using the docker image of DOLFINX/v0.6.0 sourced in complex mode be
 ```
 * The first call will take longer to build the image.
 
-* Once the container is launched, install the package using   
+* Once the container is launched, install the package using (only the first time)   
 ```bash
 [complex]waveguicsxuser@hostname:~$ python3 -m pip install -e .
 ```
 **WARNING** : the waveguicsx folder (i.e. `.`) is mounted inside the container in `/home/waveguicsxuser` :
 so that all changes are persistent and modify the repository of the host system as well.  
-The package files will be installed in the `.local` folder (ignored by git).  
+The python package files will be installed in the `.local` folder (ignored by `git`), 
+so that it is not necessary to reinstall the package with pip each time the container is launched.
 
 * Usage inside the container :  
 ```bash
 [complex]waveguicsxuser@hostname:~$ real  # => use the real libraries of dolfinx
 [real]waveguicsxuser@hostname:~$ complex  # back to complexe mode
-[complex]waveguicsxuser@hostname:~$ jupyter notebook  # to launch the jupyter notebook from inside the container  
+[complex]waveguicsxuser@hostname:~$ python3 ./examples/Elastic_Waveguide_SquareBar3D.py  # run the examples in cli
+[complex]waveguicsxuser@hostname:~$ jupyter notebook  # to launch the jupyter notebook from inside the container
+[complex]waveguicsxuser@hostname:~$ exit  # to leave the container
 ```
 
 ## 3. Documentation

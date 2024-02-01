@@ -123,7 +123,7 @@ echo " \ \ /\ / / _\` \ \ / / _ \/ _\` | | | | |/ __/ __\ \/ /"
 echo "  \ V  V / (_| |\ V /  __/ (_| | |_| | | (__\__ \>  < "
 echo "   \_/\_/ \__,_| \_/ \___|\__, |\__,_|_|\___|___/_/\_\\"
 echo "                          |___/                        "
-echo " fenicsx0.6.0"
+echo " dolfinx/dolfinx:v0.6.0"
 # source the real environment
 #. /usr/local/bin/dolfinx-real-mode
 . /usr/local/bin/dolfinx-complex-mode

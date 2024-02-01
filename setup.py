@@ -57,7 +57,7 @@ setuptools.setup(
     # author_email="", TODO add mail adress if useful
     version=__version__,
     packages=setuptools.find_packages(),
-    url='https://github.com/treyssede/waveguicsx',
+    url='https://github.com/Universite-Gustave-Eiffel/waveguicsx',
     license='COPYING',
     description='waveguicsx, a python library for solving complex waveguide problems', 
     long_description=long_description, 

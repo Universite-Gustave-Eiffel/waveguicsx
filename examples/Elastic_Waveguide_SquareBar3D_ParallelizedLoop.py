@@ -32,11 +32,11 @@ import matplotlib.pyplot as plt
 
 from waveguicsx.waveguide import Waveguide
 #For proper use with a jupyter notebook, uncomment the following line:
-#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #try also: "static", "pythreejs", "ipyvtklink"...
+#pyvista.set_jupyter_backend("static"); pyvista.start_xvfb() #try: "none", "static", "pythreejs", "ipyvtklink"...
 
 ##################################
 # Input parameters
-a = 2.7e-3 #core half-length (m)
+a = 2.7e-3 #square half-length (m)
 N = 10 #number of finite elements along one half-side
 rho, cs, cl = 7932, 3260, 5960 #core density (kg/m3), shear and longitudinal wave celerities (m/s)
 kappas, kappal = 0.008, 0.003 #core shear and longitudinal bulk wave attenuations (Np/wavelength)

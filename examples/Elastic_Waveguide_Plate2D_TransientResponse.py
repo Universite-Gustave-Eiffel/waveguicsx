@@ -30,11 +30,11 @@ import pyvista
 
 from waveguicsx.waveguide import Waveguide, Signal
 #For proper use with a jupyter notebook, uncomment the following line:
-#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #try also: "static", "pythreejs", "ipyvtklink"...
+#pyvista.set_jupyter_backend("static"); pyvista.start_xvfb() #try: "none", "static", "pythreejs", "ipyvtklink"...
 
 ##################################
 # Input parameters
-h = 0.01 #core half-length (m)
+h = 0.01 #plate thickness (m)
 N = 10 #number of finite elements along one half-side
 rho, cs, cl = 7800, 3218, 6020 #core density (kg/m3), shear and longitudinal wave celerities (m/s)
 kappas, kappal = 0*0.008, 0*0.003 #core shear and longitudinal bulk wave attenuations (Np/wavelength)
@@ -183,5 +183,11 @@ u_plotter.view_zx()
 u_plotter.show_axes()
 u_plotter.show()
 
-""
-
+###############################################################################
+# Save matrices into file (for basic usage of waveguicsx, see README examples)
+viewer = PETSc.Viewer().createBinary('BasicExample_K0K1K2MF.dat', 'w')
+K0.view(viewer=viewer)
+K1.view(viewer=viewer)
+K2.view(viewer=viewer)
+M.view(viewer=viewer)
+F.view(viewer=viewer)

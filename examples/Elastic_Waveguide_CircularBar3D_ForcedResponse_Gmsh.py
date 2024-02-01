@@ -29,7 +29,7 @@ import pyvista
 
 from waveguicsx.waveguide import Waveguide
 #For proper use with a jupyter notebook, uncomment the following line:
-#pyvista.set_jupyter_backend("none"); pyvista.start_xvfb() #try also: "static", "pythreejs", "ipyvtklink"...
+#pyvista.set_jupyter_backend("static"); pyvista.start_xvfb() #try: "none", "static", "pythreejs", "ipyvtklink"...
 
 ##################################
 # Input parameters

@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>waveguicsx.waveguide &mdash; waveguicsx 1.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="prev" title="Modules" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html">
+            <img src="_static/logo_doc.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readme_link.html">waveguicsx</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#introduction">0. Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#prerequisites">1. Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#installation">2. Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#documentation">3. Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#tutorials">4. Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#authors-and-contributors">5. Authors and contributors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#how-to-cite">6. How to cite</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#license">7. License</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Modules</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">waveguicsx.waveguide</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#d-elastic-bar-of-square-cross-section">3D elastic bar of square cross-section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#d-elastic-bar-of-square-cross-section-with-parallelization">3D elastic bar of square cross-section with parallelization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#d-elastic-bar-of-square-cross-section-buried-into-a-pml-external-medium">3D elastic bar of square cross-section buried into a PML external medium</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#d-elastic-bar-of-square-cross-section-buried-into-a-pml-external-medium-using-gmsh">3D elastic bar of square cross-section buried into a PML external medium using gmsh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#excitation-of-a-3d-elastic-bar-of-circular-cross-section">Excitation of a 3D elastic bar of circular cross-section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#excitation-of-a-3d-elastic-bar-of-circular-cross-section-with-parallelization">Excitation of a 3D elastic bar of circular cross-section with parallelization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#time-response-of-a-plate-excited-near-its-first-zgv-resonance">Time response of a plate excited near its first ZGV resonance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#dispersion-curves-of-a-rail">Dispersion curves of a rail</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">waveguicsx</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">Modules</a></li>
+      <li class="breadcrumb-item active">waveguicsx.waveguide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/waveguicsx.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-waveguicsx">
+<span id="waveguicsx-waveguide"></span><h1>waveguicsx.waveguide<a class="headerlink" href="#module-waveguicsx" title="Permalink to this heading"></a></h1>
+<span class="target" id="module-waveguicsx.waveguide"></span><dl class="py class">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">waveguicsx.waveguide.</span></span><span class="sig-name descname"><span class="pre">Waveguide</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_MPI.Comm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for solving complex waveguide problems based on SLEPc eigensolver.</p>
+<p>The full documentation is entirely defined in the <a href="#id1"><span class="problematic" id="id2">`</span></a>waveguide.py’ module.</p>
+<p>The following matrix problem is considered: (K0-omega**2*M + 1j*k*(K1-K1^T) + k**2*K2)*U=F.
+This kind of problem typically stems from the so-called SAFE (Semi-Analytical Finite Element) method.</p>
+<p>The class enables to deal with complex waveguides, two-dimensional (e.g. plates) or three-dimensional (arbitrarily
+shaped cross-section), inhomogeneous in the transverse directions, anisotropic. Complex-valued problems can be handled
+including the effects of non-propagating modes (evanescent, inhomogeneous), viscoelastic loss (complex material
+properties) or perfectly matched layers (PML) to simulate buried waveguides.</p>
+<p>The free response (F=0) is an eigenvalue problem, solved iteratively by varying the parameter
+which can be the angular frequency omega or the wavenumber k. In the former case, the eigenvalue is k,
+while in the latter case, the eigenvalue is omega^2. The loops over the parameter (angular frequency or wavenumber)
+can be parallelized, as shown in some tutorials (using mpi4py).</p>
+<p>Various modal properties (energy velocity, group velocity, excitability…) can be post-processed as a function of the
+frequency and plotted as dispersion curves.</p>
+<p>The forced reponse (F is not 0) is solved in the frequency domain by expanding the solution as a sum of
+eigenmodes using biorthogonality relationship, leading to very fast computations of excited wavefields.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">waveguicsx.waveguide</span> <span class="kn">import</span> <span class="n">Waveguide</span>
+
+<span class="c1"># Definition of the excitation signal (here, a toneburst)</span>
+<span class="n">excitation</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">()</span>
+<span class="n">excitation</span><span class="o">.</span><span class="n">toneburst</span><span class="p">(</span><span class="n">fs</span><span class="o">=</span><span class="mi">8</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">),</span> <span class="n">T</span><span class="o">=</span><span class="mf">49.75</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">),</span> <span class="n">fc</span><span class="o">=</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> 
+<span class="n">excitation</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">excitation</span><span class="o">.</span><span class="n">plot_spectrum</span><span class="p">()</span>
+<span class="n">omega</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">excitation</span><span class="o">.</span><span class="n">frequency</span>  <span class="c1">#omega = np.linspace(0.02, 4, 200)</span>
+
+<span class="c1"># Initialization of waveguide</span>
+<span class="n">wg</span> <span class="o">=</span> <span class="n">Waveguide</span><span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">K0</span><span class="p">,</span> <span class="n">K1</span><span class="p">,</span> <span class="n">K2</span><span class="p">)</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">omega</span><span class="o">=</span><span class="n">omega</span><span class="p">)</span>
+
+<span class="c1"># Solution of eigenvalue problem (iteration over the parameter omega)</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">nev</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="c1">#access to components with: wg.eigenvalues[iomega][imode], wg.eigenvectors[iomega][idof,imode]</span>
+
+<span class="c1"># Plot dispersion curves</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">compute_energy_velocity</span><span class="p">()</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">plot_energy_velocity</span><span class="p">()</span>
+
+<span class="c1"># Computation of modal coefficients and excitabilities</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">compute_response_coefficient</span><span class="p">(</span><span class="n">F</span><span class="o">=</span><span class="n">F</span><span class="p">,</span> <span class="n">dof</span><span class="o">=</span><span class="n">dof</span><span class="p">)</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">plot_coefficient</span><span class="p">()</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">plot_excitability</span><span class="p">()</span>
+
+<span class="c1"># Forced response in the frequency domain, due to a toneburst excitation, at degree of freedom dof and axial coordinates z</span>
+<span class="n">frequency</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="n">wg</span><span class="o">.</span><span class="n">compute_response</span><span class="p">(</span><span class="n">dof</span><span class="o">=</span><span class="n">dof</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span> <span class="n">spectrum</span><span class="o">=</span><span class="n">excitation</span><span class="o">.</span><span class="n">spectrum</span><span class="p">)</span>
+
+<span class="c1"># Transient response</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="n">frequency</span><span class="o">=</span><span class="n">frequency</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="n">response</span><span class="p">)</span>
+<span class="n">response</span><span class="o">.</span><span class="n">plot_spectrum</span><span class="p">()</span>
+<span class="n">response</span><span class="o">.</span><span class="n">ifft</span><span class="p">()</span>
+<span class="n">response</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt>comm<span class="classifier">mpi4py.MPI.Intracomm</span></dt><dd><p>MPI communicator (parallel processing)</p>
+</dd>
+<dt>M, K0, K1, K2<span class="classifier">petsc4py.PETSc.Mat</span></dt><dd><p>SAFE matrices</p>
+</dd>
+<dt>F<span class="classifier">petsc4py.PETSc.Vec</span></dt><dd><p>SAFE excitation vector</p>
+</dd>
+<dt>problem_type<span class="classifier">str</span></dt><dd><p>problem_type is “omega” if the varying parameter is omega, “wavenumber” if this is k</p>
+</dd>
+<dt>two_sided<span class="classifier">bool</span></dt><dd><p>if True, left eigenvectors will be also computed (otherwise, only right eigenvectors are computed)</p>
+</dd>
+<dt>target: complex number or user-defined function of the parameter</dt><dd><p>target around which eigenpairs are looked for (see method solve)</p>
+</dd>
+<dt>omega or wavenumber<span class="classifier">numpy.ndarray</span></dt><dd><p>the parameter range specified by the user (see method set_parameters)</p>
+</dd>
+<dt>evp<span class="classifier">PEP or EPS instance (SLEPc object)</span></dt><dd><p>eigensolver parameters</p>
+</dd>
+<dt>eigenvalues<span class="classifier">list of numpy arrays</span></dt><dd><p>list of wavenumbers or angular frequencies,
+access to components with eigenvalues[ip][imode] (ip: parameter index, imode: mode index)</p>
+</dd>
+<dt>eigenvectors<span class="classifier">list of PETSc matrices</span></dt><dd><p>list of mode shapes,
+access to components with eigenvectors[ik][idof,imode] (ip: parameter index, imode: mode index, idof: dof index)
+or eigenvectors[ik].getColumnVector(imode)</p>
+</dd>
+<dt>eigenforces<span class="classifier">list of PETSc matrices</span></dt><dd><p>list of eigenforces (acces to components: see eigenvectors)</p>
+</dd>
+<dt>opposite_going<span class="classifier">list of numpy arrays</span></dt><dd><p>list of opposite-going mode (acces to components: see eigenvectors)</p>
+</dd>
+<dt>energy_velocity<span class="classifier">list of numpy arrays</span></dt><dd><p>list of energy velocity (access to component: see eigenvalues)</p>
+</dd>
+<dt>group_velocity<span class="classifier">list of numpy arrays</span></dt><dd><p>list of group velocity (access to component: see eigenvalues)</p>
+</dd>
+<dt>traveling_direction<span class="classifier">list of numpy arrays</span></dt><dd><p>list of traveling_direction (access to component: see eigenvalues)</p>
+</dd>
+<dt>pml_ratio<span class="classifier">list of numpy arrays</span></dt><dd><p>list of pml ratio, used for filtering out PML modes (access to component: see eigenvalues)</p>
+</dd>
+<dt>coefficient<span class="classifier">list of numpy arrays</span></dt><dd><p>list of response coefficient to excitation vector F (access to component: see eigenvalues)</p>
+</dd>
+<dt>excitability<span class="classifier">list of numpy arrays</span></dt><dd><p>list of excitability to excitation vector F (access to component: see eigenvalues)</p>
+</dd>
+<dt>plot_scaler<span class="classifier">dictionnary</span></dt><dd><p>dictionnary containing the scaling factors of various modal properties, useful to plot results in a dimensional form</p>
+</dd>
+</dl>
+</section>
+<section id="methods">
+<h2>Methods<a class="headerlink" href="#methods" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt>__init__(comm:’_MPI.Comm’, M:PETSc.Mat, K0:PETSc.Mat, K1:PETSc.Mat, K2:PETSc.Mat):</dt><dd><p>Constructor, initialization of waveguide</p>
+</dd>
+<dt>set_parameters(omega=None, wavenumber=None, two_sided=False):</dt><dd><p>Set problem type (problem_type), the parameter range (omega or wavenumber) as well as default parameters of SLEPc eigensolver (evp);
+set two_sided to True to compute left eigenvectors also (left eigenvectors are the opposite-going modes)</p>
+</dd>
+<dt>solve(nev=1, target=0):</dt><dd><p>Solve the eigenvalue problem repeatedly for the parameter range, solutions are stored as attributes (names: eigenvalues,
+eigenvectors)</p>
+</dd>
+<dt>compute_eigenforce():</dt><dd><p>Compute the eigenforces for the whole parameter range and store them as an attribute (name: eigenforces)</p>
+</dd>
+<dt>compute_poynting_normalization():</dt><dd><p>Normalization of eigenvectors and eigenforces, so that U’=U/sqrt(<a href="#id34"><span class="problematic" id="id35">|P|</span></a>), where P is the normal component of complex Poynting vector</p>
+</dd>
+<dt>compute_opposite_going(plot=False):</dt><dd><p>Compute opposite-going mode pairs based on on wavenumber and biorthogonality for the whole parameter range and store
+them as attributes (name: opposite_going), set plot to True to visualize the biorthogonality values of detected pairs</p>
+</dd>
+<dt>compute_energy_velocity():</dt><dd><p>Compute the energy velocities for the whole parameter range and store them as an attribute (name: energy_velocity)</p>
+</dd>
+<dt>compute_group_velocity():</dt><dd><p>Compute the group velocities for the whole parameter range and store them as an attribute (name: energy_velocity)</p>
+</dd>
+<dt>compute_traveling_direction():</dt><dd><p>Compute the traveling directions for the whole parameter range and store them as an attribute (name: traveling_direction)</p>
+</dd>
+<dt>compute_pml_ratio():</dt><dd><p>Compute the pml ratios for the whole parameter range and store them as an attribute (name: pml_ratio)</p>
+</dd>
+<dt>compute_response_coefficient(F, spectrum=None, wavenumber_function=None, dof=None):</dt><dd><p>Compute the response coefficients due to excitation vector F for the whole parameter range and store them as
+an attribute (name: coefficient)</p>
+</dd>
+<dt>compute_response(dof, z, spectrum=None, wavenumber_function=None, plot=False):</dt><dd><p>Compute the response at the degree of freedom dof and the axial coordinate z for the whole frequency range</p>
+</dd>
+<dt>plot(direction=None, pml_threshold=None, ax=None, color=”k”,  marker=”o”, markersize=2, linestyle=””, <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs):</dt><dd><p>Plot dispersion curves Re(omega) vs. Re(wavenumber) using matplotlib</p>
+</dd>
+<dt>plot_phase_velocity(direction=None, pml_threshold=None, ax=None, color=”k”, marker=”o”, markersize=2, linestyle=””, <a href="#id5"><span class="problematic" id="id6">**</span></a>kwargs):</dt><dd><p>Plot phase velocity dispersion curves, vp=Re(omega)/Re(wavenumber) vs. Re(omega)</p>
+</dd>
+<dt>plot_attenuation(direction=None, pml_threshold=None, ax=None, color=”k”, marker=”o”, markersize=2, linestyle=””, <a href="#id7"><span class="problematic" id="id8">**</span></a>kwargs):</dt><dd><p>Plot attenuation dispersion curves, Im(wavenumber) vs. Re(omega) if omega is the parameter,
+or Im(omega) vs. Re(omega) if wavenumber is the parameter</p>
+</dd>
+<dt>plot_energy_velocity(direction=None, pml_threshold=None, ax=None, color=”k”, marker=”o”, markersize=2, linestyle=””, <a href="#id9"><span class="problematic" id="id10">**</span></a>kwargs):</dt><dd><p>Plot energy velocity dispersion curves, ve vs. Re(omega)</p>
+</dd>
+<dt>plot_group_velocity(direction=None, pml_threshold=None, ax=None, color=”k”, marker=”o”, markersize=2, linestyle=””, <a href="#id11"><span class="problematic" id="id12">**</span></a>kwargs):</dt><dd><p>Plot group velocity dispersion curves, vg vs. Re(omega)</p>
+</dd>
+<dt>plot_coefficient(direction=None, pml_threshold=None, ax=None, color=”k”, marker=”o”, markersize=2, linestyle=””, <a href="#id13"><span class="problematic" id="id14">**</span></a>kwargs):</dt><dd><p>Plot response coefficients as a function of frequency, <a href="#id36"><span class="problematic" id="id37">|q|</span></a> vs. Re(omega)</p>
+</dd>
+<dt>plot_excitability(direction=None, pml_threshold=None, ax=None, color=”k”, marker=”o”, markersize=2, linestyle=””, <a href="#id15"><span class="problematic" id="id16">**</span></a>kwargs):</dt><dd><p>Plot excitability as a function of frequency, <a href="#id38"><span class="problematic" id="id39">|e|</span></a> vs. Re(omega)</p>
+</dd>
+<dt>plot_spectrum(index=0, ax=None, color=”k”, marker=”o”, markersize=2, linestyle=””, <a href="#id17"><span class="problematic" id="id18">**</span></a>kwargs):</dt><dd><p>Plot the spectrum, Im(eigenvalues) vs. Re(eigenvalues), for the parameter index specified by the user</p>
+</dd>
+<dt>set_plot_scaler(length=1, time=1, mass=1, dim=3):</dt><dd><p>Define the characteristic length, time, mass, as well as dim, and calculate the scaling factors of modal
+properties, which are stored in the attribute name plot_scaler (useful to visualize plots in a dimensional form)</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.set_parameters">
+<span class="sig-name descname"><span class="pre">set_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">omega</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavenumber</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">two_sided</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.set_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.set_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>Set the parameter range (omega or wavenumber) as well as default parameters of the SLEPc eigensolver (evp).
+The user must specify the parameter omega or wavenumber, but not both.
+This method generates the attributes omega (or wavenumber) and evp.
+After calling this method, various SLEPc parameters can be set by changing the attribute evp manually.
+Set two_sided=True for solving left eigenvectors also.</p>
+<section id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h3>
+<dl class="simple">
+<dt>omega or wavenumber<span class="classifier">numpy.ndarray</span></dt><dd><p>the parameter range specified by the user</p>
+</dd>
+<dt>two_sided<span class="classifier">bool</span></dt><dd><p>False if left eigenvectiors are not needed, True if they must be solved also</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.solve" title="Permalink to this definition"></a></dt>
+<dd><p>Solve the dispersion problem, i.e. the eigenvalue problem repeatedly for the parameter range (omega or wavenumber).
+The solutions are stored in the attributes eigenvalues and eigenvectors.
+If two_sided is True, left eigensolutions are also solved.</p>
+<p>Note: left eigensolutions correspond to opposite-going modes and are hence added to the right eigensolutions
+(i.e. in eigenvalues and eigenvectors) after removing any possible duplicates.</p>
+<section id="id19">
+<h3>Parameters<a class="headerlink" href="#id19" title="Permalink to this heading"></a></h3>
+<dl class="simple">
+<dt>nev<span class="classifier">int</span></dt><dd><p>number of eigenpairs requested</p>
+</dd>
+<dt>target<span class="classifier">complex number or user-defined function of the parameter, optional (default: 0)</span></dt><dd><p>target around which eigenpairs are looked for
+a small shift might sometimes prevent errors (e.g. zero pivot with dirichlet bc)</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.compute_eigenforces">
+<span class="sig-name descname"><span class="pre">compute_eigenforces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.compute_eigenforces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.compute_eigenforces" title="Permalink to this definition"></a></dt>
+<dd><p>Post-process the eigenforces F=(K1^T+1j*k*K2)*U for every mode in the whole parameter range</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.compute_poynting_normalization">
+<span class="sig-name descname"><span class="pre">compute_poynting_normalization</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.compute_poynting_normalization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.compute_poynting_normalization" title="Permalink to this definition"></a></dt>
+<dd><p>Post-process the normalization of eigenvectors and eigenforces, so that U’=U/sqrt(<a href="#id40"><span class="problematic" id="id41">|P|</span></a>),
+where P is the normal component of complex Poynting vector (P=-1j*omega/2*U^H*F).
+After normalization, every mode is such that <a href="#id20"><span class="problematic" id="id21">|</span></a>P|=1 and the attribute _poynting_normalization is set to True.
+Normalization is not mandatory but, when applied, has to be done before any response coefficient computation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.compute_energy_velocity">
+<span class="sig-name descname"><span class="pre">compute_energy_velocity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.compute_energy_velocity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.compute_energy_velocity" title="Permalink to this definition"></a></dt>
+<dd><p>Post-process the energy velocity ve=Re(P)/Re(E) for every mode in the whole parameter range, where P is the
+normal component of complex Poynting vector and E is the total energy (cross-section time-averaged)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.compute_opposite_going">
+<span class="sig-name descname"><span class="pre">compute_opposite_going</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.compute_opposite_going"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.compute_opposite_going" title="Permalink to this definition"></a></dt>
+<dd><p>Post-process the pairing of opposite-going modes, based on wavenumber and biorthogonality criteria, and store them
+as a an attribute (name: opposite_going, -1 value for unpaired modes).
+Compute their biorthogonality normalization factors, Um^T*F-m - U-m^T*Fm, where m and -m denote opposite-going
+modes, for the whole parameter range and store them as an attribute (name: _biorthogonality_factor).
+If plot is set to True, the biorthogonality factors found by the algorithm are plotted in magnitude as a function
+of frequency, allowing visual check that there is no values close to zero (a factor close to zero probably means
+a lack of biorthogonality).</p>
+<p>Notes:</p>
+<ul class="simple">
+<li><p>when an unpaired mode is found, the value -1 is stored in opposite_going (and NaN value in _biorthogonality_factor),
+meaning that this mode will be discarded in the computation of group velocity, traveling direction, coefficient and
+excitability (NaN values stored)</p></li>
+<li><p>if modes with lack of biorthogonality or two many unpaired modes occur, try to recompute the eigenproblem by
+increasing the accuracy (e.g. reducing the tolerance)</p></li>
+<li><p>lack of biorthogonality may be also due to multiple modes (*); in this case, try to use an unstructured mesh instead</p></li>
+<li><p>if two_sided is True, lack of biorthogonolity may occur for specific target: try another target (e.g. add a small
+imaginary part)</p></li>
+</ul>
+<p>(*) e.g. flexural modes in a cylinder with structured mesh</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.compute_group_velocity">
+<span class="sig-name descname"><span class="pre">compute_group_velocity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.compute_group_velocity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.compute_group_velocity" title="Permalink to this definition"></a></dt>
+<dd><p>Post-process the group velocity, vg=1/Re(dk/domega) for every mode in the whole parameter range (opposite-going modes
+required). For unpaired modes, NaN values are set.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.compute_traveling_direction">
+<span class="sig-name descname"><span class="pre">compute_traveling_direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.compute_traveling_direction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.compute_traveling_direction" title="Permalink to this definition"></a></dt>
+<dd><p>Post-process the traveling direction, +1 or -1, for every mode in the whole parameter range,
+using the sign of Im(k + 1j*delta/v) where delta is the imaginary shift used for analytical
+continuation of k, and v is the group velocity (or, if not available, the energy velocity).
+This criterion is based on the limiting absorption principle (theoretically, vg should be used
+instead of ve). For unpaired modes, NaN values are set.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.compute_pml_ratio">
+<span class="sig-name descname"><span class="pre">compute_pml_ratio</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.compute_pml_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.compute_pml_ratio" title="Permalink to this definition"></a></dt>
+<dd><p>Post-process the pml ratio (useful to filter out PML mode), given by 1-Im(Ek)/<a href="#id42"><span class="problematic" id="id43">|Ek|</span></a> where Ek denotes
+the “complex” kinetic energy, for every mode in the whole parameter range.      
+Reminder: the pml ratio tends to 1 for mode shapes vanishing inside the PML.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.compute_response_coefficient">
+<span class="sig-name descname"><span class="pre">compute_response_coefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">F</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavenumber_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dof</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.compute_response_coefficient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.compute_response_coefficient" title="Permalink to this definition"></a></dt>
+<dd><p>Computation of modal coefficients due to the excitation vector F for every mode in the whole omega range (opposite-going
+eigenvectors are required).
+Modal coefficients qm are defined from: U(z,omega) = sum qm(omega)*Um(omega)*exp(i*km*z), m=1…M, omega denotes the
+angular frequency.
+For unpaired modes, NaN values are set.
+Assumption: the source is centred at z=0.</p>
+<p>Note: spectrum and wavenumber_function can be specified in compute_response(…) instead of     
+compute_response_coefficient(…), but not in both functions in the same time (otherwise the excitation will be
+modulated twice)</p>
+<section id="id22">
+<h3>Parameters<a class="headerlink" href="#id22" title="Permalink to this heading"></a></h3>
+<dl class="simple">
+<dt>F<span class="classifier">PETSc vector</span></dt><dd><p>SAFE excitation vector</p>
+</dd>
+<dt>spectrum<span class="classifier">numpy.ndarray</span></dt><dd><p>when specified, spectrum is a vector of length omega  used to modulate F in terms of frequency (default: 1 for
+all frequencies)</p>
+</dd>
+<dt>wavenumber_function: python function</dt><dd><p>when specified, wavenumber_function is a python function used to modulate F in terms of wavenumber (example:
+wavenumber_function = lambda x: np.sin(x), default: 1 for all wavenumbers, i.e. source localized at z=0)</p>
+</dd>
+<dt>dof<span class="classifier">int</span></dt><dd><p>when specified, it calculates the modal excitability (stored in the attribute excitability), i.e. qm*Um at
+the degree of freedom dof and for a unit excitation vector (i.e. such that the sum of the elements of F is
+equal to 1)</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.compute_response">
+<span class="sig-name descname"><span class="pre">compute_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">omega_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavenumber_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.compute_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.compute_response" title="Permalink to this definition"></a></dt>
+<dd><p>Post-process the response (modal expansion) at the degree of freedom dof and the axial coordinate z, for the whole
+frequency range.
+The outputs are frequency, a numpy 1d array of size len(omega), and response, a numpy 2d array of size len(dof or
+z)*len(omega).
+dof and z cannot be both vectors, except if omega_index is specified or omega is scalar (single frequency computation):
+in that case, the array response is of size len(z)*len(dof), which can be useful to plot the whole field at a single
+frequency.</p>
+<p>The response at each frequency omega is calculated from:
+U(z,omega) = sum qm(omega)*Um(omega)*exp(i*km*z), m=1…M,
+where z is the receiver position along the waveguide axis.
+M is the number of modes traveling in the proper direction, positive if z is positive, negative if z is negative.
+The pairing of opposite-going eigenvectors is required, unpaired modes are discarded from the expansion.</p>
+<p>The outputs frequency and response are made dimensional when values in plot_scaler are not set to 1.</p>
+<p>Assumption: the source is assumed to be centred at z=0.</p>
+<p>Warning: the response calculation is only valid if z lies oustide the source region.</p>
+<p>Note: spectrum and wavenumber_function can be specified in compute_response_coefficient(…) instead
+of compute_response(…), but not in both functions in the same time (otherwise the excitation will be modulated twice).</p>
+<section id="id23">
+<h3>Parameters<a class="headerlink" href="#id23" title="Permalink to this heading"></a></h3>
+<dl class="simple">
+<dt>dof<span class="classifier">numpy array of integer</span></dt><dd><p>dof where the response is computed</p>
+</dd>
+<dt>z<span class="classifier">numpy array</span></dt><dd><p>axial coordinate where the response is computed</p>
+</dd>
+<dt>omega_index<span class="classifier">int</span></dt><dd><p>omega index to compute the response at a single frequency, allowing the consideration of multiple dof and z</p>
+</dd>
+<dt>spectrum<span class="classifier">numpy.ndarray</span></dt><dd><p>when specified, spectrum is a vector of length omega  used to modulate F in terms of frequency (default: 1 for
+all frequencies)</p>
+</dd>
+<dt>wavenumber_function: python function</dt><dd><p>when specified, wavenumber_function is a python function used to modulate F in terms of wavenumber (example:
+wavenumber_function = lambda x: np.sin(x), default: 1 for all wavenumbers, i.e. source localized at z=0)</p>
+</dd>
+<dt>plot<span class="classifier">bool</span></dt><dd><p>if set to True, the magnitude and phase of response are plotted as a function of frequency</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h3>Returns<a class="headerlink" href="#returns" title="Permalink to this heading"></a></h3>
+<dl class="simple">
+<dt>frequency: numpy 1d array</dt><dd><p>the frequency vector, i.e. omega/(2*pi)</p>
+</dd>
+<dt>response<span class="classifier">numpy array (1d or 2d)</span></dt><dd><p>the matrix response</p>
+</dd>
+<dt>ax<span class="classifier">matplotlib axes when plot is set to True</span></dt><dd><p>ax[0] is the matplotlib axes used for magnitude, ax[1] is the matplotlib axes used for phase</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.plot_phase_velocity">
+<span class="sig-name descname"><span class="pre">plot_phase_velocity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.plot_phase_velocity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.plot_phase_velocity" title="Permalink to this definition"></a></dt>
+<dd><p>Plot phase velocity dispersion curves, vp vs. Re(omega), where omega is replaced with frequency
+for dimensional results. Parameters and Returns: see plot(…).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.plot_attenuation">
+<span class="sig-name descname"><span class="pre">plot_attenuation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.plot_attenuation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.plot_attenuation" title="Permalink to this definition"></a></dt>
+<dd><p>Plot attenuation dispersion curves, Im(wavenumber) vs. Re(omega) if omega is the parameter,
+or Im(omega) vs. Re(wavenumber) if wavenumber is the parameter, where omega is replaced with frequency
+for dimensional results. Parameters and Returns: see plot(…).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.plot_energy_velocity">
+<span class="sig-name descname"><span class="pre">plot_energy_velocity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.plot_energy_velocity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.plot_energy_velocity" title="Permalink to this definition"></a></dt>
+<dd><p>Plot energy velocity dispersion curves, ve vs. Re(omega), where omega is replaced with frequency
+for dimensional results. Parameters and Returns: see plot(…).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.plot_group_velocity">
+<span class="sig-name descname"><span class="pre">plot_group_velocity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.plot_group_velocity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.plot_group_velocity" title="Permalink to this definition"></a></dt>
+<dd><p>Plot group velocity dispersion curves, vg vs. Re(omega), where omega is replaced with frequency
+for dimensional results. Parameters and Returns: see plot(…).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.plot_coefficient">
+<span class="sig-name descname"><span class="pre">plot_coefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.plot_coefficient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.plot_coefficient" title="Permalink to this definition"></a></dt>
+<dd><p>Plot response coefficients as a function of frequency, <a href="#id44"><span class="problematic" id="id45">|q|</span></a> vs. Re(omega), where omega is replaced with frequency
+for dimensional results. Parameters and Returns: see plot(…).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.plot_excitability">
+<span class="sig-name descname"><span class="pre">plot_excitability</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.plot_excitability"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.plot_excitability" title="Permalink to this definition"></a></dt>
+<dd><p>Plot excitability as a function of frequency, <a href="#id46"><span class="problematic" id="id47">|e|</span></a> vs. Re(omega), where omega is replaced with frequency
+for dimensional results. Parameters and Returns: see plot(…).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pml_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'o'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">markersize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.plot" title="Permalink to this definition"></a></dt>
+<dd><p>Plot dispersion curves y[1](y[0]) vs. x[1](x[0])</p>
+<section id="id24">
+<h3>Parameters<a class="headerlink" href="#id24" title="Permalink to this heading"></a></h3>
+<dl class="simple">
+<dt>x, y, c: list</dt><dd><p>x[0], y[0], c[0] are strings corresponding to modal properties for the x-axis, y-axis and marker colors respectively
+(these strings can be: ‘omega’, ‘wavenumber’, ‘energy_velocity’, ‘group_velocity’, ‘pml_ratio’, ‘eigenvalues’,
+‘excitability’, ‘eigenvectors’, ‘eigenforces’, ‘coefficient’, ‘frequency’, ‘attenuation’, ‘phase_velocity’),
+x[1], y[1], c[1] are the functions applied to x[0], y[0] and c[0] respectively (e.g. np.abs, np.angle, np.real, np.imag, etc.).
+If x is None but not y, x is set to [‘omega’, np.real] if results are normalized, or set to [‘frequency’, np.real] if they are
+dimensional. If both x and are None, plot dispersion curves Re(omega) or Re(frequency) vs. Re(wavenumber).
+If c is None, a single color is used for coloring markers (given by the input variable color).</p>
+</dd>
+<dt>direction: int</dt><dd><p>+1 for positive-going modes, -1 for negative-going modes, None for plotting all modes</p>
+</dd>
+<dt>pml_threshold: float</dt><dd><p>threshold to filter out PML modes (modes such that pml_ratio&lt;pml_threshold)</p>
+</dd>
+<dt>ax: matplotlib axis</dt><dd><p>the matplotlib axis on which to plot data (created if None)</p>
+</dd>
+</dl>
+<p>color: str, marker: str, markersize: int, linestyle: str, <a href="#id25"><span class="problematic" id="id26">**</span></a>kwargs are passed to ax.plot</p>
+</section>
+<section id="id27">
+<h3>Returns<a class="headerlink" href="#id27" title="Permalink to this heading"></a></h3>
+<p>sc: the matplotlib collection</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.set_plot_scaler">
+<span class="sig-name descname"><span class="pre">set_plot_scaler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.set_plot_scaler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.set_plot_scaler" title="Permalink to this definition"></a></dt>
+<dd><p>Define the characteristic length, time and mass in order to visualize plots in a dimensional form (by default, they are equal to 1).
+Set dim=3 for three-dimensional waveguides, dim=2 for two-dimensional waveguides (e.g. plates).
+Scaling factors for ‘omega’, ‘wavenumber’, ‘energy_velocity’, ‘group_velocity’, ‘pml_ratio’, ‘eigenvalues’, ‘excitability’,
+‘eigenvectors’, ‘eigenforces’, ‘coefficient’, ‘frequency’, ‘attenuation’, ‘phase_velocity’ are stored in the attribute name plot_scaler.
+If poynting normalization has already been applied, then the scalers for ‘eigenvectors’, ‘eigenforces’ and ‘coefficient’ are such that
+the dimensional cross-section power flow of eigenmodes is equal to 1 Watt (if no poynting normalization applied, these scalers are left to 1).
+Reminder: while the dimension of U (displacement) is in meter, the dimension of F (force) is in Newton for 3D waveguides
+and in Newton/meter for 2D waveguides (F is in mass*length**(dim-2)/time**2).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.plot_spectrum">
+<span class="sig-name descname"><span class="pre">plot_spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'o'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">markersize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.plot_spectrum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.plot_spectrum" title="Permalink to this definition"></a></dt>
+<dd><p>Plot the spectrum, Im(k) vs. Re(k) computed for omega[index] (if the parameter is the frequency),
+or Im(omega) vs. Re(omega) for wavenumber[index] (if the parameter is the wavenumber).</p>
+<section id="id28">
+<h3>Parameters<a class="headerlink" href="#id28" title="Permalink to this heading"></a></h3>
+<dl class="simple">
+<dt>index: int</dt><dd><p>parameter index</p>
+</dd>
+<dt>c: list</dt><dd><p>c[0] is a string (must be an attribute of self) and c[1] is a function used for coloring markers,
+a single color (given by the input variable color) is used if c is None</p>
+</dd>
+<dt>ax: matplotlib axis</dt><dd><p>the matplotlib axis on which to plot data (created if None)</p>
+</dd>
+</dl>
+<p>color: str, marker: str, markersize: int, linestyle: str, <a href="#id29"><span class="problematic" id="id30">**</span></a>kwargs are passed to ax.plot</p>
+</section>
+<section id="id31">
+<h3>Returns<a class="headerlink" href="#id31" title="Permalink to this heading"></a></h3>
+<p>ax: the plot axe used for display</p>
+</section>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Signal">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">waveguicsx.waveguide.</span></span><span class="sig-name descname"><span class="pre">Signal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">waveform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Signal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Signal" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for handling signals in the time domain and in the frequency domain</p>
+<p>Reminder:</p>
+<ul class="simple">
+<li><p>the sampling frequency fs must be at least twice the highest excited frequency (fs&gt;=2fmax)</p></li>
+<li><p>the time duration T must be large enough to capture the slowest wave at z, the source-receiver distance</p></li>
+</ul>
+<p>Fourier transform definition used: X(f) = 2/T * integral of x(t)*exp(+i*omega*t)*dt</p>
+<p>Two remarks:</p>
+<ol class="arabic simple">
+<li><p>this is not the numpy fft function convention, which is in exp(-i*omega*t)</p></li>
+<li><p>the true amplitude of the Fourier transform, when needed, has to be obtained by
+multiplying the output (spectrum) by the scalar T/2, where T is the duration of the time signal
+(with the above definition: the division by T simplifies dimensionless analyses,
+and the factor 2 is used because only the positive part of the spectrum is considered)</p></li>
+</ol>
+<p>Complex Fourier transform:</p>
+<p>A complex Fourier transform is applied if alpha is set to a nonzero value.
+The frequency vector has then an imaginary part, constant and equal to alpha/(2*pi).
+Complex frequency computations can be useful for the analysis of long time duration signals (avoids aliasing).
+A good choice is alpha = log(50)/T.
+Note that the first frequency component is kept in that case (the frequency has a zero real part
+but non-zero imaginary part).</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mysignal</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mi">0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span><span class="o">/</span><span class="mf">5e-4</span><span class="p">)</span>
+<span class="n">mysignal</span><span class="o">.</span><span class="n">toneburst</span><span class="p">(</span><span class="n">fs</span><span class="o">=</span><span class="mf">5000e3</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mf">5e-4</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="mf">100e3</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">mysignal</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">mysignal</span><span class="o">.</span><span class="n">fft</span><span class="p">()</span>
+<span class="n">mysignal</span><span class="o">.</span><span class="n">plot_spectrum</span><span class="p">()</span>
+<span class="n">mysignal</span><span class="o">.</span><span class="n">ifft</span><span class="p">(</span><span class="n">coeff</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">mysignal</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<section id="id32">
+<h2>Attributes<a class="headerlink" href="#id32" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt>time<span class="classifier">numpy 1d array</span></dt><dd><p>time vector</p>
+</dd>
+<dt>waveform<span class="classifier">numpy nd array</span></dt><dd><p>waveform vectors stacked as rows (waveform is an array of size number_of_signals*len(time))</p>
+</dd>
+<dt>frequency<span class="classifier">numpy 1d array</span></dt><dd><p>frequency vector</p>
+</dd>
+<dt>spectrum<span class="classifier">numpy nd array</span></dt><dd><p>spectrum vectors stacked as rows (spectrum is an array of size number_of_signals*len(frequency))</p>
+</dd>
+<dt>alpha<span class="classifier">float</span></dt><dd><p>decaying parameter to apply complex Fourier transform (useful for long time duration signal)</p>
+</dd>
+</dl>
+</section>
+<section id="id33">
+<h2>Methods<a class="headerlink" href="#id33" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt>__init__(time=None, waveform=None, frequency=None, spectrum=None, alpha=0):</dt><dd><p>Constructor, initialization of signal (specify either waveform vs. time or spectrum vs. frequency)</p>
+</dd>
+<dt>fft():</dt><dd><p>Compute Fourier transform, results are stored as attributes (names: frequency, spectrum)</p>
+</dd>
+<dt>ifft(coeff=1):</dt><dd><p>Compute inverse Fourier transform, results are stored as attributes (names: time, waveform)</p>
+</dd>
+<dt>ricker(fs, T, fc):</dt><dd><p>Generate a Ricker signal</p>
+</dd>
+<dt>toneburst(fs, T, fc, n):</dt><dd><p>Generate a toneburst signal</p>
+</dd>
+<dt>chirp(fs, T, f0, f1, chirp_duration):</dt><dd><p>Generate a chirp signal</p>
+</dd>
+<dt>plot():</dt><dd><p>Plot time waveform (waveform vs. time)</p>
+</dd>
+<dt>plot_spectrum():</dt><dd><p>Plot the spectrum (spectrum vs. frequency), in magnitude and phase</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Signal.fft">
+<span class="sig-name descname"><span class="pre">fft</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Signal.fft"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Signal.fft" title="Permalink to this definition"></a></dt>
+<dd><p>Compute Fourier transform (positive frequency part only, time waveform are assumed to be real).
+If the number of time steps is odd, one point is added.
+The zero frequency, if any, is suppressed.
+Results are stored as attributes (names: frequency, spectrum).
+spectrum is an array of size number_of_signals*len(frequency)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Signal.ifft">
+<span class="sig-name descname"><span class="pre">ifft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coeff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Signal.ifft"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Signal.ifft" title="Permalink to this definition"></a></dt>
+<dd><p>Compute inverse Fourier transform (only the positive frequency part is needed, time waveform are assumed to be real).
+Zero padding is applied in the low-frequency range (if missing) and in the high-frequency range (if coeff is greater than 1).
+Zero padding in the high frequency range is applied up to the frequency coeff*max(frequency).
+Results are stored as attributes (names: time, waveform).
+waveform is an array of size number_of_signals*len(time).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Signal.ricker">
+<span class="sig-name descname"><span class="pre">ricker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Signal.ricker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Signal.ricker" title="Permalink to this definition"></a></dt>
+<dd><p>Generate a Ricker wavelet signal of unit amplitude (fs: sampling frequency, T: time duration, fc: Ricker central frequency)</p>
+<p>Note that for better accuracy:</p>
+<ul class="simple">
+<li><p>fs is rounded so that fs/fc is an integer</p></li>
+<li><p>T is adjusted so that the number of points is even</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Signal.toneburst">
+<span class="sig-name descname"><span class="pre">toneburst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Signal.toneburst"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Signal.toneburst" title="Permalink to this definition"></a></dt>
+<dd><p>Generate a toneburst signal (fs: sampling frequency, T: time duration, fc: central frequency, n: number of cycles).
+This signal is a Hanning-modulated n cycles sinusoidal toneburst centred at fc Hz (with unit amplitude).
+For this kind of excitation, fmax can be considered as 2*fc roughly, hence one should choose fs&gt;=4fc.</p>
+<p>Note that for better accuracy:</p>
+<ul class="simple">
+<li><p>fs is rounded so that fs/fc is an integer</p></li>
+<li><p>T is adjusted so that the number of points is even</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Signal.chirp">
+<span class="sig-name descname"><span class="pre">chirp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chirp_duration</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Signal.chirp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Signal.chirp" title="Permalink to this definition"></a></dt>
+<dd><p>Generate a chirp of unit amplitude (fs: sampling frequency, T: time duration, f0: first frequency, f1: last frequency, chirp_duration: time to sweep from f0 to f1).
+Note that for better accuracy, T is adjusted so that the number of points is even.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Signal.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linestyle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'-'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Signal.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Signal.plot" title="Permalink to this definition"></a></dt>
+<dd><p>Plot time waveform (waveform vs. time)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.waveguide.Signal.plot_spectrum">
+<span class="sig-name descname"><span class="pre">plot_spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linestyle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'-'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Signal.plot_spectrum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Signal.plot_spectrum" title="Permalink to this definition"></a></dt>
+<dd><p>Plot the spectrum (spectrum vs. frequency), in magnitude and phase</p>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="Modules" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Fabien Treyssede.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

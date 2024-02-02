@@ -204,43 +204,30 @@ In the tutorials (see subfolder 'examples'), these matrices are built from the o
 
 ```bash
 git clone https://github.com/Universite-Gustave-Eiffel/waveguicsx.git
+cd ./waveguicsx
 ```
 
-### 2.2 Install Waveguicsx alone ...
-```bash 
-# recommended
-conda create -n py310 python=3.10 --yes && conda activate py310
-
-# petsc slepc might fail to install with pip, try with conda first :  
-conda install -c conda-forge mpi4py mpich petsc4py slepc4py --yes
-
-# install waveguicsx in the current environment (add -e to install in editable mode)
-cd waveguicsx
-python3 -m pip install .
-```
-
-### 2.3 ... or install Waveguicsx inside Fenicsx Environment (Docker)
+### 2.2 Generate the docker image and run the container using :
 
 FEniCSX is not a dependency of Waveguicsx. Nevertheless, it is required to run the tutorials.
-We recommend using the docker image of DOLFINX/v0.6.0 sourced in complex mode before running scripts:
+We recommend using the docker image of DOLFINX/v0.6.0 sourced in complex mode before running the tutorials :
 
-* Install [Docker](https://docs.docker.com/engine/install) and authorize [non-root users](https://docs.docker.com/engine/install/linux-postinstall/)
-* Generate the docker image and run the container using :
+Install [Docker](https://docs.docker.com/engine/install) and authorize [non-root users](https://docs.docker.com/engine/install/linux-postinstall/)
+
 ```bash
 ./launch_fenicsx.sh
 ```
-* The first call will take longer to build the image.
 
-* Once the container is launched, install the package using (only the first time)   
+Once the container is launched, install the package using (only the first time)   
 ```bash
 [complex]waveguicsxuser@hostname:~$ python3 -m pip install -e .
 ```
-**WARNING** : the waveguicsx folder (i.e. `.`) is mounted inside the container in `/home/waveguicsxuser` :
+*WARNING* : the waveguicsx folder (i.e. `.`) is mounted inside the container in `/home/waveguicsxuser` :
 so that all changes are persistent and modify the repository of the host system as well.  
 The python package files will be installed in the `.local` folder (ignored by `git`), 
 so that it is not necessary to reinstall the package with pip each time the container is launched.
 
-* Usage inside the container :  
+Usage inside the container :  
 ```bash
 [complex]waveguicsxuser@hostname:~$ real  # => use the real libraries of dolfinx
 [real]waveguicsxuser@hostname:~$ complex  # back to complexe mode

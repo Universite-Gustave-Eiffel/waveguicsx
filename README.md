@@ -200,53 +200,41 @@ In the tutorials (see subfolder 'examples'), these matrices are built from the o
 
 ## 2. Installation
 
-### 2.1 Waveguicsx package without FEniCSX
-
-Clone the waveguicsx public repository
+### 2.1 Clone the Waveguicsx public repository
 
 ```bash
-# move to installation location with cd
-
-# get the repo from github
-git clone https://github.com/treyssede/waveguicsx.git
-
-# move into repository
+git clone https://github.com/Universite-Gustave-Eiffel/waveguicsx.git
 cd ./waveguicsx
-
-# [recommended] create a conda environment dedicated to waveguicsx
-conda create -n wgx-env python=3.10 --yes
-conda activate wgx-env
-
-# petsc slepc might fail to install with pip, try with conda first :  
-conda install -c conda-forge mpi4py mpich petsc4py slepc4py --yes
-
-# install waveguicsx in the current environment (add -e to install in editable mode)
-python3 -m pip install .
 ```
 
-### 2.2 Waveguicsx inside FEniCSX Environment
+### 2.2 Generate the docker image and run the container using :
 
-FEniCSX is not a dependency of waveguicsx. Nevertheless it is required to run the tutorials.
-We recommend using a docker image of DOLFINx sourced in complex mode before running scripts:
+FEniCSX is not a dependency of Waveguicsx. Nevertheless, it is required to run the tutorials.
+We recommend using the docker image of DOLFINX/v0.6.0 sourced in complex mode before running the tutorials :
+
+Install [Docker](https://docs.docker.com/engine/install) and authorize [non-root users](https://docs.docker.com/engine/install/linux-postinstall/)
 
 ```bash
-docker run -ti dolfinx/dolfinx:v0.6.0
-source /usr/local/bin/dolfinx-complex-mode
-## NOTE you need to install waveguicsx inside the container now
+./launch_fenicsx.sh
 ```
-or , instead, a Jupyter Lab environment with the latest stable release of DOLFINx:
+
+Once the container is launched, install the package using (only the first time)   
 ```bash
-docker run --init -ti -p 8888:8888 dolfinx/lab:v0.6.0
-## NOTE you need to install waveguicsx inside the container now
+[complex]waveguicsxuser@hostname:~$ python3 -m pip install -e .
 ```
-See https://fenicsproject.org/ for details.
+*WARNING* : the waveguicsx folder (i.e. `.`) is mounted inside the container in `/home/waveguicsxuser` :
+so that all changes are persistent and modify the repository of the host system as well.  
+The python package files will be installed in the `.local` folder (ignored by `git`), 
+so that it is not necessary to reinstall the package with pip each time the container is launched.
 
-### 2.3 FEniCSX environment, using Penguinx
-
-Penguinx is a github project that let you create a persistent 
-and shared docker-container to run the waveguicsx tutorials with the right version FEniCSX installed.  
-See : https://github.com/mlehujeur/penguinx.git
-
+Usage inside the container :  
+```bash
+[complex]waveguicsxuser@hostname:~$ real  # => use the real libraries of dolfinx
+[real]waveguicsxuser@hostname:~$ complex  # back to complexe mode
+[complex]waveguicsxuser@hostname:~$ python3 ./examples/Elastic_Waveguide_SquareBar3D.py  # run the examples in cli
+[complex]waveguicsxuser@hostname:~$ jupyter notebook  # to launch the jupyter notebook from inside the container
+[complex]waveguicsxuser@hostname:~$ exit  # to leave the container
+```
 
 ## 3. Documentation
 

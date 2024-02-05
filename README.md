@@ -1,3 +1,5 @@
+[![Generic badge](https://github.com/Universite-Gustave-Eiffel/waveguicsx/actions/workflows/pages/pages-build-deployment/badge.svg)](https://universite-gustave-eiffel.github.io/waveguicsx/)	
+
 # waveguicsx
 
 waveguicsx, a python library for solving complex waveguide problems  

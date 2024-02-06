@@ -1,7 +1,7 @@
 #####################################################################
 # waveguicsx, a python library for solving complex waveguide problems
 # 
-# Copyright (C) 2023  Fabien Treyssede
+# Copyright (C) 2023-2024  Fabien Treyssede
 # 
 # This file is part of waveguicsx.
 # 

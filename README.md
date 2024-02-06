@@ -1,7 +1,9 @@
+[![Generic badge](https://github.com/Universite-Gustave-Eiffel/waveguicsx/actions/workflows/pages/pages-build-deployment/badge.svg)](https://universite-gustave-eiffel.github.io/waveguicsx/)	
+
 # waveguicsx
 
 waveguicsx, a python library for solving complex waveguide problems  
-Copyright (C) 2023  Fabien Treyssede
+Copyright (C) 2023-2024  Fabien Treyssede
 
 This file is part of waveguicsx.
 
@@ -33,6 +35,8 @@ The forced reponse ($\textbf{F}\neq\textbf{0}$) is solved in the frequency domai
 
 The library contains two classes. The main class, the class Waveguide, enables to solve the waveguide problem defined by the following inputs: $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ and $\textbf{F}$. The other class, the class Signal, is provided to easily handle the transforms of signals from frequency to time and inversely, as well as the generation of excitation pulses.
 
+
+## 1. Basic examples
 
 **Basic example 1: dispersion curves of a homogeneous plate**
 
@@ -185,9 +189,9 @@ plt.show()
 ```
 
 
-## 1. Prerequisites
+## 2. Prerequisites
 
-Waveguicsx requires SLEPc and PETSc (slepc4py, petsc4py).
+Waveguicsx requires the complex version of SLEPc and PETSc (slepc4py, petsc4py).
 
 The necessary inputs to waveguicsx are the matrices $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ (PETSc matrix format) to compute the free response of waveguide (dispersion curves), as well as the vector $\textbf{F}$ to compute the forced response. These matrices can be built from any code, then imported to Python and converted to PETSc format.
 
@@ -198,27 +202,27 @@ In the tutorials (see subfolder 'examples'), these matrices are built from the o
 *Tutorial files are currently written for FEniCSX v0.6.0, minor modifications may be required for use with latest versions (work under progress).*
 
 
-## 2. Installation
+## 3. Installation
 
-### 2.1 Clone the Waveguicsx public repository
+### 3.1 Clone the Waveguicsx public repository
 
 ```bash
 git clone https://github.com/Universite-Gustave-Eiffel/waveguicsx.git
 cd ./waveguicsx
 ```
 
-### 2.2 Generate the docker image and run the container using :
+### 3.2 Generate the docker image and run the container using :
 
 FEniCSX is not a dependency of Waveguicsx. Nevertheless, it is required to run the tutorials.
 We recommend using the docker image of DOLFINX/v0.6.0 sourced in complex mode before running the tutorials :
 
-Install [Docker](https://docs.docker.com/engine/install) and authorize [non-root users](https://docs.docker.com/engine/install/linux-postinstall/)
-
+Install [Docker](https://docs.docker.com/engine/install) and authorize [non-root users](https://docs.docker.com/engine/install/linux-postinstall/). Then run the following shell script file of waveguicsx repository:
 ```bash
 ./launch_fenicsx.sh
 ```
+(the first run will install FEniCSX inside the container, which may take time).
 
-Once the container is launched, install the package using (only the first time)   
+Once the container is launched, install the waveguicsx package using (only the first time): 
 ```bash
 [complex]waveguicsxuser@hostname:~$ python3 -m pip install -e .
 ```
@@ -236,21 +240,24 @@ Usage inside the container :
 [complex]waveguicsxuser@hostname:~$ exit  # to leave the container
 ```
 
-## 3. Documentation
 
-The full documentation is entirely defined in the `waveguide.py' module.
+## 4. Documentation
+
+The documentation is entirely defined in the `waveguide.py' module.
+
+You can also see the full documentation at: https://universite-gustave-eiffel.github.io/waveguicsx.
 
 You can also build the documentation, using `python setup.py doc` and opening the front page in `./doc/Waveguicsx_documentation.html`.
 
 
-## 4. Tutorials
+## 5. Tutorials
 
 Various tutorials are provided in the subfolder 'examples'. These tutorials fully depict simple as well as more complex problems, two-dimensional (plates) or three-dimensional (bars, rail...), including viscoelastic loss or perfectly matched layers (used for buried waveguides). In particular, these tutorials show how to build the finite element matrices $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ with FEniCSX. Installing FEniCSX is therefore required to run the tutorials.
 
 In case you have your own code to generate these matrices, you can readily forget FEniCSX parts in each tutorial, and only consider the part dedicated to waveguicsx.
 
 
-## 5. Authors and contributors
+## 6. Authors and contributors
 
 Waveguicsx is currently developed and maintained at Université Gustave Eiffel by Dr. Fabien Treyssède, with some contributions from Dr. Maximilien Lehujeur (github software management, python formatting, beta testing) and Dr. Pierric Mora (parallelization of loops in tutorials, beta testing). Please see the AUTHORS file for a list of contributors.
 
@@ -259,7 +266,7 @@ Feel free to contact me by email for further information or questions about wave
 contact: fabien.treyssede@univ-eiffel.fr
 
 
-## 6. How to cite
+## 7. How to cite
 
 Please cite the software project as follows if used for your own projects or academic publications:
 
@@ -276,7 +283,7 @@ F. Treyssède, Spectral element computation of high-frequency leaky modes in thr
 M. Gallezot, F. Treyssède, L. Laguerre, A modal approach based on perfectly matched layers for the forced response of elastic open waveguides, Journal of Computational Physics 356 (2018), 391-409
 
 
-## 7. License
+## 8. License
 
 Waveguicsx is freely available under the GNU GPL, version 3.
 

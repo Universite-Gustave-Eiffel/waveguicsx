@@ -37,6 +37,6 @@ Waveguicsx - Version |__version__|
    :caption: Contents:
 
    readme_link
-   modules
-   examples
+   documentation
+   tutorials
 

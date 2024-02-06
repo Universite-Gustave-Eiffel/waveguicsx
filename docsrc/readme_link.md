@@ -1,6 +1,0 @@
-Presentation
-============
-
-```{include} ../README.md
-```
-

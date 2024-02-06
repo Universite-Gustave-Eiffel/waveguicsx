@@ -1,7 +1,6 @@
 Tutorials
 =========
 
-
 3D elastic bar of square cross-section
 --------------------------------------
 

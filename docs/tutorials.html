@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Examples &mdash; waveguicsx 1.0 documentation</title>
+  <title>Tutorials &mdash; waveguicsx 1.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -21,7 +21,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="waveguicsx.waveguide" href="waveguicsx.html" /> 
+    <link rel="prev" title="Documentation" href="documentation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,22 +42,24 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="readme_link.html">waveguicsx</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="readme_link.html">Presentation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="readme_link.html#introduction">0. Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme_link.html#prerequisites">1. Prerequisites</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme_link.html#installation">2. Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme_link.html#documentation">3. Documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme_link.html#tutorials">4. Tutorials</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme_link.html#authors-and-contributors">5. Authors and contributors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme_link.html#how-to-cite">6. How to cite</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme_link.html#license">7. License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#basic-examples">1. Basic examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#prerequisites">2. Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#installation">3. Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#documentation">4. Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#tutorials">5. Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#authors-and-contributors">6. Authors and contributors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#how-to-cite">7. How to cite</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#license">8. License</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="waveguicsx.html">waveguicsx.waveguide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="documentation.html">Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html#waveguicsx.waveguide.Waveguide"><code class="docutils literal notranslate"><span class="pre">Waveguide</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html#waveguicsx.waveguide.Signal"><code class="docutils literal notranslate"><span class="pre">Signal</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorials</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#d-elastic-bar-of-square-cross-section">3D elastic bar of square cross-section</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#d-elastic-bar-of-square-cross-section-with-parallelization">3D elastic bar of square cross-section with parallelization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#d-elastic-bar-of-square-cross-section-buried-into-a-pml-external-medium">3D elastic bar of square cross-section buried into a PML external medium</a></li>
@@ -84,9 +86,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a></li>
-      <li class="breadcrumb-item active">Examples</li>
+      <li class="breadcrumb-item active">Tutorials</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/examples.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/tutorials.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -94,8 +96,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="examples">
-<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h1>
+  <section id="tutorials">
+<h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this heading"></a></h1>
 <section id="d-elastic-bar-of-square-cross-section">
 <h2>3D elastic bar of square cross-section<a class="headerlink" href="#d-elastic-bar-of-square-cross-section" title="Permalink to this heading"></a></h2>
 <p>3D (visco-)elastic waveguide example.
@@ -108,7 +110,7 @@ Results are compared with Euler-Bernoulli analytical solutions for the lowest wa
 <span class="c1"># the matrices K0, K1, K2, M and the excitation vector F.</span>
 <span class="c1"># In the tutorial, K0, K1, K2 and M are finite element matrices generated by FEnicSX (**).</span>
 <span class="c1">#  (*) waveguicsx is a python library for solving complex waveguide problems</span>
-<span class="c1">#      Copyright (C) 2023  Fabien Treyssede</span>
+<span class="c1">#      Copyright (C) 2023-2024  Fabien Treyssede</span>
 <span class="c1">#      waveguicsx is free software distributed under the GNU General Public License</span>
 <span class="c1">#      (https://github.com/treyssede/waveguicsx)</span>
 <span class="c1"># (**) FEniCSx is an open-source computing platform for solving partial differential equations</span>
@@ -297,7 +299,7 @@ In this example:</p>
 <span class="c1"># the matrices K0, K1, K2, M and the excitation vector F.</span>
 <span class="c1"># In the tutorial, K0, K1, K2 and M are finite element matrices generated by FEnicSX (**).</span>
 <span class="c1">#  (*) waveguicsx is a python library for solving complex waveguide problems</span>
-<span class="c1">#      Copyright (C) 2023  Fabien Treyssede</span>
+<span class="c1">#      Copyright (C) 2023-2024  Fabien Treyssede</span>
 <span class="c1">#      waveguicsx is free software distributed under the GNU General Public License</span>
 <span class="c1">#      (https://github.com/treyssede/waveguicsx)</span>
 <span class="c1"># (**) FEniCSx is an open-source computing platform for solving partial differential equations</span>
@@ -451,7 +453,7 @@ Results are to be compared with Fig. 8 of paper: Treyssede, Journal of Computati
 <span class="c1"># the matrices K0, K1, K2, M and the excitation vector F.</span>
 <span class="c1"># In the tutorial, K0, K1, K2 and M are finite element matrices generated by FEnicSX (**).</span>
 <span class="c1">#  (*) waveguicsx is a python library for solving complex waveguide problems</span>
-<span class="c1">#      Copyright (C) 2023  Fabien Treyssede</span>
+<span class="c1">#      Copyright (C) 2023-2024  Fabien Treyssede</span>
 <span class="c1">#      waveguicsx is free software distributed under the GNU General Public License</span>
 <span class="c1">#      (https://github.com/treyssede/waveguicsx)</span>
 <span class="c1"># (**) FEniCSx is an open-source computing platform for solving partial differential equations</span>
@@ -689,7 +691,7 @@ Results are to be compared with Fig. 8 of paper: Treyssede, Journal of Computati
 <span class="c1"># the matrices K0, K1, K2, M and the excitation vector F.</span>
 <span class="c1"># In the tutorial, K0, K1, K2 and M are finite element matrices generated by FEnicSX (**).</span>
 <span class="c1">#  (*) waveguicsx is a python library for solving complex waveguide problems</span>
-<span class="c1">#      Copyright (C) 2023  Fabien Treyssede</span>
+<span class="c1">#      Copyright (C) 2023-2024  Fabien Treyssede</span>
 <span class="c1">#      waveguicsx is free software distributed under the GNU General Public License</span>
 <span class="c1">#      (https://github.com/treyssede/waveguicsx)</span>
 <span class="c1"># (**) FEniCSx is an open-source computing platform for solving partial differential equations</span>
@@ -980,7 +982,7 @@ Results are to be compared with Figs. 5, 6 and 7 of paper: Treyssede, Wave Motio
 <span class="c1"># the matrices K0, K1, K2, M and the excitation vector F.</span>
 <span class="c1"># In the tutorial, K0, K1, K2 and M are finite element matrices generated by FEnicSX (**).</span>
 <span class="c1">#  (*) waveguicsx is a python library for solving complex waveguide problems</span>
-<span class="c1">#      Copyright (C) 2023  Fabien Treyssede</span>
+<span class="c1">#      Copyright (C) 2023-2024  Fabien Treyssede</span>
 <span class="c1">#      waveguicsx is free software distributed under the GNU General Public License</span>
 <span class="c1">#      (https://github.com/treyssede/waveguicsx)</span>
 <span class="c1"># (**) FEniCSx is an open-source computing platform for solving partial differential equations</span>
@@ -1196,7 +1198,7 @@ In this example:</p>
 <span class="c1"># the matrices K0, K1, K2, M and the excitation vector F.</span>
 <span class="c1"># In the tutorial, K0, K1, K2 and M are finite element matrices generated by FEnicSX (**).</span>
 <span class="c1">#  (*) waveguicsx is a python library for solving complex waveguide problems</span>
-<span class="c1">#      Copyright (C) 2023  Fabien Treyssede</span>
+<span class="c1">#      Copyright (C) 2023-2024  Fabien Treyssede</span>
 <span class="c1">#      waveguicsx is free software distributed under the GNU General Public License</span>
 <span class="c1">#      (https://github.com/treyssede/waveguicsx)</span>
 <span class="c1"># (**) FEniCSx is an open-source computing platform for solving partial differential equations</span>
@@ -1418,7 +1420,7 @@ Note: the depth direction is x, the axis of propagation is z.</p>
 <span class="c1"># the matrices K0, K1, K2, M and the excitation vector F.</span>
 <span class="c1"># In the tutorial, K0, K1, K2 and M are finite element matrices generated by FEnicSX (**).</span>
 <span class="c1">#  (*) waveguicsx is a python library for solving complex waveguide problems</span>
-<span class="c1">#      Copyright (C) 2023  Fabien Treyssede</span>
+<span class="c1">#      Copyright (C) 2023-2024  Fabien Treyssede</span>
 <span class="c1">#      waveguicsx is free software distributed under the GNU General Public License</span>
 <span class="c1">#      (https://github.com/treyssede/waveguicsx)</span>
 <span class="c1"># (**) FEniCSx is an open-source computing platform for solving partial differential equations</span>
@@ -1620,7 +1622,7 @@ The FE mesh is built from gmsh with a .geo file.</p>
 # the matrices K0, K1, K2, M and the excitation vector F.
 # In the tutorial, K0, K1, K2 and M are finite element matrices generated by FEnicSX (**).
 #  (*) waveguicsx is a python library for solving complex waveguide problems
-#      Copyright (C) 2023  Fabien Treyssede
+#      Copyright (C) 2023-2024  Fabien Treyssede
 #      waveguicsx is free software distributed under the GNU General Public License
 #      (https://github.com/treyssede/waveguicsx)
 # (**) FEniCSx is an open-source computing platform for solving partial differential equations
@@ -1797,13 +1799,13 @@ plotter.show()
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="waveguicsx.html" class="btn btn-neutral float-left" title="waveguicsx.waveguide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="documentation.html" class="btn btn-neutral float-left" title="Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Fabien Treyssede.</p>
+    <p>&#169; Copyright 2023-2024, Fabien Treyssede.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

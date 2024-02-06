@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>waveguicsx &mdash; waveguicsx 1.0 documentation</title>
+  <title>Presentation &mdash; waveguicsx 1.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -23,8 +23,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Modules" href="modules.html" />
-    <link rel="prev" title="Waveguicsx - Version 1.0" href="index.html" /> 
+    <link rel="next" title="Documentation" href="documentation.html" />
+    <link rel="prev" title="Waveguicsx - Version 1.1" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,30 +45,32 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">waveguicsx</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Presentation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#introduction">0. Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#prerequisites">1. Prerequisites</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#installation">2. Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#documentation">3. Documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#tutorials">4. Tutorials</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#authors-and-contributors">5. Authors and contributors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#how-to-cite">6. How to cite</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#license">7. License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-examples">1. Basic examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">2. Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">3. Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">4. Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tutorials">5. Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#authors-and-contributors">6. Authors and contributors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-cite">7. How to cite</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license">8. License</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="waveguicsx.html">waveguicsx.waveguide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="documentation.html">Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html#waveguicsx.waveguide.Waveguide"><code class="docutils literal notranslate"><span class="pre">Waveguide</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html#waveguicsx.waveguide.Signal"><code class="docutils literal notranslate"><span class="pre">Signal</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#d-elastic-bar-of-square-cross-section">3D elastic bar of square cross-section</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#d-elastic-bar-of-square-cross-section-with-parallelization">3D elastic bar of square cross-section with parallelization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#d-elastic-bar-of-square-cross-section-buried-into-a-pml-external-medium">3D elastic bar of square cross-section buried into a PML external medium</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#d-elastic-bar-of-square-cross-section-buried-into-a-pml-external-medium-using-gmsh">3D elastic bar of square cross-section buried into a PML external medium using gmsh</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#excitation-of-a-3d-elastic-bar-of-circular-cross-section">Excitation of a 3D elastic bar of circular cross-section</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#excitation-of-a-3d-elastic-bar-of-circular-cross-section-with-parallelization">Excitation of a 3D elastic bar of circular cross-section with parallelization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#time-response-of-a-plate-excited-near-its-first-zgv-resonance">Time response of a plate excited near its first ZGV resonance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#dispersion-curves-of-a-rail">Dispersion curves of a rail</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#d-elastic-bar-of-square-cross-section">3D elastic bar of square cross-section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#d-elastic-bar-of-square-cross-section-with-parallelization">3D elastic bar of square cross-section with parallelization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#d-elastic-bar-of-square-cross-section-buried-into-a-pml-external-medium">3D elastic bar of square cross-section buried into a PML external medium</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#d-elastic-bar-of-square-cross-section-buried-into-a-pml-external-medium-using-gmsh">3D elastic bar of square cross-section buried into a PML external medium using gmsh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#excitation-of-a-3d-elastic-bar-of-circular-cross-section">Excitation of a 3D elastic bar of circular cross-section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#excitation-of-a-3d-elastic-bar-of-circular-cross-section-with-parallelization">Excitation of a 3D elastic bar of circular cross-section with parallelization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#time-response-of-a-plate-excited-near-its-first-zgv-resonance">Time response of a plate excited near its first ZGV resonance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#dispersion-curves-of-a-rail">Dispersion curves of a rail</a></li>
 </ul>
 </li>
 </ul>
@@ -87,7 +89,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a></li>
-      <li class="breadcrumb-item active">waveguicsx</li>
+      <li class="breadcrumb-item active">Presentation</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/readme_link.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -97,10 +99,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section class="tex2jax_ignore mathjax_ignore" id="waveguicsx">
-<h1>waveguicsx<a class="headerlink" href="#waveguicsx" title="Permalink to this heading"></a></h1>
-<p>waveguicsx, a python library for solving complex waveguide problems<br />
-Copyright (C) 2023  Fabien Treyssede</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="presentation">
+<h1>Presentation<a class="headerlink" href="#presentation" title="Permalink to this heading"></a></h1>
+<p><a class="reference external" href="https://universite-gustave-eiffel.github.io/waveguicsx/"><img alt="Generic badge" src="https://github.com/Universite-Gustave-Eiffel/waveguicsx/actions/workflows/pages/pages-build-deployment/badge.svg" /></a></p>
+<p><strong>waveguicsx, a python library for solving complex waveguide problems</strong>
+<strong>Copyright (C) 2023-2024  Fabien Treyssede</strong></p>
 <p>This file is part of waveguicsx.</p>
 <p>waveguicsx is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</p>
 <p>waveguicsx is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
@@ -117,6 +120,9 @@ Copyright (C) 2023  Fabien Treyssede</p>
 the angular frequency <span class="math notranslate nohighlight">\(\omega\)</span> or the wavenumber <span class="math notranslate nohighlight">\(k\)</span>, leading to dispersion curve results. In the former case, the eigenvalue is <span class="math notranslate nohighlight">\(k\)</span>, while in the latter case, the eigenvalue is <span class="math notranslate nohighlight">\(\omega^2\)</span>. The loops over the parameter (angular frequency or wavenumber) can be parallelized, as shown in some tutorials (using mpi4py). Various modal properties (energy velocity, group velocity, excitability…) can be post-processed as a function of the frequency and plotted as dispersion curves.</p>
 <p>The forced reponse (<span class="math notranslate nohighlight">\(\textbf{F}\neq\textbf{0}\)</span>) is solved in the frequency domain by expanding the solution as a sum of eigenmodes using biorthogonality relationship, leading to very fast computations of the excited wavefields. The transient response can finally be processed in the time domain by inverse FFT.</p>
 <p>The library contains two classes. The main class, the class Waveguide, enables to solve the waveguide problem defined by the following inputs: <span class="math notranslate nohighlight">\(\textbf{K}_0\)</span>, <span class="math notranslate nohighlight">\(\textbf{K}_1\)</span>, <span class="math notranslate nohighlight">\(\textbf{K}_2\)</span>, <span class="math notranslate nohighlight">\(\textbf{M}\)</span> and <span class="math notranslate nohighlight">\(\textbf{F}\)</span>. The other class, the class Signal, is provided to easily handle the transforms of signals from frequency to time and inversely, as well as the generation of excitation pulses.</p>
+</section>
+<section id="basic-examples">
+<h2>1. Basic examples<a class="headerlink" href="#basic-examples" title="Permalink to this heading"></a></h2>
 <p><strong>Basic example 1: dispersion curves of a homogeneous plate</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">###########################################</span>
 <span class="c1"># Basic example 1: dispersion curves of a homogeneous plate</span>
@@ -265,31 +271,32 @@ the angular frequency <span class="math notranslate nohighlight">\(\omega\)</spa
 </div>
 </section>
 <section id="prerequisites">
-<h2>1. Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this heading"></a></h2>
-<p>Waveguicsx requires SLEPc and PETSc (slepc4py, petsc4py).</p>
+<h2>2. Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this heading"></a></h2>
+<p>Waveguicsx requires the complex version of SLEPc and PETSc (slepc4py, petsc4py).</p>
 <p>The necessary inputs to waveguicsx are the matrices <span class="math notranslate nohighlight">\(\textbf{K}_0\)</span>, <span class="math notranslate nohighlight">\(\textbf{K}_1\)</span>, <span class="math notranslate nohighlight">\(\textbf{K}_2\)</span>, <span class="math notranslate nohighlight">\(\textbf{M}\)</span> (PETSc matrix format) to compute the free response of waveguide (dispersion curves), as well as the vector <span class="math notranslate nohighlight">\(\textbf{F}\)</span> to compute the forced response. These matrices can be built from any code, then imported to Python and converted to PETSc format.</p>
 <p><strong>Tutorials:</strong></p>
 <p>In the tutorials (see subfolder ‘examples’), these matrices are built from the open finite element (FE) platform FEniCSX. To run these tutorials, you will therefore need to install FEniCSX first. Note that tutorials are py files formatted such that they can be conveniently opened in a text editor or in a jupyter notebook.</p>
 <p><em>Tutorial files are currently written for FEniCSX v0.6.0, minor modifications may be required for use with latest versions (work under progress).</em></p>
 </section>
 <section id="installation">
-<h2>2. Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h2>
+<h2>3. Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h2>
 <section id="clone-the-waveguicsx-public-repository">
-<h3>2.1 Clone the Waveguicsx public repository<a class="headerlink" href="#clone-the-waveguicsx-public-repository" title="Permalink to this heading"></a></h3>
+<h3>3.1 Clone the Waveguicsx public repository<a class="headerlink" href="#clone-the-waveguicsx-public-repository" title="Permalink to this heading"></a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/Universite-Gustave-Eiffel/waveguicsx.git
 <span class="nb">cd</span><span class="w"> </span>./waveguicsx
 </pre></div>
 </div>
 </section>
 <section id="generate-the-docker-image-and-run-the-container-using">
-<h3>2.2 Generate the docker image and run the container using :<a class="headerlink" href="#generate-the-docker-image-and-run-the-container-using" title="Permalink to this heading"></a></h3>
+<h3>3.2 Generate the docker image and run the container using :<a class="headerlink" href="#generate-the-docker-image-and-run-the-container-using" title="Permalink to this heading"></a></h3>
 <p>FEniCSX is not a dependency of Waveguicsx. Nevertheless, it is required to run the tutorials.
 We recommend using the docker image of DOLFINX/v0.6.0 sourced in complex mode before running the tutorials :</p>
-<p>Install <a class="reference external" href="https://docs.docker.com/engine/install">Docker</a> and authorize <a class="reference external" href="https://docs.docker.com/engine/install/linux-postinstall/">non-root users</a></p>
+<p>Install <a class="reference external" href="https://docs.docker.com/engine/install">Docker</a> and authorize <a class="reference external" href="https://docs.docker.com/engine/install/linux-postinstall/">non-root users</a>. Then run the following shell script file of waveguicsx repository:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./launch_fenicsx.sh
 </pre></div>
 </div>
-<p>Once the container is launched, install the package using (only the first time)</p>
+<p>(the first run will install FEniCSX inside the container, which may take time).</p>
+<p>Once the container is launched, install the waveguicsx package using (only the first time):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span>complex<span class="o">]</span>waveguicsxuser@hostname:~$<span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
 </pre></div>
 </div>
@@ -308,23 +315,24 @@ so that it is not necessary to reinstall the package with pip each time the cont
 </section>
 </section>
 <section id="documentation">
-<h2>3. Documentation<a class="headerlink" href="#documentation" title="Permalink to this heading"></a></h2>
-<p>The full documentation is entirely defined in the `waveguide.py’ module.</p>
+<h2>4. Documentation<a class="headerlink" href="#documentation" title="Permalink to this heading"></a></h2>
+<p>The documentation is entirely defined in the `waveguide.py’ module.</p>
+<p>You can also see the full documentation at: https://universite-gustave-eiffel.github.io/waveguicsx.</p>
 <p>You can also build the documentation, using <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">doc</span></code> and opening the front page in <code class="docutils literal notranslate"><span class="pre">./doc/Waveguicsx_documentation.html</span></code>.</p>
 </section>
 <section id="tutorials">
-<h2>4. Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this heading"></a></h2>
+<h2>5. Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this heading"></a></h2>
 <p>Various tutorials are provided in the subfolder ‘examples’. These tutorials fully depict simple as well as more complex problems, two-dimensional (plates) or three-dimensional (bars, rail…), including viscoelastic loss or perfectly matched layers (used for buried waveguides). In particular, these tutorials show how to build the finite element matrices <span class="math notranslate nohighlight">\(\textbf{K}_0\)</span>, <span class="math notranslate nohighlight">\(\textbf{K}_1\)</span>, <span class="math notranslate nohighlight">\(\textbf{K}_2\)</span>, <span class="math notranslate nohighlight">\(\textbf{M}\)</span> with FEniCSX. Installing FEniCSX is therefore required to run the tutorials.</p>
 <p>In case you have your own code to generate these matrices, you can readily forget FEniCSX parts in each tutorial, and only consider the part dedicated to waveguicsx.</p>
 </section>
 <section id="authors-and-contributors">
-<h2>5. Authors and contributors<a class="headerlink" href="#authors-and-contributors" title="Permalink to this heading"></a></h2>
+<h2>6. Authors and contributors<a class="headerlink" href="#authors-and-contributors" title="Permalink to this heading"></a></h2>
 <p>Waveguicsx is currently developed and maintained at Université Gustave Eiffel by Dr. Fabien Treyssède, with some contributions from Dr. Maximilien Lehujeur (github software management, python formatting, beta testing) and Dr. Pierric Mora (parallelization of loops in tutorials, beta testing). Please see the AUTHORS file for a list of contributors.</p>
 <p>Feel free to contact me by email for further information or questions about waveguicsx.</p>
 <p>contact: fabien.treyssede&#64;univ-eiffel.fr</p>
 </section>
 <section id="how-to-cite">
-<h2>6. How to cite<a class="headerlink" href="#how-to-cite" title="Permalink to this heading"></a></h2>
+<h2>7. How to cite<a class="headerlink" href="#how-to-cite" title="Permalink to this heading"></a></h2>
 <p>Please cite the software project as follows if used for your own projects or academic publications:</p>
 <p>F. Treyssède, waveguicsx (a python library for solving complex waveguides problems), 2023; software available at https://github.com/treyssede/waveguicsx.</p>
 <p>For theoretical details about finite element modeling of waveguide problems, here are also a few references by the author about the SAFE modeling of waveguides:</p>
@@ -334,7 +342,7 @@ so that it is not necessary to reinstall the package with pip each time the cont
 <p>M. Gallezot, F. Treyssède, L. Laguerre, A modal approach based on perfectly matched layers for the forced response of elastic open waveguides, Journal of Computational Physics 356 (2018), 391-409</p>
 </section>
 <section id="license">
-<h2>7. License<a class="headerlink" href="#license" title="Permalink to this heading"></a></h2>
+<h2>8. License<a class="headerlink" href="#license" title="Permalink to this heading"></a></h2>
 <p>Waveguicsx is freely available under the GNU GPL, version 3.</p>
 </section>
 </section>
@@ -343,14 +351,14 @@ so that it is not necessary to reinstall the package with pip each time the cont
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Waveguicsx - Version 1.0" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="modules.html" class="btn btn-neutral float-right" title="Modules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Waveguicsx - Version 1.1" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="documentation.html" class="btn btn-neutral float-right" title="Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Fabien Treyssede.</p>
+    <p>&#169; Copyright 2023-2024, Fabien Treyssede.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

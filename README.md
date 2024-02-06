@@ -1,6 +1,6 @@
 [![Generic badge](https://github.com/Universite-Gustave-Eiffel/waveguicsx/actions/workflows/pages/pages-build-deployment/badge.svg)](https://universite-gustave-eiffel.github.io/waveguicsx/)	
 
-**waveguicsx, a python library for solving complex waveguide problems**
+**Waveguicsx, a python library for solving complex waveguide problems**
 
 **Copyright (C) 2023-2024  Fabien Treyssede**
 
@@ -212,7 +212,7 @@ cd ./waveguicsx
 
 ### 3.2 Generate the docker image and run the container using :
 
-FEniCSX is not a dependency of Waveguicsx. Nevertheless, it is required to run the tutorials.
+FEniCSX is not a dependency of waveguicsx. Nevertheless, it is required to run the tutorials.
 We recommend using the docker image of DOLFINX/v0.6.0 sourced in complex mode before running the tutorials :
 
 Install [Docker](https://docs.docker.com/engine/install) and authorize [non-root users](https://docs.docker.com/engine/install/linux-postinstall/). Then run the following shell script file of waveguicsx repository:

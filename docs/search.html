@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search &mdash; waveguicsx 1.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="#" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html">
+            <img src="_static/logo_doc.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="#" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="readme_link.html">Presentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#introduction">0. Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#basic-examples">1. Basic examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#prerequisites">2. Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#installation">3. Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#documentation">4. Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#tutorials">5. Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#authors-and-contributors">6. Authors and contributors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#how-to-cite">7. How to cite</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#license">8. License</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="documentation.html">Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html#waveguicsx.waveguide.Waveguide"><code class="docutils literal notranslate"><span class="pre">Waveguide</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html#waveguicsx.waveguide.Signal"><code class="docutils literal notranslate"><span class="pre">Signal</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#d-elastic-bar-of-square-cross-section">3D elastic bar of square cross-section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#d-elastic-bar-of-square-cross-section-with-parallelization">3D elastic bar of square cross-section with parallelization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#d-elastic-bar-of-square-cross-section-buried-into-a-pml-external-medium">3D elastic bar of square cross-section buried into a PML external medium</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#d-elastic-bar-of-square-cross-section-buried-into-a-pml-external-medium-using-gmsh">3D elastic bar of square cross-section buried into a PML external medium using gmsh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#excitation-of-a-3d-elastic-bar-of-circular-cross-section">Excitation of a 3D elastic bar of circular cross-section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#excitation-of-a-3d-elastic-bar-of-circular-cross-section-with-parallelization">Excitation of a 3D elastic bar of circular cross-section with parallelization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#time-response-of-a-plate-excited-near-its-first-zgv-resonance">Time response of a plate excited near its first ZGV resonance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#dispersion-curves-of-a-rail">Dispersion curves of a rail</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">waveguicsx</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Search</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <noscript>
+  <div id="fallback" class="admonition warning">
+    <p class="last">
+      Please activate JavaScript to enable the search functionality.
+    </p>
+  </div>
+  </noscript>
+
+  
+  <div id="search-results">
+  
+  </div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2024, Fabien Treyssede.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+  <script>
+    jQuery(function() { Search.loadIndex("searchindex.js"); });
+  </script>
+  
+  <script id="searchindexloader"></script>
+   
+
+
+</body>
+</html>

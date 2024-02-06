@@ -1,0 +1,11 @@
+Documentation
+=============
+
+.. toctree::
+   :maxdepth: 4
+
+.. automodule:: waveguicsx.waveguide
+   :members:
+   :undoc-members:
+   :show-inheritance:
+

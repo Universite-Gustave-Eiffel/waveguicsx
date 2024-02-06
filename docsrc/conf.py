@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath('..'))
 from waveguicsx import __version__
 
 project = 'waveguicsx'
-copyright = '2023, Fabien Treyssede'
+copyright = '2023-2024, Fabien Treyssede'
 author = 'Fabien Treyssede'
 release = __version__
 

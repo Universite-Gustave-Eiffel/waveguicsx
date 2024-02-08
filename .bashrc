@@ -128,3 +128,5 @@ echo " dolfinx/dolfinx:v0.6.0"
 #. /usr/local/bin/dolfinx-real-mode
 . /usr/local/bin/dolfinx-complex-mode
 export PS1='[${DOLFINX_MODE}]'$PS1
+export PATH=$PATH:$HOME/.local/bin
+

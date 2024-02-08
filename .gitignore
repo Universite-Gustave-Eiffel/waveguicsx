@@ -23,6 +23,7 @@ waveguicsx/__pycache__/
 /build/
 
 # ignore skeleton files due to the mounting of . in the docker container
+.viminfo
 .bash_history
 .cache/
 .fltk/

@@ -234,10 +234,10 @@ so that it is not necessary to reinstall the package with pip each time the cont
 
 Once the container is launched, here are examples of usage inside the container :
 ```bash
-[complex]waveguicsxuser@hostname:~$ python3 ./examples/BasicExample1.py  # run a basic example (for check that everything works)
+[complex]waveguicsxuser@hostname:~$ python3 ./examples/BasicExample1.py  # run a basic example (check that everything works)
 ```
 ```bash
-[complex]waveguicsxuser@hostname:~$ python3 ./examples/Elastic_Waveguide_SquareBar3D.py  # run the examples in cli
+[complex]waveguicsxuser@hostname:~$ python3 ./examples/Elastic_Waveguide_SquareBar3D.py  # run a tutorial in cli
 ```
 ```bash
 [complex]waveguicsxuser@hostname:~$ jupyter notebook  # launch the jupyter notebook from inside the container

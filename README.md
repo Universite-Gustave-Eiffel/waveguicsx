@@ -210,33 +210,40 @@ git clone https://github.com/Universite-Gustave-Eiffel/waveguicsx.git
 cd ./waveguicsx
 ```
 
-### 3.2 Generate the docker image and run the container using :
+### 3.2 Generate the docker image and run the container
 
 FEniCSX is not a dependency of waveguicsx. Nevertheless, it is required to run the tutorials.
 We recommend using the docker image of DOLFINX/v0.6.0 sourced in complex mode before running the tutorials :
 
-Install [Docker](https://docs.docker.com/engine/install) and authorize [non-root users](https://docs.docker.com/engine/install/linux-postinstall/). Then run the following shell script file of waveguicsx repository:
+Install [Docker](https://docs.docker.com/engine/install) and authorize [non-root users](https://docs.docker.com/engine/install/linux-postinstall/).
+
+Then run the following shell script file of waveguicsx repository (launch docker container):
 ```bash
 ./launch_fenicsx.sh
 ```
-(the first run will install FEniCSX inside the container, which may take time).
+The first run will install FEniCSX inside the container, which may take time.
 
-Once the container is launched, install the waveguicsx package using (only the first time): 
+*Only the first time* : once the container is launched, install the waveguicsx package using: 
 ```bash
 [complex]waveguicsxuser@hostname:~$ python3 -m pip install -e .
 ```
-*WARNING* : the waveguicsx folder (i.e. `.`) is mounted inside the container in `/home/waveguicsxuser` :
+*Warning* : the waveguicsx folder (i.e. `.`) is mounted inside the container in `/home/waveguicsxuser` :
 so that all changes are persistent and modify the repository of the host system as well.  
 The python package files will be installed in the `.local` folder (ignored by `git`), 
 so that it is not necessary to reinstall the package with pip each time the container is launched.
 
-Usage inside the container :  
+Once the container is launched, here are examples of usage inside the container :
 ```bash
-[complex]waveguicsxuser@hostname:~$ real  # => use the real libraries of dolfinx
-[real]waveguicsxuser@hostname:~$ complex  # back to complexe mode
-[complex]waveguicsxuser@hostname:~$ python3 ./examples/Elastic_Waveguide_SquareBar3D.py  # run the examples in cli
-[complex]waveguicsxuser@hostname:~$ jupyter notebook  # to launch the jupyter notebook from inside the container
-[complex]waveguicsxuser@hostname:~$ exit  # to leave the container
+[complex]waveguicsxuser@hostname:~$ python3 ./examples/BasicExample1.py  # run a basic example (check that everything works)
+```
+```bash
+[complex]waveguicsxuser@hostname:~$ python3 ./examples/Elastic_Waveguide_SquareBar3D.py  # run a tutorial in cli
+```
+```bash
+[complex]waveguicsxuser@hostname:~$ jupyter notebook  # launch the jupyter notebook from inside the container
+```
+```bash
+[complex]waveguicsxuser@hostname:~$ exit  # leave the container
 ```
 
 

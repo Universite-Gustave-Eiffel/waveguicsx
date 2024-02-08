@@ -286,29 +286,35 @@ the angular frequency <span class="math notranslate nohighlight">\(\omega\)</spa
 </pre></div>
 </div>
 </section>
-<section id="generate-the-docker-image-and-run-the-container-using">
-<h3>3.2 Generate the docker image and run the container using :<a class="headerlink" href="#generate-the-docker-image-and-run-the-container-using" title="Permalink to this heading"></a></h3>
+<section id="generate-the-docker-image-and-run-the-container">
+<h3>3.2 Generate the docker image and run the container<a class="headerlink" href="#generate-the-docker-image-and-run-the-container" title="Permalink to this heading"></a></h3>
 <p>FEniCSX is not a dependency of waveguicsx. Nevertheless, it is required to run the tutorials.
 We recommend using the docker image of DOLFINX/v0.6.0 sourced in complex mode before running the tutorials :</p>
-<p>Install <a class="reference external" href="https://docs.docker.com/engine/install">Docker</a> and authorize <a class="reference external" href="https://docs.docker.com/engine/install/linux-postinstall/">non-root users</a>. Then run the following shell script file of waveguicsx repository:</p>
+<p>Install <a class="reference external" href="https://docs.docker.com/engine/install">Docker</a> and authorize <a class="reference external" href="https://docs.docker.com/engine/install/linux-postinstall/">non-root users</a>.</p>
+<p>Then run the following shell script file of waveguicsx repository (launch docker container):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./launch_fenicsx.sh
 </pre></div>
 </div>
-<p>(the first run will install FEniCSX inside the container, which may take time).</p>
-<p>Once the container is launched, install the waveguicsx package using (only the first time):</p>
+<p>The first run will install FEniCSX inside the container, which may take time.</p>
+<p><em>Only the first time</em> : once the container is launched, install the waveguicsx package using:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span>complex<span class="o">]</span>waveguicsxuser@hostname:~$<span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
 </pre></div>
 </div>
-<p><em>WARNING</em> : the waveguicsx folder (i.e. <code class="docutils literal notranslate"><span class="pre">.</span></code>) is mounted inside the container in <code class="docutils literal notranslate"><span class="pre">/home/waveguicsxuser</span></code> :
+<p><em>Warning</em> : the waveguicsx folder (i.e. <code class="docutils literal notranslate"><span class="pre">.</span></code>) is mounted inside the container in <code class="docutils literal notranslate"><span class="pre">/home/waveguicsxuser</span></code> :
 so that all changes are persistent and modify the repository of the host system as well.<br />
 The python package files will be installed in the <code class="docutils literal notranslate"><span class="pre">.local</span></code> folder (ignored by <code class="docutils literal notranslate"><span class="pre">git</span></code>),
 so that it is not necessary to reinstall the package with pip each time the container is launched.</p>
-<p>Usage inside the container :</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span>complex<span class="o">]</span>waveguicsxuser@hostname:~$<span class="w"> </span>real<span class="w">  </span><span class="c1"># =&gt; use the real libraries of dolfinx</span>
-<span class="o">[</span>real<span class="o">]</span>waveguicsxuser@hostname:~$<span class="w"> </span>complex<span class="w">  </span><span class="c1"># back to complexe mode</span>
-<span class="o">[</span>complex<span class="o">]</span>waveguicsxuser@hostname:~$<span class="w"> </span>python3<span class="w"> </span>./examples/Elastic_Waveguide_SquareBar3D.py<span class="w">  </span><span class="c1"># run the examples in cli</span>
-<span class="o">[</span>complex<span class="o">]</span>waveguicsxuser@hostname:~$<span class="w"> </span>jupyter<span class="w"> </span>notebook<span class="w">  </span><span class="c1"># to launch the jupyter notebook from inside the container</span>
-<span class="o">[</span>complex<span class="o">]</span>waveguicsxuser@hostname:~$<span class="w"> </span><span class="nb">exit</span><span class="w">  </span><span class="c1"># to leave the container</span>
+<p>Once the container is launched, here are examples of usage inside the container :</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span>complex<span class="o">]</span>waveguicsxuser@hostname:~$<span class="w"> </span>python3<span class="w"> </span>./examples/BasicExample1.py<span class="w">  </span><span class="c1"># run a basic example (check that everything works)</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span>complex<span class="o">]</span>waveguicsxuser@hostname:~$<span class="w"> </span>python3<span class="w"> </span>./examples/Elastic_Waveguide_SquareBar3D.py<span class="w">  </span><span class="c1"># run a tutorial in cli</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span>complex<span class="o">]</span>waveguicsxuser@hostname:~$<span class="w"> </span>jupyter<span class="w"> </span>notebook<span class="w">  </span><span class="c1"># launch the jupyter notebook from inside the container</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span>complex<span class="o">]</span>waveguicsxuser@hostname:~$<span class="w"> </span><span class="nb">exit</span><span class="w">  </span><span class="c1"># leave the container</span>
 </pre></div>
 </div>
 </section>

@@ -210,7 +210,7 @@ git clone https://github.com/Universite-Gustave-Eiffel/waveguicsx.git
 cd ./waveguicsx
 ```
 
-### 3.2 Generate the docker image and run the container using :
+### 3.2 Generate the docker image and run the container
 
 FEniCSX is not a dependency of waveguicsx. Nevertheless, it is required to run the tutorials.
 We recommend using the docker image of DOLFINX/v0.6.0 sourced in complex mode before running the tutorials :

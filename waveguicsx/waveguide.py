@@ -163,6 +163,9 @@ class Waveguide:
         an attribute (name: coefficient)
     compute_response(dof, z, spectrum=None, wavenumber_function=None, plot=False):
         Compute the response at the degree of freedom dof and the axial coordinate z for the whole frequency range
+    track_mode(omega_index, mode_index, threshold=0.9, plot=False):
+        Track a mode over the whole frequency range thanks to eigenvector similarity. The mode is specified by its
+        index, mode_index, at a given angular frequency index, omega_index.
     plot(direction=None, pml_threshold=None, ax=None, color="k",  marker="o", markersize=2, linestyle="", **kwargs):
         Plot dispersion curves Re(omega) vs. Re(wavenumber) using matplotlib
     plot_phase_velocity(direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
@@ -825,6 +828,63 @@ class Waveguide:
             return frequency, response, [ax_abs, ax_angle]
         else:
             return frequency, response
+
+    def track_mode(self, omega_index, mode_index, threshold=0.9, plot=False):
+        """
+        Track a mode over the whole frequency range.
+        The mode is specified by its index, mode_index, at a given angular frequency index, omega_index.
+        Tracking is performed thanks to similarity between eigenvectors and eigenforces (value between 0 and 1).
+        Tracking is stopped if similarity becomes lower than threshold.
+        It returns mode, the index list identifying the mode position at each frequency (index is set to -1
+        for frequencies at which the mode has not been successfully tracked due to low similarity).
+        """
+        if len(self.eigenforces)==0: #compute the eigenforces if not yet computed      
+            self.compute_eigenforces()
+        if len(self.traveling_direction)==0: #compute traveling direction if not yet computed
+            self.compute_traveling_direction()
+        
+        #Initialization
+        mode = np.zeros(self.omega.size, dtype='int32') - 1 #fill with -1 by default
+        mode[omega_index] = mode_index
+        direction = self.traveling_direction[omega_index][mode_index]
+        upper_part = range(omega_index, self.omega.size-1) #towards increasing frequency
+        lower_part = range(omega_index, 0, -1) #towards decreasing frequency
+        
+        #Track mode based on similarity
+        for p, part in enumerate([upper_part, lower_part]):
+            m = mode_index
+            for i in part:
+                inext = i+1-2*p #i+1 if p=0 (upper part), i-1 if p=1 (lower part)
+                U = self.eigenvectors[i].getColumnVector(m)
+                F =  self.eigenforces[i].getColumnVector(m)
+                similarity = np.zeros(self.eigenvectors[inext].size[1])
+                imodes = np.nonzero(self.traveling_direction[inext]==direction)[0] #restriction to modes traveling in the same direction
+                for m in imodes:
+                    test_U = self.eigenvectors[inext].getColumnVector(m)
+                    test_F = self.eigenforces[inext].getColumnVector(m)
+                    similarity[m] = np.abs(test_U.dot(U) + test_F.dot(F)) \
+                                  / np.sqrt(((U.norm()**2+F.norm()**2)*(test_U.norm()**2+test_F.norm()**2)))
+                if similarity.max()<threshold:
+                    print(f'Mode tracking stopped at frequency index {inext}: similarity equals {similarity.max():.2f}, lower than threshold (try to increase threshold)')
+                    break
+                else:
+                    m = similarity.argmax()
+                    mode[inext] = m
+        
+        #Plot for check
+        if plot:
+            fig, ax = plt.subplots(1, 1)
+            eigenvalues = np.zeros(self.omega.size, dtype='complex')
+            for i in range(self.omega.size):
+                eigenvalues[i] = self.eigenvalues[i][mode[i]] if mode[i]>=0 else None
+            ax.plot(self.omega, eigenvalues.real, color='blue', label='real')
+            ax.plot(self.omega, eigenvalues.imag, color='red', label='imag')
+            ax.set_xlabel('angular frequency')
+            ax.set_ylabel('wavenumber')
+            ax.legend()
+            fig.tight_layout()
+        
+        return mode
 
     def plot_phase_velocity(self, **kwargs):
         """

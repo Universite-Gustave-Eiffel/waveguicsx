@@ -461,9 +461,9 @@ class Waveguide:
         as a an attribute (name: opposite_going, -1 value for unpaired modes).
         Compute their biorthogonality normalization factors, Um^T*F-m - U-m^T*Fm, where m and -m denote opposite-going
         modes, for the whole parameter range and store them as an attribute (name: _biorthogonality_factor).
-        If plot is set to True, the biorthogonality factors found by the algorithm are plotted in magnitude as a function
-        of frequency, allowing visual check that there is no values close to zero (a factor close to zero probably means
-        a lack of biorthogonality).
+        If plot is set to True, the biorthogonality criterion found by the algorithm is plotted as a function
+        of frequency index, allowing visual check that there is no values close to zero (a factor close to zero probably means
+        a lack of biorthogonality). The biorthogonality criterion is defined as |biorthogonality_factor*omega/4|.
         
         Notes:
         
@@ -538,19 +538,18 @@ class Waveguide:
             self.opposite_going.append(opposite_going)
             self._biorthogonality_factor.append(biorthogonality_factor)
         print(f'Computation of pairs of opposite-going modes, elapsed time : {(time.perf_counter() - start):.2f}s')
-        #Plot the biorthogonality factors as a function of frequency
+        #Plot biorthogonality criterion as a function of frequency index
         if plot:
             omega = np.repeat(self.omega.real, [len(egv) for egv in self._biorthogonality_factor])
             biorthogonality_factor = np.concatenate(self._biorthogonality_factor)
             fig, ax = plt.subplots(1, 1)
-            ax.plot(omega, np.abs(biorthogonality_factor*omega/4), marker="o", markersize=2, linestyle="", color="k")
-            ax.set_xlabel('Re(omega)')
-            ax.set_ylabel('|biorthogonality factor|')
+            ax.plot(np.abs(biorthogonality_factor*omega/4), marker="o", markersize=2, linestyle="", color="k")
+            ax.set_xlabel('frequency index')
+            ax.set_ylabel('biorthogonality criterion')
             ax.set_yscale('log')
             ax.axhline(y = tol2_abs, color="r", linestyle="--")
             ax.set_title('----- threshold allowed', color='r')
             fig.tight_layout()
-            return ax
 
     def compute_group_velocity(self):
         """
@@ -837,6 +836,8 @@ class Waveguide:
         Tracking is stopped if similarity becomes lower than threshold.
         It returns mode, the index list identifying the mode position at each frequency (index is set to -1
         for frequencies at which the mode has not been successfully tracked due to low similarity).
+        If plot is set to True, the real and imaginary parts of eigenvalue are plotted w.r.t. frequency index,
+        for visual check that the desired mode has been properly tracked.
         """
         if len(self.eigenforces)==0: #compute the eigenforces if not yet computed      
             self.compute_eigenforces()
@@ -877,13 +878,12 @@ class Waveguide:
             eigenvalues = np.zeros(self.omega.size, dtype='complex')
             for i in range(self.omega.size):
                 eigenvalues[i] = self.eigenvalues[i][mode[i]] if mode[i]>=0 else None
-            ax.plot(self.omega, eigenvalues.real, color='blue', label='real')
-            ax.plot(self.omega, eigenvalues.imag, color='red', label='imag')
-            ax.set_xlabel('angular frequency')
-            ax.set_ylabel('wavenumber')
+            ax.plot(eigenvalues.real, color='blue', label='real')
+            ax.plot(eigenvalues.imag, color='red', label='imag')
+            ax.set_xlabel('frequency index')
+            ax.set_ylabel('eigenvalue')
+            ax.set_title('tracked mode curve')
             ax.legend()
-            fig.tight_layout()
-        
         return mode
 
     def plot_phase_velocity(self, **kwargs):
@@ -929,9 +929,11 @@ class Waveguide:
         """
         return self.plot(y=['excitability', np.abs], **kwargs)
 
-    def plot(self, x=None, y=None, c=None, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
+    def plot(self, x=None, y=None, c=None, direction=None, pml_threshold=None, mode=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
         """
-        Plot dispersion curves y[1](y[0]) vs. x[1](x[0])
+        Plot dispersion curves y[1](y[0]) vs. x[1](x[0]) as scatter plot.
+        If the index list, mode, is specified by the user, a single mode is plotted as a continuous single colored curve
+        (the index list mode can be obtained from method track_mode(...)).
         
         Parameters
         ----------
@@ -947,6 +949,8 @@ class Waveguide:
             +1 for positive-going modes, -1 for negative-going modes, None for plotting all modes
         pml_threshold: float
             threshold to filter out PML modes (modes such that pml_ratio<pml_threshold)
+        mode: index list
+            index list identifying the mode position at each frequency
         ax: matplotlib axis
             the matplotlib axis on which to plot data (created if None)
         color: str, marker: str, markersize: int, linestyle: str, **kwargs are passed to ax.plot
@@ -994,8 +998,13 @@ class Waveguide:
         if c[0] is None: #single color plot (no colorbar)
             c_array = color
         
-        # Re(omega) vs. Re(k)
-        sc = ax.scatter(x_array, y_array, s=markersize, c=c_array, marker=marker, **kwargs)
+        # Plot
+        if mode is None: #all modes
+            sc = ax.scatter(x_array, y_array, s=markersize, c=c_array, marker=marker, **kwargs)
+        else: #single mode (trick to find the right index)
+            index = mode + np.insert(np.array([self.eigenvalues[i].size for i in range(self.omega.size-1)]).cumsum(), 0, 0).astype('int32')
+            index = index[mode>=0]
+            sc = ax.plot(x_array[index], y_array[index], c=color, marker=marker, markersize=markersize, **kwargs)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.figure.tight_layout()

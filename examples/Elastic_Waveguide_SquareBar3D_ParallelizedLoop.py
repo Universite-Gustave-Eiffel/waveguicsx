@@ -31,7 +31,7 @@ import matplotlib.pyplot as plt
 #import pyvista
 
 from waveguicsx.waveguide import Waveguide
-#For proper use with a jupyter notebook, uncomment the following line:
+#For proper use with a notebook, uncomment the following line:
 #pyvista.set_jupyter_backend("static"); pyvista.start_xvfb() #try: "none", "static", "pythreejs", "ipyvtklink"...
 
 ##################################

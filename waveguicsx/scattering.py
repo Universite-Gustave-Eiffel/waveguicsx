@@ -120,7 +120,7 @@ class Scattering:
         mode is a list of indices identifying the mode position at each frequency.
     set_internal_excitation(F, F_spectrum=None):
         Set the internal excitation vector F and its spectrum F_spectrum
-    set_parameters():
+    set_parameters(solver='iterative'):
         Set default parameters of KSP solver (stored in attribute ksp)
     solve():
         Solve the scattering problem repeatedly for the angular frequency range, solutions are stored as attributes
@@ -179,6 +179,7 @@ class Scattering:
         #Initialization of modal coefficients to zero
         getattr(self, tbc_name).coefficient = [np.zeros(getattr(self, tbc_name).eigenvalues[i].size).astype('complex')
                                                for i in range(size)]
+        getattr(self, tbc_name).complex_power = []
         #Set mode index to 1
         for i in range(size):
             if mode[i]>=0:
@@ -194,15 +195,26 @@ class Scattering:
         self.F = F
         self.F_spectrum = spectrum
     
-    def set_parameters(self):
+    def set_parameters(self, solver='iterative'):
         """
-        Set default parameters of the KSP solver () stored into the attribute ksp.
+        Set default parameters of KSP solver (stored into the attribute ksp.)
+        The preselected methods are CGS (iterative method) and MUMPS (direct method).
+        CGS is used by default, set solver='direct' to use MUMPS instead.
         After calling this method, various PETSc parameters can be set by changing the attribute ksp manually.
         """       
-        #Default setup
         self.ksp = PETSc.KSP().create(comm=self.comm)
+        if solver=='iterative': #iterative solver setup by default
+            self.ksp.setType(PETSc.KSP.Type.CGS) #CGS seems to be faster than: GMRES (ksp default), BCGS, ...
+            pc = self.ksp.getPC()
+            pc.setType('ilu')
+        elif solver=='direct': #direct solver setup
+            self.ksp.setType('preonly')
+            pc = self.ksp.getPC()
+            pc.setType('lu')
+            pc.setFactorSolverType('mumps') #mumps seems to be faster than: umfpack, superlu_dist, petsc, superlu, klu...
+        else:
+            raise NotImplementedError('The string solver must be iterative or direct')
         self.ksp.setFromOptions()
-        #self.ksp.setType(PETSc.KSP.Type.GMRES) #GMRES is default, try also: BCGS, CGS...
     
     def solve(self):
         """
@@ -235,6 +247,7 @@ class Scattering:
                     raise NotImplementedError(f'The angular frequencies of {tbc[0]} are different from those of {self.tbcs[0][0]}!')
             if len(getattr(self, tbc[0]).coefficient)==0: #create zero arrays if no coefficient has been computed
                 getattr(self, tbc[0]).coefficient = [np.zeros(eigenvalues.size).astype('complex') for eigenvalues in getattr(self, tbc[0]).eigenvalues]
+            getattr(self, tbc[0]).complex_power = [] #re-initialization of modal complex power
         if self.F is None: #create zero vector F by default
             self.F = self.M.createVecRight()
         if self.F_spectrum is None: #create vector of 1 by default
@@ -295,8 +308,11 @@ class Scattering:
             D = self.K - omega**2*self.M - 1j*omega*self.C
             Bu_out_transpose = Bu_out.copy().transpose()
             U_out = PETSc.Vec().createSeq(outgoing_ncol, comm=self.comm)
+            if i>0 and self.ksp.getInitialGuessNonzero() is True: #try to set initial value from previous solution...
+                U_out.setValues(range(internal_dofs.size), self.displacement[-1].getValues(internal_dofs)) #internal dofs only->inefficient?
             self.ksp.reset() #reset is necessary because the size of A and b can change at every iteration
             self.ksp.setOperators(Bu_out_transpose*(D*Bu_out-Bf_out)) #the operator A of system Ax=b
+            #self.ksp.setUp(); FM = pc.getFactorMatrix(); FM.setMumpsIcntl(14, 50); FM.setMumpsCntl(3, 1e-12) #uncomment if mumps was to be parametrized (see mumps doc)
             self.ksp.solve(Bu_out_transpose*(Bf_in-D*Bu_in)*U_in, U_out)
             
             #Back to initial dofs
@@ -313,32 +329,45 @@ class Scattering:
                 traveling_direction = getattr(self, tbc[0]).traveling_direction[i]
                 imodes = np.nonzero(traveling_direction==+normal_sign)[0]
                 getattr(self, tbc[0]).coefficient[i][imodes] = U_out.getValues(range(outgoing_col_pointer[j], outgoing_col_pointer[j+1]))
-
+            
             print(f'Iteration {i}, elapsed time :{(time.perf_counter() - start):.2f}s')
+
+        #print('\n---- KSP setup (based on last iteration) ----\n')
+        #self.ksp.view()
+        print('')
         
         #Memory saving
         Bu_out_transpose.destroy()
         D.destroy()
         
-    def plot_energy_balance(self):
+    def plot_energy_balance(self, ax=None, color="k", linewidth=1, linestyle="-", **kwargs):
         """
         Plot energy balance at each frequency index for checking modal tbc truncature.
         The energy balance is defined as the difference between tbc net flux and volume power
         divided by the input power (values close to zero indicate that enough modes have
         been included in the transparent BCs).
+
+        Parameters
+        ----------
+        ax: matplotlib axis
+            the matplotlib axis on which to plot data (created if None)
+        color: str, linewidth: int, linestyle: str, **kwargs are passed to ax.plot
+        
+        Returns
+        -------
+        ll: the matplotlib list of lines
         """
+        # Initialization
+        if ax is None:
+            fig, ax = plt.subplots(1, 1)
+        # Plot energy balance
         energy_balance = np.concatenate(self.energy_balance)
-        fig, ax = plt.subplots(1, 1)
         energy_balance = (np.abs(energy_balance[1::3])-np.abs(energy_balance[2::3]))/np.abs(energy_balance[::3])
-        ax.plot(np.abs(energy_balance[::3]), linewidth=1, color='black', label='|input power|')
-        #ax.plot(np.abs(energy_balance[::3]), linewidth=1, color='black', label='|input power|')
-        #ax.plot(np.abs(energy_balance[1::3]), linewidth=1, color='red', label='|tbc net flux|')
-        #ax.plot(np.abs(energy_balance[2::3]), linewidth=1, color='blue', label='|volume power|')
-        #ax.legend()
+        ll = ax.plot(np.abs(energy_balance[::3]), color=color, linewidth=linewidth, linestyle=linestyle, **kwargs)
         ax.set_xlabel('frequency index')
         ax.set_ylabel('energy balance')
         fig.tight_layout()
-        return ax
+        return ll
         
     def _build_global_modal(self, i, tbc, direction_str, ncol, col_pointer):
         """

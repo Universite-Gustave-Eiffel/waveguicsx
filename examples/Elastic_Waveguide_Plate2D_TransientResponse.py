@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 import pyvista
 
 from waveguicsx.waveguide import Waveguide, Signal
-#For proper use with a jupyter notebook, uncomment the following line:
+#For proper use with a notebook, uncomment the following line:
 #pyvista.set_jupyter_backend("static"); pyvista.start_xvfb() #try: "none", "static", "pythreejs", "ipyvtklink"...
 
 ##################################
@@ -137,10 +137,10 @@ sc = wg.plot_excitability()
 sc.axes.set_yscale('log')
 sc.axes.set_ylim(1e-3,1e2)
 wg.set_plot_scaler(length=L0, time=T0, mass=M0, dim=2) #to visualize dimensional results
-frequency, response, axs = wg.compute_response(dof=dof, z=h/2, spectrum=excitation.spectrum, plot=True)
-axs[0].get_lines()[0].set_color("black")
-axs[0].set_xlim([0, 0.5e6])
-axs[0].set_ylim([0, 1e-4])
+frequency, response, ll_abs, ll_angle = wg.compute_response(dof=dof, z=h/2, spectrum=excitation.spectrum, plot=True)
+ll_abs[0].axes.get_lines()[0].set_color("black")
+ll_abs[0].axes.set_xlim([0, 0.5e6])
+ll_abs[0].axes.set_ylim([0, 1e-4])
 plt.close()
 
 ###############################################################################

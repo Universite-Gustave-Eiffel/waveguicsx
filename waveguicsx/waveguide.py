@@ -15,7 +15,7 @@
 #####################################################################
 
 
-from typing import Union, List
+from typing import Union, List, Optional, Literal, Callable
 from petsc4py import PETSc
 from slepc4py import SLEPc
 
@@ -112,7 +112,7 @@ class Waveguide:
         access to components with eigenvalues[ip][imode] (ip: parameter index, imode: mode index)
     eigenvectors : list of PETSc matrices
         list of mode shapes,
-        access to components with eigenvectors[ik][idof,imode] (ip: parameter index, imode: mode index, idof: dof index)
+        access to components with eigenvectors[ik][idof,imode] (ik: parameter index, imode: mode index, idof: dof index)
         or eigenvectors[ik].getColumnVector(imode)
     eigenforces : list of PETSc matrices
         list of eigenforces (acces to components: see eigenvectors)
@@ -207,37 +207,41 @@ class Waveguide:
         self.K0 = K0
         self.K1 = K1
         self.K2 = K2
-        self.F = None
+        self.F: Optional[PETSc.Mat] = None
 
         # Set the default values for the internal attributes used in this class
-        self.problem_type: str = ""  # "wavenumber" or "omega"
-        self.omega: Union[np.ndarray, None] = None
-        self.wavenumber: Union[np.ndarray, None] = None
-        self.two_sided = None
-        self.target = None
-        self.evp: Union[SLEPc.PEP, SLEPc.EPS, None] = None
-        self.eigenvalues: list = []
-        self.eigenvectors: list = []
-        self.eigenforces: list = []
-        self.opposite_going: list = []
-        self.energy_velocity: list = []
-        self.group_velocity: list = []
-        self.traveling_direction: list = []
-        self.pml_ratio: list = []
-        self.coefficient: list = []
-        self.excitability: list = []
-        self.complex_power: list = []
-        self.plot_scaler = dict.fromkeys(['omega','wavenumber','energy_velocity','group_velocity','pml_ratio',
-                                          'eigenvalues','excitability',
-                                          'eigenvectors','eigenforces','coefficient','complex_power',
-                                          'frequency','attenuation','phase_velocity'], 1)
+        self.problem_type: Literal["", "wavenumber", "omega"] = ""
+        self.omega: Optional[np.ndarray[complex]] = None
+        self.wavenumber: Optional[np.ndarray[complex]] = None
+        self.two_sided: Optional[bool] = None
+        self.target: Optional[Union[complex, Callable]] = None
+        self.evp: Optional[Union[SLEPc.PEP, SLEPc.EPS]] = None
+        self.eigenvalues: List[np.ndarray[complex]] = []
+        self.eigenvectors: List[PETSc.MAT] = []
+        self.eigenforces: List[PETSc.MAT] = []
+        self.opposite_going: List[np.ndarray[int]] = []
+        self.energy_velocity: List[np.ndarray[float]] = []
+        self.group_velocity: List[np.ndarray[float]] = []
+        self.traveling_direction: List[np.ndarray[int]] = []
+        self.pml_ratio: List[np.ndarray[float]] = []
+        self.coefficient: List[np.ndarray[complex]] = []
+        self.excitability: List[np.ndarray[complex]] = []
+        self.complex_power: List[np.ndarray[complex]] = []
+        self.plot_scaler = dict.fromkeys(
+            ['omega','wavenumber','energy_velocity','group_velocity','pml_ratio',
+                     'eigenvalues','excitability',
+                     'eigenvectors','eigenforces','coefficient','complex_power',
+                     'frequency','attenuation','phase_velocity'], 1)
         self._poynting_normalization = None
         self._biorthogonality_factor: list = []
         
         # Print the number of degrees of freedom
         print(f'Total number of degrees of freedom: {self.M.size[0]}')
 
-    def set_parameters(self, omega: Union[np.ndarray, None]=None, wavenumber:Union[np.ndarray, None]=None, two_sided=False):
+    def set_parameters(self,
+                       omega: Optional[np.ndarray[complex]] = None,
+                       wavenumber:Optional[np.ndarray[complex]] = None,
+                       two_sided: bool = False):
         """
         Set the parameter range (omega or wavenumber) as well as default parameters of the SLEPc eigensolver (evp).
         The user must specify the parameter omega or wavenumber, but not both.

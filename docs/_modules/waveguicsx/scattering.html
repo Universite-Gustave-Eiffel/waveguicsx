@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>waveguicsx.scattering &mdash; waveguicsx 2.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html">
+            <img src="../../_static/logo_doc.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme_link.html">Presentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../readme_link.html#introduction">0. Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../readme_link.html#basic-examples">1. Basic examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../readme_link.html#prerequisites">2. Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../readme_link.html#installation">3. Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../readme_link.html#documentation">4. Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../readme_link.html#tutorials">5. Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../readme_link.html#scattering-by-local-inhomogeneities">6. Scattering by local inhomogeneities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../readme_link.html#authors-and-contributors">7. Authors and contributors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../readme_link.html#how-to-cite">8. How to cite</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../readme_link.html#license">9. License</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../documentation.html">Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../waveguicsx.html">waveguicsx.waveguide</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#three-dimensional-elastic-bar-of-square-cross-section">0. Three-dimensional elastic bar of square cross-section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#three-dimensional-elastic-bar-of-square-cross-section-with-parallelization">1. Three-dimensional elastic bar of square cross-section with parallelization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#three-dimensional-elastic-bar-of-square-cross-section-buried-into-a-pml-external-medium">2. Three-dimensional elastic bar of square cross-section buried into a PML external medium</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#three-dimensional-elastic-bar-of-square-cross-section-buried-into-a-pml-external-medium-using-gmsh">3. Three-dimensional elastic bar of square cross-section buried into a PML external medium using gmsh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#excitation-of-a-three-dimensional-elastic-bar-of-circular-cross-section">4. Excitation of a three-dimensional elastic bar of circular cross-section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#excitation-of-a-three-dimensional-elastic-bar-of-circular-cross-section-with-parallelization">5. Excitation of a three-dimensional elastic bar of circular cross-section with parallelization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#time-response-of-a-two-dimensional-plate-excited-near-its-first-zgv-resonance">6. Time response of a two-dimensional plate excited near its first ZGV resonance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#dispersion-curves-of-a-rail">7. Dispersion curves of a rail</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#reflection-of-lamb-modes-by-the-free-edge-of-a-plate">8. Reflection of Lamb modes by the free edge of a plate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#reflection-and-transmission-of-pochhammer-chree-modes-inside-a-cylinder">9. Reflection and transmission of Pochhammer-Chree modes inside a cylinder</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">waveguicsx</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">waveguicsx.scattering</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for waveguicsx.scattering</h1><div class="highlight"><pre>
+<span></span><span class="c1">#####################################################################</span>
+<span class="c1"># waveguicsx, a python library for solving complex waveguide problems</span>
+<span class="c1"># </span>
+<span class="c1"># Copyright (C) 2023-2024  Fabien Treyssede</span>
+<span class="c1"># </span>
+<span class="c1"># This file is part of waveguicsx.</span>
+<span class="c1"># </span>
+<span class="c1"># waveguicsx is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</span>
+<span class="c1"># </span>
+<span class="c1"># waveguicsx is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</span>
+<span class="c1"># </span>
+<span class="c1"># You should have received a copy of the GNU General Public License along with waveguicsx. If not, see &lt;https://www.gnu.org/licenses/&gt;.</span>
+<span class="c1"># </span>
+<span class="c1"># Contact: fabien.treyssede@univ-eiffel.fr</span>
+<span class="c1">#####################################################################</span>
+
+
+<span class="kn">from</span> <span class="nn">petsc4py</span> <span class="kn">import</span> <span class="n">PETSc</span>
+<span class="kn">from</span> <span class="nn">waveguicsx.waveguide</span> <span class="kn">import</span> <span class="n">Waveguide</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+
+<div class="viewcode-block" id="Scattering"><a class="viewcode-back" href="../../waveguicsx.html#waveguicsx.scattering.Scattering">[docs]</a><span class="k">class</span> <span class="nc">Scattering</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class for solving scattering problems by local inhomogeneities in complex waveguides based on PETSc.</span>
+<span class="sd">    </span>
+<span class="sd">    The full documentation is entirely defined in the `scattering.py&#39; module.</span>
+
+<span class="sd">    The following matrix problem is considered: (K-omega**2*M-1j*omega*C)*U=F.</span>
+<span class="sd">    This kind of problem typically typically stems from a finite element (FE) model of a small portion of waveguide</span>
+<span class="sd">    including a local inhomogeneity (e.g. defects). The cross-section extremities of the truncated FE model are then</span>
+<span class="sd">    handled as transparent boundary conditions (BCs) to reproduce semi-infinite waveguides.</span>
+<span class="sd">    The so-obtained scattering problem is solved repeatedly for each frequency. The loops over the angular frequency can</span>
+<span class="sd">    be parallelized, as shown in some tutorials (using mpi4py).</span>
+<span class="sd">    </span>
+<span class="sd">    This class enables to deal with scattering in complex waveguides, two-dimensional (e.g. plates) or three-dimensional</span>
+<span class="sd">    (arbitrarily shaped cross-section), inhomogeneous in the transverse directions, anisotropic. Complex-valued problems</span>
+<span class="sd">    can be handled including the effects of non-propagating modes (evanescent, inhomogeneous), viscoelastic loss (complex</span>
+<span class="sd">    material properties) or perfectly matched layers (PML) to simulate buried waveguides.</span>
+<span class="sd">    </span>
+<span class="sd">    Transparent BCs are Waveguide objects, which must have been solved prior to the scattering</span>
+<span class="sd">    problem solution, yielding the following object attributes: omega, eigenvalues, eigenvectors, eigenforces and traveling</span>
+<span class="sd">    direction (see waveguide.py module for details). Transparent BCs are localized by their degrees of</span>
+<span class="sd">    freedom in the global vector U. This means that the local degree of freedom i of a given eigenvector/eigenforce</span>
+<span class="sd">    stored in a Waveguide object is located at the global degree of freedom dofs[i] of the FE model.</span>
+<span class="sd">    </span>
+<span class="sd">    The user must supply the following inputs:</span>
+<span class="sd">    - K, M, C, the global FE matrices (stiffness, mass and viscous damping)</span>
+<span class="sd">    - F and F_spectrum, the global FE vector of internal excitation  (i.e. sources inside the FE model), if any,</span>
+<span class="sd">      and its spectrum</span>
+<span class="sd">    - tbcs, a list of pairs (name, dofs) which characterize the transparent BCs, where name is a string specifying the</span>
+<span class="sd">      attribute name of a given transparent BC (this attribute will be a Waveguide object) and dofs is a numpy array</span>
+<span class="sd">      of the global degrees of freedom for this transparent BC.</span>
+<span class="sd">    - the ingoing mode coefficients, specified by the attribute coefficient in each transparent BC</span>
+<span class="sd">    Important convention: if the waveguide axis of a transparent BC is oriented outward (i.e. outside the FE box), dofs are</span>
+<span class="sd">    positive, but if oriented inward (i.e. inside the FE box), a negative sign has to be assigned to dofs by the user.</span>
+<span class="sd">    </span>
+<span class="sd">    The solution to the scattering problem yields:</span>
+<span class="sd">    - the displacement U of the FE model for each angular frequency omega</span>
+<span class="sd">    - the outgoing modal coefficients of every transparent BC and for each omega</span>
+<span class="sd">    - the energy balance post-processed for each angular frequency</span>
+<span class="sd">      which enables to check the error due to the modal truncature introduced in the transparent BCs.</span>
+<span class="sd">    See Attributes below for more details.</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    Example::</span>
+<span class="sd">    </span>
+<span class="sd">        # This simple example involves only one transparent boundary condition (e.g. waveguide scattering by a free edge)</span>
+<span class="sd">        # The tbc (the &quot;inlet&quot;) is supposed to be at the left-hand side of the FE box so that its outward normal is negative</span>
+
+<span class="sd">        from waveguicsx.waveguide import Waveguide</span>
+<span class="sd">        from waveguicsx.scattering import Scattering</span>
+
+<span class="sd">        # Input parameters</span>
+<span class="sd">        omega = 2*np.sqrt(3)*np.linspace(1.48, 1.60, num=100) #normalized angular frequency range</span>
+<span class="sd">        nev = 30 #tbc number of eigenvalues requested at each frequency</span>
+
+<span class="sd">        # Scattering initialization</span>
+<span class="sd">        ws = Scattering(MPI.COMM_WORLD, M, K, 0*M, [(&#39;waveguide0&#39;, -tbc_dofs)]) #M and K are the mass and stiffness matrices of the FE box</span>
+<span class="sd">        #reminder: tbc_dofs are the global degrees of freedom, set negative by convention when the normal is negative (here, we suppose n=-ey)</span>
+
+<span class="sd">        #Solve waveguide problem associated with the tbc</span>
+<span class="sd">        ws.waveguide0 = Waveguide(MPI.COMM_WORLD, Ms, K0, K1, K2) #Ms, K0, K1 and K2 are SAFE matrices associated with the tbc (here, named &#39;waveguide0&#39;)</span>
+<span class="sd">        ws.waveguide0.set_parameters(omega=omega)</span>
+<span class="sd">        ws.waveguide0.solve(nev)</span>
+<span class="sd">        ws.waveguide0.compute_traveling_direction()</span>
+<span class="sd">        ws.waveguide0.compute_poynting_normalization()</span>
+
+<span class="sd">        # Solving scattering problem</span>
+<span class="sd">        mode = ws.waveguide0.track_mode(frequency_index, mode_index, threshold=0.98, plot=True) #track a mode, specified by its index at a given frequency, over the whole frequency range</span>
+<span class="sd">        ws.set_ingoing_mode(&#39;waveguide0&#39;, mode) #set mode as a single ingoing mode, coeff is 1 (here, power is also 1 thanks to poynting normalization)</span>
+<span class="sd">        ws.set_parameters()</span>
+<span class="sd">        ws.solve()</span>
+
+<span class="sd">        # Plot reflected power coefficients vs. angular frequency</span>
+<span class="sd">        ws.waveguide0.compute_complex_power()</span>
+<span class="sd">        ws.waveguide0.plot(y=(&#39;complex_power&#39;, lambda x:np.abs(np.real(x))), direction=-1)</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    comm : mpi4py.MPI.Intracomm</span>
+<span class="sd">        MPI communicator (parallel processing)</span>
+<span class="sd">    M, K, C : petsc4py.PETSc.Mat</span>
+<span class="sd">        FE matrices</span>
+<span class="sd">    F : petsc4py.PETSc.Vec</span>
+<span class="sd">        FE force vector (internal excitation)</span>
+<span class="sd">    F_spectrum : numpy.ndarray</span>
+<span class="sd">        the modulation spectrum of F (size must be the same as omega)</span>
+<span class="sd">    tbc : list of pairs (name, dofs)</span>
+<span class="sd">        name is a string corresponding to the desired attribute name of a tbc (Waveguide object),</span>
+<span class="sd">        dofs is a numpy array of the degrees of freedom of the tbc (positive if outward</span>
+<span class="sd">        negative if inward)</span>
+<span class="sd">    omega : numpy.ndarray</span>
+<span class="sd">        the angular frequency range, specified by the user in tbcs (Waveguide objects)</span>
+<span class="sd">    ksp: KSP object (PETSc object)</span>
+<span class="sd">        solver parameters</span>
+<span class="sd">    displacement : list of PETSc vectors</span>
+<span class="sd">        for each angular frequency, the FE displacement vector U (solution of the scattering problem)</span>
+<span class="sd">    energy_balance : list of 1d numpy array</span>
+<span class="sd">        for each angular frequency, energy_balance[i] gives the following three-component array,</span>
+<span class="sd">        [Pin-i*omega/2*U^H*F, Ptot, -i*omega*U^H*D*U], where P=-i*omega/2*U^H*T:</span>
+<span class="sd">        - the term Pin-i*omega/2*U^H*F represents the input power, supplied by ingoing modes and internal</span>
+<span class="sd">          forces (this term should have a negative real part)</span>
+<span class="sd">        - the term Ptot is the complex power flow of the sum of ingoing and ougoing modes</span>
+<span class="sd">        - the term -i*omega*U^H*D*U is related to the kinetic, potential and dissipated energies in the volume</span>
+<span class="sd">          (the dissipated energy, defined as positive, is equal to the real part of this term divided by -2*omega).</span>
+<span class="sd">        - a perfect energy balance is achived if Ptot = -i*omega*U^H*D*U</span>
+<span class="sd">    name.coefficient : list of numpy.ndarray, where name is a Waveguide object associated with a given transparent BC</span>
+<span class="sd">        this transparent BC attribute stores modal coefficients at each frequency:</span>
+<span class="sd">        - the coefficients of ingoing modes are considered as inputs, specified by the user (excitation in the scattering problem)</span>
+<span class="sd">        - the coefficients of outgoing modes are considered as initially unknown, solution of the scattering problem</span>
+<span class="sd">        Any non-zero outgoing amplitudes specified in name.coefficient prior to solving the scattering problem</span>
+<span class="sd">        will hence be discarded and replaced with the scattering solution.</span>
+<span class="sd">        If the attribute coefficient is empty prior to scattering (no specified ingoing modes), zero ingoing amplitudes</span>
+<span class="sd">        will be considered by default.</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    __init__(comm:&#39;_MPI.Comm&#39;, M:PETSc.Mat, K:PETSc.Mat, C:PETSc.Mat, tbcs:list):</span>
+<span class="sd">        Constructor, initialization of scattering problem</span>
+<span class="sd">    set_ingoing_mode(tbc_name, mode, spectrum=None):</span>
+<span class="sd">        For a given tbc, specified by the string tbc_name, set the coefficient of a single mode to 1.</span>
+<span class="sd">        mode is a list of indices identifying the mode position at each frequency.</span>
+<span class="sd">    set_internal_excitation(F, F_spectrum=None):</span>
+<span class="sd">        Set the internal excitation vector F and its spectrum F_spectrum</span>
+<span class="sd">    set_parameters(solver=&#39;iterative&#39;):</span>
+<span class="sd">        Set default parameters of KSP solver (stored in attribute ksp)</span>
+<span class="sd">    solve():</span>
+<span class="sd">        Solve the scattering problem repeatedly for the angular frequency range, solutions are stored as attributes</span>
+<span class="sd">        (names: displacement, energy_balance)</span>
+<span class="sd">    plot_energy_balance():</span>
+<span class="sd">        Plot the three terms of energy_balance (complex modulus) at each frequency index for checking modal tbc truncature        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">comm</span><span class="p">:</span><span class="s1">&#39;_MPI.Comm&#39;</span><span class="p">,</span> <span class="n">M</span><span class="p">:</span><span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">,</span> <span class="n">K</span><span class="p">:</span><span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span><span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">,</span> <span class="n">tbcs</span><span class="p">:</span><span class="nb">list</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        comm : mpi4py.MPI.Intracomm</span>
+<span class="sd">            MPI communicator (parallel processing)</span>
+<span class="sd">        M, K, C : petsc4py.PETSc.Mat</span>
+<span class="sd">            FE matrices</span>
+<span class="sd">        tbcs : list of pairs (name, dofs)</span>
+<span class="sd">            name is a string corresponding to the desired attribute name of a tbc (Waveguide object),</span>
+<span class="sd">            dofs is a numpy array of the degrees of freedom of the tbc (positive if outward</span>
+<span class="sd">            negative if inward)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">comm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">M</span> <span class="o">=</span> <span class="n">M</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">=</span> <span class="n">K</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="n">C</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tbcs</span> <span class="o">=</span> <span class="n">tbcs</span>
+        <span class="k">for</span> <span class="n">tbc</span> <span class="ow">in</span> <span class="n">tbcs</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="kc">None</span><span class="p">)</span>
+        
+        <span class="c1"># Set the default values for the internal attributes used in this class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">omega</span><span class="p">:</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">F</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">F_spectrum</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ksp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy_balance</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">displacement</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># Print the number of degrees of freedom</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Total number of degrees of freedom: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="Scattering.set_ingoing_mode"><a class="viewcode-back" href="../../waveguicsx.html#waveguicsx.scattering.Scattering.set_ingoing_mode">[docs]</a>    <span class="k">def</span> <span class="nf">set_ingoing_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc_name</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For a given tbc, specified by the string tbc_name, set the coefficient of a single mode to 1. The coefficients of</span>
+<span class="sd">        all other modes are set to 0. mode is a list of indices identifying the mode position at each frequency</span>
+<span class="sd">        (see also method track_mode() of class Waveguide).</span>
+<span class="sd">        Please ensure that this mode is an ingoing mode (non-zero outgoing amplitudes will be discarded).</span>
+<span class="sd">        When specified, spectrum is a vector of length omega (numpy.array) used to modulate the coefficient in terms of</span>
+<span class="sd">        frequency (default: 1 for all frequencies).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc_name</span><span class="p">)</span><span class="o">.</span><span class="n">omega</span><span class="o">.</span><span class="n">size</span>
+        <span class="k">if</span> <span class="n">spectrum</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">spectrum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span> <span class="o">!=</span> <span class="n">size</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;The length of spectrum must be equal to the length of omega&#39;</span><span class="p">)</span>
+        <span class="c1">#Initialization of modal coefficients to zero</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc_name</span><span class="p">)</span><span class="o">.</span><span class="n">coefficient</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc_name</span><span class="p">)</span><span class="o">.</span><span class="n">eigenvalues</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;complex&#39;</span><span class="p">)</span>
+                                               <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc_name</span><span class="p">)</span><span class="o">.</span><span class="n">complex_power</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1">#Set mode index to 1</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">mode</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">:</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc_name</span><span class="p">)</span><span class="o">.</span><span class="n">coefficient</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">mode</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">spectrum</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
+    
+<div class="viewcode-block" id="Scattering.set_internal_excitation"><a class="viewcode-back" href="../../waveguicsx.html#waveguicsx.scattering.Scattering.set_internal_excitation">[docs]</a>    <span class="k">def</span> <span class="nf">set_internal_excitation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">F_spectrum</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the internal excitation vector F (petsc4py.PETSc.Vec).</span>
+<span class="sd">        When specified, F_spectrum is a vector of length omega (numpy.array) used to modulate F in terms of</span>
+<span class="sd">        frequency (default: 1 for all frequencies).</span>
+<span class="sd">        F and F_spectrum are stored as attributes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">F</span> <span class="o">=</span> <span class="n">F</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">F_spectrum</span> <span class="o">=</span> <span class="n">spectrum</span></div>
+    
+<div class="viewcode-block" id="Scattering.set_parameters"><a class="viewcode-back" href="../../waveguicsx.html#waveguicsx.scattering.Scattering.set_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;iterative&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set default parameters of KSP solver (stored into the attribute ksp.)</span>
+<span class="sd">        The preselected methods are CGS (iterative method) and MUMPS (direct method).</span>
+<span class="sd">        CGS is used by default, set solver=&#39;direct&#39; to use MUMPS instead.</span>
+<span class="sd">        After calling this method, various PETSc parameters can be set by changing the attribute ksp manually.</span>
+<span class="sd">        &quot;&quot;&quot;</span>       
+        <span class="bp">self</span><span class="o">.</span><span class="n">ksp</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">KSP</span><span class="p">()</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">comm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">solver</span><span class="o">==</span><span class="s1">&#39;iterative&#39;</span><span class="p">:</span> <span class="c1">#iterative solver setup by default</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ksp</span><span class="o">.</span><span class="n">setType</span><span class="p">(</span><span class="n">PETSc</span><span class="o">.</span><span class="n">KSP</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">CGS</span><span class="p">)</span> <span class="c1">#CGS seems to be faster than: GMRES (ksp default), BCGS, ...</span>
+            <span class="n">pc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ksp</span><span class="o">.</span><span class="n">getPC</span><span class="p">()</span>
+            <span class="n">pc</span><span class="o">.</span><span class="n">setType</span><span class="p">(</span><span class="s1">&#39;ilu&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">solver</span><span class="o">==</span><span class="s1">&#39;direct&#39;</span><span class="p">:</span> <span class="c1">#direct solver setup</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ksp</span><span class="o">.</span><span class="n">setType</span><span class="p">(</span><span class="s1">&#39;preonly&#39;</span><span class="p">)</span>
+            <span class="n">pc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ksp</span><span class="o">.</span><span class="n">getPC</span><span class="p">()</span>
+            <span class="n">pc</span><span class="o">.</span><span class="n">setType</span><span class="p">(</span><span class="s1">&#39;lu&#39;</span><span class="p">)</span>
+            <span class="n">pc</span><span class="o">.</span><span class="n">setFactorSolverType</span><span class="p">(</span><span class="s1">&#39;mumps&#39;</span><span class="p">)</span> <span class="c1">#mumps seems to be faster than: umfpack, superlu_dist, petsc, superlu, klu...</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;The string solver must be iterative or direct&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ksp</span><span class="o">.</span><span class="n">setFromOptions</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="Scattering.solve"><a class="viewcode-back" href="../../waveguicsx.html#waveguicsx.scattering.Scattering.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Solve the scattering problem, i.e. the linear system repeatedly for the angular frequency range.</span>
+<span class="sd">        The solutions are stored in the attributes displacement and energy_balance.</span>
+<span class="sd">        The FE problem D*U=F is transformed into:</span>
+<span class="sd">        Bout^T*(D*Bout-Tout)*Uout = Bout^T*(Tin-D*Bin)*Uin</span>
+<span class="sd">        where:</span>
+<span class="sd">        - D is the dynamic stiffness matrix (D=K-omega**2*M-1j*omega*C)</span>
+<span class="sd">        - Bin and Bout (resp. Tin and Tout) are bases containing ingoing and outgoing modal</span>
+<span class="sd">          displacements (resp. forces) so that: U=Bin*Uin+Bout*Uout, F=Tin*Uin+Tout*Uout</span>
+<span class="sd">        - Uin contains internal forces and known ingoing amplitudes (zero by default, if not specified)</span>
+<span class="sd">        - Uout is the solution containing outgoing modal amplitudes and internal dofs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1">#Checks        </span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">tbc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tbcs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="n">Waveguide</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The attribute </span><span class="si">{</span><span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> is not an instance of class Waveguide!&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">eigenvalues</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The eigenvalue problem of </span><span class="si">{</span><span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> has not been solved!&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">eigenforces</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The eigenforces of </span><span class="si">{</span><span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> have not been computed!&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">traveling_direction</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The traveling direction of </span><span class="si">{</span><span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> has not been computed!&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">index</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">omega</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">omega</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">omega</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">omega</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The angular frequencies of </span><span class="si">{</span><span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> are different from those of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tbcs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">!&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">coefficient</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span> <span class="c1">#create zero arrays if no coefficient has been computed</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">coefficient</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">eigenvalues</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;complex&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">eigenvalues</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">eigenvalues</span><span class="p">]</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">complex_power</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1">#re-initialization of modal complex power</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1">#create zero vector F by default</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">F</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="o">.</span><span class="n">createVecRight</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">F_spectrum</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1">#create vector of 1 by default</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">F_spectrum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">omega</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">F_spectrum</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">omega</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;The length of spectrum of F must be equal to the length of omega&#39;</span><span class="p">)</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Scattering problem (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">omega</span><span class="p">)</span><span class="si">}</span><span class="s1"> iterations)&#39;</span><span class="p">)</span>
+        
+        <span class="c1">#Loop on frequency</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">omega</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">omega</span><span class="p">):</span>
+            
+            <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+            
+            <span class="c1">#Pointers</span>
+            <span class="n">tbc_dofs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tbc</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">tbc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tbcs</span><span class="p">])</span>
+            <span class="n">internal_dofs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">setdiff1d</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="o">.</span><span class="n">getSize</span><span class="p">()[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">tbc_dofs</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
+            <span class="n">ingoing_col_pointer</span> <span class="o">=</span> <span class="p">[</span><span class="n">internal_dofs</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
+            <span class="n">outgoing_col_pointer</span> <span class="o">=</span> <span class="p">[</span><span class="n">internal_dofs</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">tbc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tbcs</span><span class="p">:</span>
+                <span class="n">normal_sign</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">tbc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="o">+</span><span class="mi">1</span> <span class="c1">#outward normal sign along the waveguide axis</span>
+                <span class="n">traveling_direction</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">traveling_direction</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>    
+                <span class="n">ingoing_col_pointer</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">ingoing_col_pointer</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">traveling_direction</span><span class="o">==-</span><span class="n">normal_sign</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">])</span>
+                <span class="n">outgoing_col_pointer</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">outgoing_col_pointer</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">traveling_direction</span><span class="o">==+</span><span class="n">normal_sign</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">])</span>
+            <span class="n">ingoing_ncol</span> <span class="o">=</span> <span class="n">ingoing_col_pointer</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">outgoing_ncol</span> <span class="o">=</span> <span class="n">outgoing_col_pointer</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            
+            <span class="c1">#Initialization of global projection matrices, filled with ones or zeroes at internal dofs</span>
+            <span class="n">Bu_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_global_internal</span><span class="p">(</span><span class="n">internal_dofs</span><span class="o">=</span><span class="p">[],</span> <span class="n">ncol</span><span class="o">=</span><span class="n">ingoing_ncol</span><span class="p">)</span>
+            <span class="n">Bf_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_global_internal</span><span class="p">(</span><span class="n">internal_dofs</span><span class="o">=</span><span class="n">internal_dofs</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">ingoing_ncol</span><span class="p">)</span>
+            <span class="n">Bu_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_global_internal</span><span class="p">(</span><span class="n">internal_dofs</span><span class="o">=</span><span class="n">internal_dofs</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">outgoing_ncol</span><span class="p">)</span>
+            <span class="n">Bf_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_global_internal</span><span class="p">(</span><span class="n">internal_dofs</span><span class="o">=</span><span class="p">[],</span> <span class="n">ncol</span><span class="o">=</span><span class="n">outgoing_ncol</span><span class="p">)</span>
+            
+            <span class="c1">#Assemble projection matrices</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">tbc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tbcs</span><span class="p">):</span>
+                <span class="c1">#Outgoing matrices</span>
+                <span class="n">Bu_temp</span><span class="p">,</span> <span class="n">Bf_temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_global_modal</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">tbc</span><span class="o">=</span><span class="n">tbc</span><span class="p">,</span> <span class="n">direction_str</span><span class="o">=</span><span class="s1">&#39;outgoing&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">outgoing_ncol</span><span class="p">,</span>
+                                                       <span class="n">col_pointer</span><span class="o">=</span><span class="n">outgoing_col_pointer</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                <span class="n">Bu_out</span> <span class="o">=</span> <span class="n">Bu_out</span> <span class="o">+</span> <span class="n">Bu_temp</span>
+                <span class="n">Bf_out</span> <span class="o">=</span> <span class="n">Bf_out</span> <span class="o">+</span> <span class="n">Bf_temp</span>
+                <span class="c1">#Ingoing matrices</span>
+                <span class="n">Bu_temp</span><span class="p">,</span> <span class="n">Bf_temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_global_modal</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">tbc</span><span class="o">=</span><span class="n">tbc</span><span class="p">,</span> <span class="n">direction_str</span><span class="o">=</span><span class="s1">&#39;ingoing&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">ingoing_ncol</span><span class="p">,</span>
+                                                       <span class="n">col_pointer</span><span class="o">=</span><span class="n">ingoing_col_pointer</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                <span class="n">Bu_in</span> <span class="o">=</span> <span class="n">Bu_in</span> <span class="o">+</span> <span class="n">Bu_temp</span>
+                <span class="n">Bf_in</span> <span class="o">=</span> <span class="n">Bf_in</span> <span class="o">+</span> <span class="n">Bf_temp</span>
+            
+            <span class="c1">#Assemble global excitation vector (internal force and ingoing modal amplitudes)</span>
+            <span class="n">U_in</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Vec</span><span class="p">()</span><span class="o">.</span><span class="n">createSeq</span><span class="p">(</span><span class="n">ingoing_ncol</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="p">)</span>
+            <span class="n">U_in</span><span class="o">.</span><span class="n">setValues</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">internal_dofs</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="o">.</span><span class="n">getValues</span><span class="p">(</span><span class="n">internal_dofs</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">F_spectrum</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="c1">#fill with the external force vector at internal dofs</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">tbc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tbcs</span><span class="p">):</span>
+                <span class="n">normal_sign</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">tbc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="o">+</span><span class="mi">1</span> <span class="c1">#outward normal sign along the waveguide axis</span>
+                <span class="n">traveling_direction</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">traveling_direction</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">imodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">traveling_direction</span><span class="o">==-</span><span class="n">normal_sign</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">tbc_coeff</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">coefficient</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">imodes</span><span class="p">]</span>
+                <span class="n">U_in</span><span class="o">.</span><span class="n">setValues</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">ingoing_col_pointer</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">ingoing_col_pointer</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]),</span> <span class="n">tbc_coeff</span><span class="p">)</span> <span class="c1">#fill with ingoing modal coefficients</span>
+            
+            <span class="c1">#Solve scattering system</span>
+            <span class="n">D</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">-</span> <span class="n">omega</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span> <span class="o">-</span> <span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">omega</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">C</span>
+            <span class="n">Bu_out_transpose</span> <span class="o">=</span> <span class="n">Bu_out</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+            <span class="n">U_out</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Vec</span><span class="p">()</span><span class="o">.</span><span class="n">createSeq</span><span class="p">(</span><span class="n">outgoing_ncol</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">&gt;</span><span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ksp</span><span class="o">.</span><span class="n">getInitialGuessNonzero</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span> <span class="c1">#try to set initial value from previous solution...</span>
+                <span class="n">U_out</span><span class="o">.</span><span class="n">setValues</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">internal_dofs</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">displacement</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">getValues</span><span class="p">(</span><span class="n">internal_dofs</span><span class="p">))</span> <span class="c1">#internal dofs only-&gt;inefficient?</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ksp</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span> <span class="c1">#reset is necessary because the size of A and b can change at every iteration</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ksp</span><span class="o">.</span><span class="n">setOperators</span><span class="p">(</span><span class="n">Bu_out_transpose</span><span class="o">*</span><span class="p">(</span><span class="n">D</span><span class="o">*</span><span class="n">Bu_out</span><span class="o">-</span><span class="n">Bf_out</span><span class="p">))</span> <span class="c1">#the operator A of system Ax=b</span>
+            <span class="c1">#self.ksp.setUp(); FM = pc.getFactorMatrix(); FM.setMumpsIcntl(14, 50); FM.setMumpsCntl(3, 1e-12) #uncomment if mumps was to be parametrized (see mumps doc)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ksp</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">Bu_out_transpose</span><span class="o">*</span><span class="p">(</span><span class="n">Bf_in</span><span class="o">-</span><span class="n">D</span><span class="o">*</span><span class="n">Bu_in</span><span class="p">)</span><span class="o">*</span><span class="n">U_in</span><span class="p">,</span> <span class="n">U_out</span><span class="p">)</span>
+            
+            <span class="c1">#Back to initial dofs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">displacement</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Bu_out</span><span class="o">*</span><span class="n">U_out</span> <span class="o">+</span> <span class="n">Bu_in</span><span class="o">*</span><span class="n">U_in</span><span class="p">)</span>
+            
+            <span class="c1">#Energy balance</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">energy_balance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">omega</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="n">Bf_in</span><span class="o">*</span><span class="n">U_in</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Bu_in</span><span class="o">*</span><span class="n">U_in</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">F_spectrum</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">displacement</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+                                                           <span class="p">(</span><span class="n">Bf_in</span><span class="o">*</span><span class="n">U_in</span><span class="o">+</span><span class="n">Bf_out</span><span class="o">*</span><span class="n">U_out</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Bu_in</span><span class="o">*</span><span class="n">U_in</span><span class="o">+</span><span class="n">Bu_out</span><span class="o">*</span><span class="n">U_out</span><span class="p">),</span>
+                                                           <span class="p">(</span><span class="n">D</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">displacement</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">displacement</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])]))</span>
+            
+            <span class="c1">#Store outgoing modal amplitudes</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">tbc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tbcs</span><span class="p">):</span>
+                <span class="n">normal_sign</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">tbc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="o">+</span><span class="mi">1</span> <span class="c1">#outward normal sign along the waveguide axis</span>
+                <span class="n">traveling_direction</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">traveling_direction</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">imodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">traveling_direction</span><span class="o">==+</span><span class="n">normal_sign</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tbc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">coefficient</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">imodes</span><span class="p">]</span> <span class="o">=</span> <span class="n">U_out</span><span class="o">.</span><span class="n">getValues</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">outgoing_col_pointer</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">outgoing_col_pointer</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]))</span>
+            
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Iteration </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">, elapsed time :</span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="p">)</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">s&#39;</span><span class="p">)</span>
+
+        <span class="c1">#print(&#39;\n---- KSP setup (based on last iteration) ----\n&#39;)</span>
+        <span class="c1">#self.ksp.view()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        
+        <span class="c1">#Memory saving</span>
+        <span class="n">Bu_out_transpose</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+        <span class="n">D</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span></div>
+        
+<div class="viewcode-block" id="Scattering.plot_energy_balance"><a class="viewcode-back" href="../../waveguicsx.html#waveguicsx.scattering.Scattering.plot_energy_balance">[docs]</a>    <span class="k">def</span> <span class="nf">plot_energy_balance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot energy balance at each frequency index for checking modal tbc truncature.</span>
+<span class="sd">        The energy balance is defined as the difference between tbc net flux and volume power</span>
+<span class="sd">        divided by the input power (values close to zero indicate that enough modes have</span>
+<span class="sd">        been included in the transparent BCs).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ax: matplotlib axis</span>
+<span class="sd">            the matplotlib axis on which to plot data (created if None)</span>
+<span class="sd">        color: str, linewidth: int, linestyle: str, **kwargs are passed to ax.plot</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ll: the matplotlib list of lines</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Initialization</span>
+        <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Plot energy balance</span>
+        <span class="n">energy_balance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy_balance</span><span class="p">)</span>
+        <span class="n">energy_balance</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">energy_balance</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">])</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">energy_balance</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">3</span><span class="p">]))</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">energy_balance</span><span class="p">[::</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">ll</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">energy_balance</span><span class="p">[::</span><span class="mi">3</span><span class="p">]),</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="n">linewidth</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="n">linestyle</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;frequency index&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;energy balance&#39;</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">ll</span></div>
+        
+    <span class="k">def</span> <span class="nf">_build_global_modal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">tbc</span><span class="p">,</span> <span class="n">direction_str</span><span class="p">,</span> <span class="n">ncol</span><span class="p">,</span> <span class="n">col_pointer</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return Bu and Bf, the global modal bases for the displacement eigenvectors and eigenforces</span>
+<span class="sd">        of the transparent BC given by tbc=(name, dofs), at omega index i, in the direction</span>
+<span class="sd">        given by direction_str (&#39;ingoing&#39; or outgoing&#39;). For internal use.</span>
+<span class="sd">        ncol is the total number of columns of the global projection matrix (i.e. number of internal dofs plus</span>
+<span class="sd">        total number of ingoing/outgoing modes), col_pointer is the column index of the global projection matrix</span>
+<span class="sd">        where to start the storage of the tbc modal basis.</span>
+<span class="sd">        Note: this method assumes that eigenvectors and eigenforces are stored as dense PETSc matrices.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#Initialization</span>
+        <span class="n">name</span><span class="p">,</span> <span class="n">dofs</span> <span class="o">=</span> <span class="n">tbc</span>
+        <span class="n">normal_sign</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">dofs</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="o">+</span><span class="mi">1</span> <span class="c1">#outward normal sign along the waveguide axis</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="o">-</span><span class="n">normal_sign</span> <span class="k">if</span> <span class="n">direction_str</span><span class="o">==</span><span class="s1">&#39;ingoing&#39;</span> <span class="k">else</span> <span class="o">+</span><span class="n">normal_sign</span>
+        <span class="n">dofs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dofs</span><span class="p">)</span>
+        <span class="n">traveling_direction</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">traveling_direction</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">imodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">traveling_direction</span><span class="o">==</span><span class="n">direction</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">tbc_size</span><span class="p">,</span> <span class="n">nmodes</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">eigenvectors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">getSize</span><span class="p">()</span> <span class="c1">#transparent boundary dofs size, number of modes</span>
+        <span class="n">tbc_row</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">tbc_size</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">imodes</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">imodes</span><span class="p">))</span> <span class="c1">#this line assumes dense PETSC matrix</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="o">.</span><span class="n">getSize</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="c1">#K, M, C size</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
+        <span class="n">row</span><span class="p">[</span><span class="n">dofs</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">tbc_row</span><span class="p">)</span>
+        <span class="c1">#Build Bu and Bf (modal basis for displacement and force)</span>
+        <span class="n">Bu</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">()</span><span class="o">.</span><span class="n">createAIJ</span><span class="p">((</span><span class="n">size</span><span class="p">,</span> <span class="n">ncol</span><span class="p">),</span> <span class="n">comm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="p">)</span>
+        <span class="n">Bu</span><span class="o">.</span><span class="n">setPreallocationNNZ</span><span class="p">(</span><span class="n">nnz</span><span class="o">=</span><span class="n">row</span><span class="p">)</span>
+        <span class="n">Bf</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">()</span><span class="o">.</span><span class="n">createAIJ</span><span class="p">((</span><span class="n">size</span><span class="p">,</span> <span class="n">ncol</span><span class="p">),</span> <span class="n">comm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="p">)</span>
+        <span class="n">Bf</span><span class="o">.</span><span class="n">setPreallocationNNZ</span><span class="p">(</span><span class="n">nnz</span><span class="o">=</span><span class="n">row</span><span class="p">)</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="n">col_pointer</span>
+        <span class="k">for</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">imodes</span><span class="p">:</span>
+            <span class="n">Bu</span><span class="o">.</span><span class="n">setValues</span><span class="p">(</span><span class="n">dofs</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">eigenvectors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">getColumnVector</span><span class="p">(</span><span class="n">mode</span><span class="p">))</span>
+            <span class="n">Bf</span><span class="o">.</span><span class="n">setValues</span><span class="p">(</span><span class="n">dofs</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">normal_sign</span> <span class="o">*</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">eigenforces</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">getColumnVector</span><span class="p">(</span><span class="n">mode</span><span class="p">))</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="n">col</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">Bu</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+        <span class="n">Bu</span><span class="o">.</span><span class="n">assemble</span><span class="p">()</span>
+        <span class="n">Bf</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+        <span class="n">Bf</span><span class="o">.</span><span class="n">assemble</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Bu</span><span class="p">,</span> <span class="n">Bf</span>
+
+    <span class="k">def</span> <span class="nf">_build_global_internal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">internal_dofs</span><span class="p">,</span> <span class="n">ncol</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build a global projection matrix filled with ones for internal dofs. If internal_dofs is empty, return</span>
+<span class="sd">        a zero matrix. internal_dofs are dofs of the FE model excluding transparent boundary dofs.</span>
+<span class="sd">        ncol is the total number of columns of the global projection matrix (i.e. number of internal dofs plus</span>
+<span class="sd">        total number of ingoing/outgoing modes).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="o">.</span><span class="n">getSize</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="c1">#K, M, C size</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">internal_dofs</span><span class="p">)</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+            <span class="n">row</span><span class="p">[</span><span class="n">internal_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">internal_dofs</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="c1">#internal dofs are set at the beginning of global matrix</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">internal_dofs</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
+            <span class="n">B</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">()</span><span class="o">.</span><span class="n">createAIJWithArrays</span><span class="p">((</span><span class="n">size</span><span class="p">,</span> <span class="n">ncol</span><span class="p">),</span> <span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">val</span><span class="p">],</span> <span class="n">comm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1">#if internal_dofs is empty, return a zero matrix</span>
+            <span class="n">B</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">()</span><span class="o">.</span><span class="n">createAIJ</span><span class="p">((</span><span class="n">size</span><span class="p">,</span> <span class="n">ncol</span><span class="p">),</span> <span class="n">nnz</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="p">)</span>
+            <span class="n">B</span><span class="o">.</span><span class="n">assemble</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">B</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2024, Fabien Treyssede.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

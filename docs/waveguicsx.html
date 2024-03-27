@@ -219,7 +219,7 @@ eigenvectors)</p>
 </dd>
 <dt>compute_eigenforce():</dt><dd><p>Compute the eigenforces for the whole parameter range and store them as an attribute (name: eigenforces)</p>
 </dd>
-<dt>compute_poynting_normalization():</dt><dd><p>Normalization of eigenvectors and eigenforces, so that U’=U/sqrt(<a href="#id46"><span class="problematic" id="id47">|P|</span></a>), where P is the normal component of complex Poynting vector</p>
+<dt>compute_poynting_normalization():</dt><dd><p>Normalization of eigenvectors and eigenforces, so that U’=U/sqrt(<a href="#id54"><span class="problematic" id="id55">|P|</span></a>), where P is the normal component of complex Poynting vector</p>
 </dd>
 <dt>compute_opposite_going(plot=False):</dt><dd><p>Compute opposite-going mode pairs based on on wavenumber and biorthogonality for the whole parameter range and store
 them as attributes (name: opposite_going), set plot to True to visualize the biorthogonality values of detected pairs</p>
@@ -253,9 +253,9 @@ or Im(omega) vs. Re(omega) if wavenumber is the parameter</p>
 </dd>
 <dt>plot_group_velocity(direction=None, pml_threshold=None, ax=None, color=”k”, marker=”o”, markersize=2, linestyle=””, <a href="#id11"><span class="problematic" id="id12">**</span></a>kwargs):</dt><dd><p>Plot group velocity dispersion curves, vg vs. Re(omega)</p>
 </dd>
-<dt>plot_coefficient(direction=None, pml_threshold=None, ax=None, color=”k”, marker=”o”, markersize=2, linestyle=””, <a href="#id13"><span class="problematic" id="id14">**</span></a>kwargs):</dt><dd><p>Plot response coefficients as a function of frequency, <a href="#id48"><span class="problematic" id="id49">|q|</span></a> vs. Re(omega)</p>
+<dt>plot_coefficient(direction=None, pml_threshold=None, ax=None, color=”k”, marker=”o”, markersize=2, linestyle=””, <a href="#id13"><span class="problematic" id="id14">**</span></a>kwargs):</dt><dd><p>Plot response coefficients as a function of frequency, <a href="#id56"><span class="problematic" id="id57">|q|</span></a> vs. Re(omega)</p>
 </dd>
-<dt>plot_excitability(direction=None, pml_threshold=None, ax=None, color=”k”, marker=”o”, markersize=2, linestyle=””, <a href="#id15"><span class="problematic" id="id16">**</span></a>kwargs):</dt><dd><p>Plot excitability as a function of frequency, <a href="#id50"><span class="problematic" id="id51">|e|</span></a> vs. Re(omega)</p>
+<dt>plot_excitability(direction=None, pml_threshold=None, ax=None, color=”k”, marker=”o”, markersize=2, linestyle=””, <a href="#id15"><span class="problematic" id="id16">**</span></a>kwargs):</dt><dd><p>Plot excitability as a function of frequency, <a href="#id58"><span class="problematic" id="id59">|e|</span></a> vs. Re(omega)</p>
 </dd>
 <dt>plot_spectrum(index=0, ax=None, color=”k”, marker=”o”, markersize=2, linestyle=””, <a href="#id17"><span class="problematic" id="id18">**</span></a>kwargs):</dt><dd><p>Plot the spectrum, Im(eigenvalues) vs. Re(eigenvalues), for the parameter index specified by the user</p>
 </dd>
@@ -311,7 +311,7 @@ a small shift might sometimes prevent errors (e.g. zero pivot with dirichlet bc)
 <dl class="py method">
 <dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.compute_poynting_normalization">
 <span class="sig-name descname"><span class="pre">compute_poynting_normalization</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.compute_poynting_normalization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.compute_poynting_normalization" title="Permalink to this definition"></a></dt>
-<dd><p>Post-process the normalization of eigenvectors and eigenforces, so that U’=U/sqrt(<a href="#id52"><span class="problematic" id="id53">|P|</span></a>),
+<dd><p>Post-process the normalization of eigenvectors and eigenforces, so that U’=U/sqrt(<a href="#id60"><span class="problematic" id="id61">|P|</span></a>),
 where P is the normal component of complex Poynting vector (P=-1j*omega/2*U^H*F).
 After normalization, every mode is such that <a href="#id20"><span class="problematic" id="id21">|</span></a>P|=1 and the attribute _poynting_normalization is set to True.
 Normalization is not mandatory but, when applied, has to be done before any response coefficient computation.</p>
@@ -335,7 +335,7 @@ Compute their biorthogonality normalization factors, Um^T*F-m - U-m^T*Fm, where 
 modes, for the whole parameter range and store them as an attribute (name: _biorthogonality_factor).
 If plot is set to True, the biorthogonality criterion found by the algorithm is plotted as a function
 of frequency index, allowing visual check that there is no values close to zero (a factor close to zero probably means
-a lack of biorthogonality). The biorthogonality criterion is defined as <a href="#id54"><span class="problematic" id="id55">|biorthogonality_factor*omega/4|</span></a>.</p>
+a lack of biorthogonality). The biorthogonality criterion is defined as <a href="#id62"><span class="problematic" id="id63">|biorthogonality_factor*omega/4|</span></a>.</p>
 <p>Notes:</p>
 <ul class="simple">
 <li><p>when an unpaired mode is found, the value -1 is stored in opposite_going (and NaN value in _biorthogonality_factor),
@@ -370,7 +370,7 @@ instead of ve). For unpaired modes, NaN values are set.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.compute_pml_ratio">
 <span class="sig-name descname"><span class="pre">compute_pml_ratio</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.compute_pml_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.compute_pml_ratio" title="Permalink to this definition"></a></dt>
-<dd><p>Post-process the pml ratio (useful to filter out PML mode), given by 1-Im(Ek)/<a href="#id56"><span class="problematic" id="id57">|Ek|</span></a> where Ek denotes
+<dd><p>Post-process the pml ratio (useful to filter out PML mode), given by 1-Im(Ek)/<a href="#id64"><span class="problematic" id="id65">|Ek|</span></a> where Ek denotes
 the “complex” kinetic energy, for every mode in the whole parameter range.      
 Reminder: the pml ratio tends to 1 for mode shapes vanishing inside the PML.</p>
 </dd></dl>
@@ -522,14 +522,14 @@ for dimensional results. Parameters and Returns: see plot(…).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.plot_coefficient">
 <span class="sig-name descname"><span class="pre">plot_coefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.plot_coefficient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.plot_coefficient" title="Permalink to this definition"></a></dt>
-<dd><p>Plot response coefficients as a function of frequency, <a href="#id58"><span class="problematic" id="id59">|q|</span></a> vs. Re(omega), where omega is replaced with frequency
+<dd><p>Plot response coefficients as a function of frequency, <a href="#id66"><span class="problematic" id="id67">|q|</span></a> vs. Re(omega), where omega is replaced with frequency
 for dimensional results. Parameters and Returns: see plot(…).</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide.plot_excitability">
 <span class="sig-name descname"><span class="pre">plot_excitability</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide.plot_excitability"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide.plot_excitability" title="Permalink to this definition"></a></dt>
-<dd><p>Plot excitability as a function of frequency, <a href="#id60"><span class="problematic" id="id61">|e|</span></a> vs. Re(omega), where omega is replaced with frequency
+<dd><p>Plot excitability as a function of frequency, <a href="#id68"><span class="problematic" id="id69">|e|</span></a> vs. Re(omega), where omega is replaced with frequency
 for dimensional results. Parameters and Returns: see plot(…).</p>
 </dd></dl>
 
@@ -774,6 +774,216 @@ Note that for better accuracy, T is adjusted so that the number of points is eve
 <h3>Returns<a class="headerlink" href="#id45" title="Permalink to this heading"></a></h3>
 <p>ll_abs: the matplotlib list of lines for magnitude plot
 ll_angle: same but for phase plot</p>
+</section>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+<span class="target" id="module-waveguicsx.scattering"></span><dl class="py class">
+<dt class="sig sig-object py" id="waveguicsx.scattering.Scattering">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">waveguicsx.scattering.</span></span><span class="sig-name descname"><span class="pre">Scattering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_MPI.Comm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tbcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/scattering.html#Scattering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.scattering.Scattering" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for solving scattering problems by local inhomogeneities in complex waveguides based on PETSc.</p>
+<p>The full documentation is entirely defined in the <a href="#id46"><span class="problematic" id="id47">`</span></a>scattering.py’ module.</p>
+<p>The following matrix problem is considered: (K-omega**2*M-1j*omega*C)*U=F.
+This kind of problem typically typically stems from a finite element (FE) model of a small portion of waveguide
+including a local inhomogeneity (e.g. defects). The cross-section extremities of the truncated FE model are then
+handled as transparent boundary conditions (BCs) to reproduce semi-infinite waveguides.
+The so-obtained scattering problem is solved repeatedly for each frequency. The loops over the angular frequency can
+be parallelized, as shown in some tutorials (using mpi4py).</p>
+<p>This class enables to deal with scattering in complex waveguides, two-dimensional (e.g. plates) or three-dimensional
+(arbitrarily shaped cross-section), inhomogeneous in the transverse directions, anisotropic. Complex-valued problems
+can be handled including the effects of non-propagating modes (evanescent, inhomogeneous), viscoelastic loss (complex
+material properties) or perfectly matched layers (PML) to simulate buried waveguides.</p>
+<p>Transparent BCs are Waveguide objects, which must have been solved prior to the scattering
+problem solution, yielding the following object attributes: omega, eigenvalues, eigenvectors, eigenforces and traveling
+direction (see waveguide.py module for details). Transparent BCs are localized by their degrees of
+freedom in the global vector U. This means that the local degree of freedom i of a given eigenvector/eigenforce
+stored in a Waveguide object is located at the global degree of freedom dofs[i] of the FE model.</p>
+<p>The user must supply the following inputs:
+- K, M, C, the global FE matrices (stiffness, mass and viscous damping)
+- F and F_spectrum, the global FE vector of internal excitation  (i.e. sources inside the FE model), if any,</p>
+<blockquote>
+<div><p>and its spectrum</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>tbcs, a list of pairs (name, dofs) which characterize the transparent BCs, where name is a string specifying the
+attribute name of a given transparent BC (this attribute will be a Waveguide object) and dofs is a numpy array
+of the global degrees of freedom for this transparent BC.</p></li>
+<li><p>the ingoing mode coefficients, specified by the attribute coefficient in each transparent BC</p></li>
+</ul>
+<p>Important convention: if the waveguide axis of a transparent BC is oriented outward (i.e. outside the FE box), dofs are
+positive, but if oriented inward (i.e. inside the FE box), a negative sign has to be assigned to dofs by the user.</p>
+<p>The solution to the scattering problem yields:
+- the displacement U of the FE model for each angular frequency omega
+- the outgoing modal coefficients of every transparent BC and for each omega
+- the energy balance post-processed for each angular frequency</p>
+<blockquote>
+<div><p>which enables to check the error due to the modal truncature introduced in the transparent BCs.</p>
+</div></blockquote>
+<p>See Attributes below for more details.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># This simple example involves only one transparent boundary condition (e.g. waveguide scattering by a free edge)</span>
+<span class="c1"># The tbc (the &quot;inlet&quot;) is supposed to be at the left-hand side of the FE box so that its outward normal is negative</span>
+
+<span class="kn">from</span> <span class="nn">waveguicsx.waveguide</span> <span class="kn">import</span> <span class="n">Waveguide</span>
+<span class="kn">from</span> <span class="nn">waveguicsx.scattering</span> <span class="kn">import</span> <span class="n">Scattering</span>
+
+<span class="c1"># Input parameters</span>
+<span class="n">omega</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1.48</span><span class="p">,</span> <span class="mf">1.60</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span> <span class="c1">#normalized angular frequency range</span>
+<span class="n">nev</span> <span class="o">=</span> <span class="mi">30</span> <span class="c1">#tbc number of eigenvalues requested at each frequency</span>
+
+<span class="c1"># Scattering initialization</span>
+<span class="n">ws</span> <span class="o">=</span> <span class="n">Scattering</span><span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="mi">0</span><span class="o">*</span><span class="n">M</span><span class="p">,</span> <span class="p">[(</span><span class="s1">&#39;waveguide0&#39;</span><span class="p">,</span> <span class="o">-</span><span class="n">tbc_dofs</span><span class="p">)])</span> <span class="c1">#M and K are the mass and stiffness matrices of the FE box</span>
+<span class="c1">#reminder: tbc_dofs are the global degrees of freedom, set negative by convention when the normal is negative (here, we suppose n=-ey)</span>
+
+<span class="c1">#Solve waveguide problem associated with the tbc</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span> <span class="o">=</span> <span class="n">Waveguide</span><span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="p">,</span> <span class="n">Ms</span><span class="p">,</span> <span class="n">K0</span><span class="p">,</span> <span class="n">K1</span><span class="p">,</span> <span class="n">K2</span><span class="p">)</span> <span class="c1">#Ms, K0, K1 and K2 are SAFE matrices associated with the tbc (here, named &#39;waveguide0&#39;)</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">omega</span><span class="o">=</span><span class="n">omega</span><span class="p">)</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">nev</span><span class="p">)</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span><span class="o">.</span><span class="n">compute_traveling_direction</span><span class="p">()</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span><span class="o">.</span><span class="n">compute_poynting_normalization</span><span class="p">()</span>
+
+<span class="c1"># Solving scattering problem</span>
+<span class="n">mode</span> <span class="o">=</span> <span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span><span class="o">.</span><span class="n">track_mode</span><span class="p">(</span><span class="n">frequency_index</span><span class="p">,</span> <span class="n">mode_index</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.98</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1">#track a mode, specified by its index at a given frequency, over the whole frequency range</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">set_ingoing_mode</span><span class="p">(</span><span class="s1">&#39;waveguide0&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> <span class="c1">#set mode as a single ingoing mode, coeff is 1 (here, power is also 1 thanks to poynting normalization)</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">()</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+
+<span class="c1"># Plot reflected power coefficients vs. angular frequency</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span><span class="o">.</span><span class="n">compute_complex_power</span><span class="p">()</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;complex_power&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">x</span><span class="p">))),</span> <span class="n">direction</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="id48">
+<h2>Attributes<a class="headerlink" href="#id48" title="Permalink to this heading"></a></h2>
+<dl>
+<dt>comm<span class="classifier">mpi4py.MPI.Intracomm</span></dt><dd><p>MPI communicator (parallel processing)</p>
+</dd>
+<dt>M, K, C<span class="classifier">petsc4py.PETSc.Mat</span></dt><dd><p>FE matrices</p>
+</dd>
+<dt>F<span class="classifier">petsc4py.PETSc.Vec</span></dt><dd><p>FE force vector (internal excitation)</p>
+</dd>
+<dt>F_spectrum<span class="classifier">numpy.ndarray</span></dt><dd><p>the modulation spectrum of F (size must be the same as omega)</p>
+</dd>
+<dt>tbc<span class="classifier">list of pairs (name, dofs)</span></dt><dd><p>name is a string corresponding to the desired attribute name of a tbc (Waveguide object),
+dofs is a numpy array of the degrees of freedom of the tbc (positive if outward
+negative if inward)</p>
+</dd>
+<dt>omega<span class="classifier">numpy.ndarray</span></dt><dd><p>the angular frequency range, specified by the user in tbcs (Waveguide objects)</p>
+</dd>
+<dt>ksp: KSP object (PETSc object)</dt><dd><p>solver parameters</p>
+</dd>
+<dt>displacement<span class="classifier">list of PETSc vectors</span></dt><dd><p>for each angular frequency, the FE displacement vector U (solution of the scattering problem)</p>
+</dd>
+<dt>energy_balance<span class="classifier">list of 1d numpy array</span></dt><dd><p>for each angular frequency, energy_balance[i] gives the following three-component array,
+[Pin-i*omega/2*U^H*F, Ptot, -i*omega*U^H*D*U], where P=-i*omega/2*U^H*T:
+- the term Pin-i*omega/2*U^H*F represents the input power, supplied by ingoing modes and internal</p>
+<blockquote>
+<div><p>forces (this term should have a negative real part)</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>the term Ptot is the complex power flow of the sum of ingoing and ougoing modes</p></li>
+<li><p>the term -i*omega*U^H*D*U is related to the kinetic, potential and dissipated energies in the volume
+(the dissipated energy, defined as positive, is equal to the real part of this term divided by -2*omega).</p></li>
+<li><p>a perfect energy balance is achived if Ptot = -i*omega*U^H*D*U</p></li>
+</ul>
+</dd>
+<dt>name.coefficient<span class="classifier">list of numpy.ndarray, where name is a Waveguide object associated with a given transparent BC</span></dt><dd><p>this transparent BC attribute stores modal coefficients at each frequency:
+- the coefficients of ingoing modes are considered as inputs, specified by the user (excitation in the scattering problem)
+- the coefficients of outgoing modes are considered as initially unknown, solution of the scattering problem
+Any non-zero outgoing amplitudes specified in name.coefficient prior to solving the scattering problem
+will hence be discarded and replaced with the scattering solution.
+If the attribute coefficient is empty prior to scattering (no specified ingoing modes), zero ingoing amplitudes
+will be considered by default.</p>
+</dd>
+</dl>
+</section>
+<section id="id49">
+<h2>Methods<a class="headerlink" href="#id49" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt>__init__(comm:’_MPI.Comm’, M:PETSc.Mat, K:PETSc.Mat, C:PETSc.Mat, tbcs:list):</dt><dd><p>Constructor, initialization of scattering problem</p>
+</dd>
+<dt>set_ingoing_mode(tbc_name, mode, spectrum=None):</dt><dd><p>For a given tbc, specified by the string tbc_name, set the coefficient of a single mode to 1.
+mode is a list of indices identifying the mode position at each frequency.</p>
+</dd>
+<dt>set_internal_excitation(F, F_spectrum=None):</dt><dd><p>Set the internal excitation vector F and its spectrum F_spectrum</p>
+</dd>
+<dt>set_parameters(solver=’iterative’):</dt><dd><p>Set default parameters of KSP solver (stored in attribute ksp)</p>
+</dd>
+<dt>solve():</dt><dd><p>Solve the scattering problem repeatedly for the angular frequency range, solutions are stored as attributes
+(names: displacement, energy_balance)</p>
+</dd>
+<dt>plot_energy_balance():</dt><dd><p>Plot the three terms of energy_balance (complex modulus) at each frequency index for checking modal tbc truncature</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.scattering.Scattering.set_ingoing_mode">
+<span class="sig-name descname"><span class="pre">set_ingoing_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tbc_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/scattering.html#Scattering.set_ingoing_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.scattering.Scattering.set_ingoing_mode" title="Permalink to this definition"></a></dt>
+<dd><p>For a given tbc, specified by the string tbc_name, set the coefficient of a single mode to 1. The coefficients of
+all other modes are set to 0. mode is a list of indices identifying the mode position at each frequency
+(see also method track_mode() of class Waveguide).
+Please ensure that this mode is an ingoing mode (non-zero outgoing amplitudes will be discarded).
+When specified, spectrum is a vector of length omega (numpy.array) used to modulate the coefficient in terms of
+frequency (default: 1 for all frequencies).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.scattering.Scattering.set_internal_excitation">
+<span class="sig-name descname"><span class="pre">set_internal_excitation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">F</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_spectrum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/scattering.html#Scattering.set_internal_excitation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.scattering.Scattering.set_internal_excitation" title="Permalink to this definition"></a></dt>
+<dd><p>Set the internal excitation vector F (petsc4py.PETSc.Vec).
+When specified, F_spectrum is a vector of length omega (numpy.array) used to modulate F in terms of
+frequency (default: 1 for all frequencies).
+F and F_spectrum are stored as attributes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.scattering.Scattering.set_parameters">
+<span class="sig-name descname"><span class="pre">set_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iterative'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/scattering.html#Scattering.set_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.scattering.Scattering.set_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>Set default parameters of KSP solver (stored into the attribute ksp.)
+The preselected methods are CGS (iterative method) and MUMPS (direct method).
+CGS is used by default, set solver=’direct’ to use MUMPS instead.
+After calling this method, various PETSc parameters can be set by changing the attribute ksp manually.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.scattering.Scattering.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/scattering.html#Scattering.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.scattering.Scattering.solve" title="Permalink to this definition"></a></dt>
+<dd><p>Solve the scattering problem, i.e. the linear system repeatedly for the angular frequency range.
+The solutions are stored in the attributes displacement and energy_balance.
+The FE problem D*U=F is transformed into:
+Bout^T*(D*Bout-Tout)*Uout = Bout^T*(Tin-D*Bin)*Uin
+where:
+- D is the dynamic stiffness matrix (D=K-omega**2*M-1j*omega*C)
+- Bin and Bout (resp. Tin and Tout) are bases containing ingoing and outgoing modal</p>
+<blockquote>
+<div><p>displacements (resp. forces) so that: U=Bin*Uin+Bout*Uout, F=Tin*Uin+Tout*Uout</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>Uin contains internal forces and known ingoing amplitudes (zero by default, if not specified)</p></li>
+<li><p>Uout is the solution containing outgoing modal amplitudes and internal dofs</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="waveguicsx.scattering.Scattering.plot_energy_balance">
+<span class="sig-name descname"><span class="pre">plot_energy_balance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linestyle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'-'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/scattering.html#Scattering.plot_energy_balance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.scattering.Scattering.plot_energy_balance" title="Permalink to this definition"></a></dt>
+<dd><p>Plot energy balance at each frequency index for checking modal tbc truncature.
+The energy balance is defined as the difference between tbc net flux and volume power
+divided by the input power (values close to zero indicate that enough modes have
+been included in the transparent BCs).</p>
+<section id="id50">
+<h3>Parameters<a class="headerlink" href="#id50" title="Permalink to this heading"></a></h3>
+<dl class="simple">
+<dt>ax: matplotlib axis</dt><dd><p>the matplotlib axis on which to plot data (created if None)</p>
+</dd>
+</dl>
+<p>color: str, linewidth: int, linestyle: str, <a href="#id51"><span class="problematic" id="id52">**</span></a>kwargs are passed to ax.plot</p>
+</section>
+<section id="id53">
+<h3>Returns<a class="headerlink" href="#id53" title="Permalink to this heading"></a></h3>
+<p>ll: the matplotlib list of lines</p>
 </section>
 </dd></dl>
 

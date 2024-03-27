@@ -28,7 +28,7 @@ import matplotlib.pyplot as plt
 import pyvista
 
 from waveguicsx.waveguide import Waveguide
-#For proper use with a jupyter notebook, uncomment the following line:
+#For proper use with a notebook, uncomment the following line:
 #pyvista.set_jupyter_backend("static"); pyvista.start_xvfb() #try: "none", "static", "pythreejs", "ipyvtklink"...
 
 ##################################
@@ -79,6 +79,9 @@ mesh, cell_tags, facet_tags = dolfinx.io.gmshio.model_to_mesh(gmsh.model, MPI.CO
 # gmsh.write("Elastic_Waveguide_Bar3D_Open.msh") #save to disk
 # mesh, cell_tags, facet_tags = dolfinx.io.gmshio.read_from_msh("Elastic_Waveguide_Bar3D_Open.msh", MPI.COMM_WORLD, rank=0, gdim=2)
 gmsh.finalize() #called when done using the Gmsh Python API
+# Finite element space
+element = ufl.VectorElement("CG", "triangle", 2, 3) #Lagrange element, triangle, quadratic "P2", 3D vector
+V = dolfinx.fem.FunctionSpace(mesh, element)
 # Visualize FE mesh with pyvista
 Vmesh = dolfinx.fem.FunctionSpace(mesh, ufl.FiniteElement("CG", "triangle", 1)) #order 1 is properly handled with pyvista
 plotter = pyvista.Plotter()
@@ -86,11 +89,10 @@ grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(Vmesh))
 grid.cell_data["Marker"] = cell_tags.values
 grid.set_active_scalars("Marker")
 plotter.add_mesh(grid, show_edges=True)
+grid_nodes = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(V)) #add higher-order nodes
+plotter.add_mesh(grid_nodes, style='points', render_points_as_spheres=True, point_size=2)
 plotter.view_xy()
 plotter.show()
-# Finite element space
-element = ufl.VectorElement("CG", "triangle", 2, 3) #Lagrange element, triangle, quadratic "P2", 3D vector
-V = dolfinx.fem.FunctionSpace(mesh, element)
 
 ##################################
 # Create Material properties (isotropic)
@@ -178,10 +180,10 @@ wg.plot_coefficient()
 sc = wg.plot_excitability()
 sc.axes.set_yscale('log')
 sc.axes.set_ylim(1e-3,0.5e+1)
-frequency, response, axs = wg.compute_response(dof=dof, z=[5], spectrum=None, plot=True) #spectrum=excitation.spectrum
-axs[0].set_yscale('log')
-axs[0].set_ylim(1e-2,1e+1)
-axs[0].get_lines()[0].set_color("black")
+frequency, response, ll_abs, ll_angle = wg.compute_response(dof=dof, z=[5], spectrum=None, plot=True) #spectrum=excitation.spectrum
+ll_abs[0].axes.set_yscale('log')
+ll_abs[0].axes.set_ylim(1e-2,1e+1)
+ll_abs[0].axes.get_lines()[0].set_color("black")
 plt.close()
 
 ##################################
@@ -195,7 +197,3 @@ u_plotter.add_mesh(grid, style="wireframe", color="k") #FE mesh
 u_plotter.add_mesh(u_grid.warp_by_vector("u", factor=0.5), opacity=0.8, show_scalar_bar=True, show_edges=False) #do not show edges of higher order elements with pyvista
 u_plotter.show_axes()
 u_plotter.show()
-
-
-""
-

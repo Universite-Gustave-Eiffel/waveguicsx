@@ -15,7 +15,7 @@
 #####################################################################
 
 
-from typing import Union, List
+from typing import Union, List, Optional, Literal, Callable
 from petsc4py import PETSc
 from slepc4py import SLEPc
 
@@ -51,41 +51,39 @@ class Waveguide:
     
     
     Example::
-    
+
+        # In this example, the matrices M, K0, K1, K2 and the excitation vector F are supposed to be dimensional for simplicity
+        # Yet, in practice, the problem would better be normalized to avoid ill-conditioning (see tutorials)
+
         from waveguicsx.waveguide import Waveguide
-        
+
         # Definition of the excitation signal (here, a toneburst)
         excitation = Signal()
-        excitation.toneburst(fs=8/(2*np.pi), T=49.75*(2*np.pi), fc=2/(2*np.pi), n=5) 
-        excitation.plot()
-        excitation.plot_spectrum()
-        omega = 2*np.pi*excitation.frequency  #omega = np.linspace(0.02, 4, 200)
-        
+        excitation.toneburst(fs=400e3, T=2e-3, fc=100e3, n=8) #central frequency 100 kHz, 8 cycles, duration 2 ms, sampling frequency 400 kHz
+        excitation.plot() #plot time signal
+        excitation.plot_spectrum() #plot spectrum
+        omega = 2*np.pi*excitation.frequency #angular frequency range
+
         # Initialization of waveguide
         wg = Waveguide(MPI.COMM_WORLD, M, K0, K1, K2)
-        wg.set_parameters(omega=omega)
-        
-        # Solution of eigenvalue problem (iteration over the parameter omega)
-        wg.solve(nev=50, target=0) #access to components with: wg.eigenvalues[iomega][imode], wg.eigenvectors[iomega][idof,imode]
-        
-        # Plot dispersion curves
-        wg.plot()
-        wg.compute_energy_velocity()
-        wg.plot_energy_velocity()
-        
-        # Computation of modal coefficients and excitabilities
-        wg.compute_response_coefficient(F=F, dof=dof)
-        wg.plot_coefficient()
-        wg.plot_excitability()
-        
-        # Forced response in the frequency domain, due to a toneburst excitation, at degree of freedom dof and axial coordinates z
-        frequency, response = wg.compute_response(dof=dof, z=[50, 100, 150, 200], spectrum=excitation.spectrum)
-        
-        # Transient response
-        response = Signal(frequency=frequency, spectrum=response)
-        response.plot_spectrum()
-        response.ifft()
-        response.plot()
+        wg.set_parameters(omega=omega) #set the parameter range (here, angular frequency)
+
+        # Free response (dispersion curves)
+        wg.solve(nev=20, target=0) #solution of eigenvalue problem (iteration over the parameter omega), 20 eigenvalues requested at each frequency
+        wg.compute_energy_velocity() #post-process energy velocity
+        wg.plot() #plot k vs. omega
+        wg.plot_energy_velocity() #plot ve vs. omega
+
+        # Computation of modal coefficients due to an excitation vector F
+        wg.compute_response_coefficient(F=F) #F should be a PETSc vector
+        wg.plot_coefficient() #plot modal coefficients vs. omega
+
+        # Forced response at degree of freedom dof and axial coordinates z (dof should be an integer)
+        frequency, response = wg.compute_response(dof=dof, z=[0.5, 1., 1.5, 2.], spectrum=excitation.spectrum, plot=False) #response in the frequency domain
+        response = Signal(frequency=frequency, spectrum=response) #define response as a Signal object
+        response.plot_spectrum() #plot frequency response
+        response.ifft() #response in the time domain
+        response.plot() #plot time response
         plt.show()
     
     
@@ -112,7 +110,7 @@ class Waveguide:
         access to components with eigenvalues[ip][imode] (ip: parameter index, imode: mode index)
     eigenvectors : list of PETSc matrices
         list of mode shapes,
-        access to components with eigenvectors[ik][idof,imode] (ip: parameter index, imode: mode index, idof: dof index)
+        access to components with eigenvectors[ik][idof,imode] (ik: parameter index, imode: mode index, idof: dof index)
         or eigenvectors[ik].getColumnVector(imode)
     eigenforces : list of PETSc matrices
         list of eigenforces (acces to components: see eigenvectors)
@@ -130,6 +128,8 @@ class Waveguide:
         list of response coefficient to excitation vector F (access to component: see eigenvalues)
     excitability : list of numpy arrays
         list of excitability to excitation vector F (access to component: see eigenvalues)
+    complex_power : list of numpy arrays
+        list of complex power flow of individual modes (access to component: see eigenvalues)
     plot_scaler : dictionnary
         dictionnary containing the scaling factors of various modal properties, useful to plot results in a dimensional form
     
@@ -161,8 +161,13 @@ class Waveguide:
     compute_response_coefficient(F, spectrum=None, wavenumber_function=None, dof=None):
         Compute the response coefficients due to excitation vector F for the whole parameter range and store them as
         an attribute (name: coefficient)
+    compute_complex_power(self):
+        Compute the individual complex power flow of modes given by P=-1j*omega/2*U^H*F
     compute_response(dof, z, spectrum=None, wavenumber_function=None, plot=False):
         Compute the response at the degree of freedom dof and the axial coordinate z for the whole frequency range
+    track_mode(omega_index, mode_index, threshold=0.9, plot=False):
+        Track a mode over the whole frequency range thanks to eigenvector similarity. The mode is specified by its
+        index, mode_index, at a given angular frequency index, omega_index.
     plot(direction=None, pml_threshold=None, ax=None, color="k",  marker="o", markersize=2, linestyle="", **kwargs):
         Plot dispersion curves Re(omega) vs. Re(wavenumber) using matplotlib
     plot_phase_velocity(direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, linestyle="", **kwargs):
@@ -200,36 +205,41 @@ class Waveguide:
         self.K0 = K0
         self.K1 = K1
         self.K2 = K2
-        self.F = None
+        self.F: Optional[PETSc.Mat] = None
 
         # Set the default values for the internal attributes used in this class
-        self.problem_type: str = ""  # "wavenumber" or "omega"
-        self.omega: Union[np.ndarray, None] = None
-        self.wavenumber: Union[np.ndarray, None] = None
-        self.two_sided = None
-        self.target = None
-        self.evp: Union[SLEPc.PEP, SLEPc.EPS, None] = None
-        self.eigenvalues: list = []
-        self.eigenvectors: list = []
-        self.eigenforces: list = []
-        self.opposite_going: list = []
-        self.energy_velocity: list = []
-        self.group_velocity: list = []
-        self.traveling_direction: list = []
-        self.pml_ratio: list = []
-        self.coefficient: list = []
-        self.excitability: list = []
-        self.plot_scaler = dict.fromkeys(['omega','wavenumber','energy_velocity','group_velocity','pml_ratio',
-                                          'eigenvalues','excitability',
-                                          'eigenvectors','eigenforces','coefficient',
-                                          'frequency','attenuation','phase_velocity'], 1)
+        self.problem_type: Literal["", "wavenumber", "omega"] = ""
+        self.omega: Optional[np.ndarray[complex]] = None
+        self.wavenumber: Optional[np.ndarray[complex]] = None
+        self.two_sided: Optional[bool] = None
+        self.target: Optional[Union[complex, Callable]] = None
+        self.evp: Optional[Union[SLEPc.PEP, SLEPc.EPS]] = None
+        self.eigenvalues: List[np.ndarray[complex]] = []
+        self.eigenvectors: List[PETSc.MAT] = []
+        self.eigenforces: List[PETSc.MAT] = []
+        self.opposite_going: List[np.ndarray[int]] = []
+        self.energy_velocity: List[np.ndarray[float]] = []
+        self.group_velocity: List[np.ndarray[float]] = []
+        self.traveling_direction: List[np.ndarray[int]] = []
+        self.pml_ratio: List[np.ndarray[float]] = []
+        self.coefficient: List[np.ndarray[complex]] = []
+        self.excitability: List[np.ndarray[complex]] = []
+        self.complex_power: List[np.ndarray[complex]] = []
+        self.plot_scaler = dict.fromkeys(
+            ['omega','wavenumber','energy_velocity','group_velocity','pml_ratio',
+                     'eigenvalues','excitability',
+                     'eigenvectors','eigenforces','coefficient','complex_power',
+                     'frequency','attenuation','phase_velocity'], 1)
         self._poynting_normalization = None
         self._biorthogonality_factor: list = []
         
         # Print the number of degrees of freedom
         print(f'Total number of degrees of freedom: {self.M.size[0]}')
 
-    def set_parameters(self, omega: Union[np.ndarray, None]=None, wavenumber:Union[np.ndarray, None]=None, two_sided=False):
+    def set_parameters(self,
+                       omega: Optional[np.ndarray[complex]] = None,
+                       wavenumber:Optional[np.ndarray[complex]] = None,
+                       two_sided: bool = False):
         """
         Set the parameter range (omega or wavenumber) as well as default parameters of the SLEPc eigensolver (evp).
         The user must specify the parameter omega or wavenumber, but not both.
@@ -397,7 +407,6 @@ class Waveguide:
         if len(self.eigenforces)==0: #compute the eigenforces if not yet computed      
             self.compute_eigenforces()
         start = time.perf_counter()
-        index = range(self.eigenvectors[0].getSize()[0])
         for i in range(len(self.eigenvalues)):
             #repeat parameter as many times as the number of eigenvalues
             omega = self._concatenate('omega', i=i)
@@ -416,7 +425,9 @@ class Waveguide:
     def compute_energy_velocity(self):
         """
         Post-process the energy velocity ve=Re(P)/Re(E) for every mode in the whole parameter range, where P is the
-        normal component of complex Poynting vector and E is the total energy (cross-section time-averaged)
+        normal component of complex Poynting vector and E is the total energy (cross-section time-averaged).
+        Warning in case of PML: the integration is currently applied over the whole cross-section (including PML),
+        the so-defined energy velocity is questionable.
         """
         if len(self.energy_velocity)==len(self.eigenvalues):
             print('Energy velocity already computed')
@@ -458,9 +469,9 @@ class Waveguide:
         as a an attribute (name: opposite_going, -1 value for unpaired modes).
         Compute their biorthogonality normalization factors, Um^T*F-m - U-m^T*Fm, where m and -m denote opposite-going
         modes, for the whole parameter range and store them as an attribute (name: _biorthogonality_factor).
-        If plot is set to True, the biorthogonality factors found by the algorithm are plotted in magnitude as a function
-        of frequency, allowing visual check that there is no values close to zero (a factor close to zero probably means
-        a lack of biorthogonality).
+        If plot is set to True, the biorthogonality criterion found by the algorithm is plotted as a function
+        of frequency index, allowing visual check that there is no values close to zero (a factor close to zero probably means
+        a lack of biorthogonality). The biorthogonality criterion is defined as |biorthogonality_factor*omega/4|.
         
         Notes:
         
@@ -535,19 +546,18 @@ class Waveguide:
             self.opposite_going.append(opposite_going)
             self._biorthogonality_factor.append(biorthogonality_factor)
         print(f'Computation of pairs of opposite-going modes, elapsed time : {(time.perf_counter() - start):.2f}s')
-        #Plot the biorthogonality factors as a function of frequency
+        #Plot biorthogonality criterion as a function of frequency index
         if plot:
             omega = np.repeat(self.omega.real, [len(egv) for egv in self._biorthogonality_factor])
             biorthogonality_factor = np.concatenate(self._biorthogonality_factor)
             fig, ax = plt.subplots(1, 1)
-            ax.plot(omega, np.abs(biorthogonality_factor*omega/4), marker="o", markersize=2, linestyle="", color="k")
-            ax.set_xlabel('Re(omega)')
-            ax.set_ylabel('|biorthogonality factor|')
+            ax.plot(np.abs(biorthogonality_factor*omega/4), marker="o", markersize=2, linestyle="", color="k")
+            ax.set_xlabel('frequency index')
+            ax.set_ylabel('biorthogonality criterion')
             ax.set_yscale('log')
             ax.axhline(y = tol2_abs, color="r", linestyle="--")
             ax.set_title('----- threshold allowed', color='r')
             fig.tight_layout()
-            return ax
 
     def compute_group_velocity(self):
         """
@@ -663,6 +673,7 @@ class Waveguide:
         self.F = F
         self.coefficient = [] #re-initialized every time compute_response_coefficient(..) is executed (F is an input)
         self.excitability = [] #idem
+        self.complex_power = [] #idem
         if spectrum is None:
             spectrum = np.ones(self.omega.size)
         if wavenumber_function is None:
@@ -694,7 +705,53 @@ class Waveguide:
             if dof is not None:
                 self.excitability.append(coefficient*self.eigenvectors[i][dof,:]/force)
         print(f'Computation of response coefficient, elapsed time : {(time.perf_counter() - start):.2f}s')
+    
+    def compute_complex_power(self):
+        """
+        Post-process the individual complex power flow of modes given by P=-1j*omega/2*U^H*F (normal
+        component of complex Poynting vector), where U and F denote the eigenvector 
+        and eigenforce of a single mode. The 'usual' power is given by the real part.
+        
+        Notes:
 
+        - For lossy media (e.g. with viscoelasticity or with PML), it should be reminded that the individual power
+          should be carefully handled: the power of a sum is not equal to the sum of powers because Auld's complex
+          biorthogonality relation does no longer hold
+        - This inequality also generally applies between two multiple modes if any(*); in this case,
+          try to use an unstructured mesh instead?
+        - Warning in case of PML: integration is currently done over the whole cross-section (see also
+          compute_energy_velocity), the so-defined complex power flow is questionable
+        
+        (*) e.g. flexural modes in a cylinder with structured mesh, whether the medium is lossy or lossless 
+        """
+        if len(self.complex_power)==len(self.eigenvalues):
+            print('Complex power flow already computed')
+            return
+        if len(self.coefficient)==0: #response already computed
+            raise NotImplementedError('Power computation has to be applied after coefficient computation')
+        if len(self.eigenforces)==0: #compute the eigenforces if not yet computed      
+            self.compute_eigenforces()
+        start = time.perf_counter()
+        for i in range(len(self.eigenvalues)):
+            #repeat parameter as many times as the number of eigenvalues
+            omega = self._concatenate('omega', i=i)
+            #complex power flow of modes
+            complex_power = []
+            for mode in range(self.eigenvalues[i].size):
+                U = self.eigenvectors[i].getColumnVector(mode)
+                F = self.eigenforces[i].getColumnVector(mode)
+                complex_power.append(-1j*omega[mode]/2*np.abs(self.coefficient[i][mode])**2*F.dot(U))
+            self.complex_power.append(np.array(complex_power))
+        print(f'Computation of complex power flow, elapsed time : {(time.perf_counter() - start):.2f}s')
+
+        # Warning for pml problems (integration restricted on the core is currently not possible)
+        dofs_pml = np.iscomplex(self.M.getDiagonal()[:])
+        if any(dofs_pml):
+            print("Warning: the complex power flow is currently integrated on the whole domain including PML region")
+        ## Future works: a possible trick to restrict the integration on physical dofs
+        #dofs_pml = np.iscomplex(M.getDiagonal()[:]) #problem: if not stuck to the core, can include part of the exterior domain
+        #Mat = M.copy(); Mat.zeroRowsColumns(dofs_pml, diag=0) #or: eigenvectors.zeroRows(dofs_pml, diag=0)
+    
     def compute_response(self, dof, z, omega_index=None, spectrum=None, wavenumber_function=None, plot=False):
         """
         Post-process the response (modal expansion) at the degree of freedom dof and the axial coordinate z, for the whole
@@ -739,12 +796,12 @@ class Waveguide:
         
         Returns
         -------
-        frequency: numpy 1d array
+        frequency : numpy 1d array
             the frequency vector, i.e. omega/(2*pi)
         response : numpy array (1d or 2d)
             the matrix response
-        ax : matplotlib axes when plot is set to True
-            ax[0] is the matplotlib axes used for magnitude, ax[1] is the matplotlib axes used for phase
+        ll_abs : matplotlib list of lines for magnitude plot when plot is set to True
+        ll_angle : matplotlib list of lines for phase plot when plot is set to True
         """
         
         #Initialization
@@ -811,20 +868,78 @@ class Waveguide:
             else:
                 xlabel, ylabel, xscale = "frequency", "|displacement|", xscale/(2*np.pi)
             #Magnitude
-            fig, ax_abs = plt.subplots(1, 1)
-            ax_abs.plot(self.omega.real*xscale, np.abs(response.T), linewidth=1, linestyle="-") #color="k"
-            ax_abs.set_xlabel(xlabel)
-            ax_abs.set_ylabel(ylabel)
+            fig, ax = plt.subplots(1, 1)
+            ll_abs = ax.plot(self.omega.real*xscale, np.abs(response.T), linewidth=1, linestyle="-") #color="k"
+            ax.set_xlabel(xlabel)
+            ax.set_ylabel(ylabel)
             fig.tight_layout()
             #Phase
-            fig, ax_angle = plt.subplots(1, 1)
-            ax_angle.plot(self.omega.real*xscale, np.angle(response.T), linewidth=1, linestyle="-") #color="k"
-            ax_angle.set_xlabel(xlabel)
-            ax_angle.set_ylabel('phase')
+            fig, ax = plt.subplots(1, 1)
+            ll_angle = ax.plot(self.omega.real*xscale, np.angle(response.T), linewidth=1, linestyle="-") #color="k"
+            ax.set_xlabel(xlabel)
+            ax.set_ylabel('phase')
             fig.tight_layout()
-            return frequency, response, [ax_abs, ax_angle]
+            return frequency, response, ll_abs, ll_angle
         else:
             return frequency, response
+
+    def track_mode(self, omega_index, mode_index, threshold=0.9, plot=False):
+        """
+        Track a mode over the whole frequency range.
+        The mode is specified by its index, mode_index, at a given angular frequency index, omega_index.
+        Tracking is performed thanks to similarity between eigenvectors and eigenforces (value between 0 and 1).
+        Tracking is stopped if similarity becomes lower than threshold.
+        It returns mode, the index list identifying the mode position at each frequency (index is set to -1
+        for frequencies at which the mode has not been successfully tracked due to low similarity).
+        If plot is set to True, the real and imaginary parts of eigenvalue are plotted w.r.t. frequency index,
+        for visual check that the desired mode has been properly tracked.
+        """
+        if len(self.eigenforces)==0: #compute the eigenforces if not yet computed      
+            self.compute_eigenforces()
+        if len(self.traveling_direction)==0: #compute traveling direction if not yet computed
+            self.compute_traveling_direction()
+        
+        #Initialization
+        mode = np.zeros(self.omega.size, dtype='int32') - 1 #fill with -1 by default
+        mode[omega_index] = mode_index
+        direction = self.traveling_direction[omega_index][mode_index]
+        upper_part = range(omega_index, self.omega.size-1) #towards increasing frequency
+        lower_part = range(omega_index, 0, -1) #towards decreasing frequency
+        
+        #Track mode based on similarity
+        for p, part in enumerate([upper_part, lower_part]):
+            m = mode_index
+            for i in part:
+                inext = i+1-2*p #i+1 if p=0 (upper part), i-1 if p=1 (lower part)
+                U = self.eigenvectors[i].getColumnVector(m)
+                F =  self.eigenforces[i].getColumnVector(m)
+                similarity = np.zeros(self.eigenvectors[inext].size[1])
+                imodes = np.nonzero(self.traveling_direction[inext]==direction)[0] #restriction to modes traveling in the same direction
+                for m in imodes:
+                    test_U = self.eigenvectors[inext].getColumnVector(m)
+                    test_F = self.eigenforces[inext].getColumnVector(m)
+                    similarity[m] = np.abs(test_U.dot(U) + test_F.dot(F)) \
+                                  / np.sqrt(((U.norm()**2+F.norm()**2)*(test_U.norm()**2+test_F.norm()**2)))
+                if similarity.max()<threshold:
+                    print(f'Mode tracking stopped at frequency index {inext}: similarity equals {similarity.max():.2f}, lower than threshold (try to increase threshold)')
+                    break
+                else:
+                    m = similarity.argmax()
+                    mode[inext] = m
+        
+        #Plot for check
+        if plot:
+            fig, ax = plt.subplots(1, 1)
+            eigenvalues = np.zeros(self.omega.size, dtype='complex')
+            for i in range(self.omega.size):
+                eigenvalues[i] = self.eigenvalues[i][mode[i]] if mode[i]>=0 else None
+            ax.plot(eigenvalues.real, color='blue', label='real')
+            ax.plot(eigenvalues.imag, color='red', label='imag')
+            ax.set_xlabel('frequency index')
+            ax.set_ylabel('eigenvalue')
+            ax.set_title('tracked mode curve')
+            ax.legend()
+        return mode
 
     def plot_phase_velocity(self, **kwargs):
         """
@@ -868,17 +983,30 @@ class Waveguide:
         for dimensional results. Parameters and Returns: see plot(...).
         """
         return self.plot(y=['excitability', np.abs], **kwargs)
-
-    def plot(self, x=None, y=None, c=None, direction=None, pml_threshold=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
+    
+    def plot_complex_power(self, **kwargs):
         """
-        Plot dispersion curves y[1](y[0]) vs. x[1](x[0])
+        Plot complex power flow of individual modes as a function of frequency, Re(P) and Im(P) vs. Re(omega), 
+        where omega is replaced with frequency for dimensional results. Gray color is used for the imaginary part.
+        Parameters and Returns: see plot(...).
+        """
+        fig, ax = plt.subplots(1, 1)
+        sc = self.plot(y=['complex_power', np.imag], ax=ax, color="gray", label="Im", **kwargs)
+        sc = self.plot(y=['complex_power', np.real], ax=ax, label="Re", **kwargs)
+        return sc
+    
+    def plot(self, x=None, y=None, c=None, direction=None, pml_threshold=None, mode=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
+        """
+        Plot dispersion curves y[1](y[0]) vs. x[1](x[0]) as scatter plot.
+        If the index list, mode, is specified by the user, a single mode is plotted as a continuous single colored curve
+        (the index list mode can be obtained from method track_mode(...)).
         
         Parameters
         ----------
         x, y, c: list
             x[0], y[0], c[0] are strings corresponding to modal properties for the x-axis, y-axis and marker colors respectively
             (these strings can be: 'omega', 'wavenumber', 'energy_velocity', 'group_velocity', 'pml_ratio', 'eigenvalues',
-            'excitability', 'eigenvectors', 'eigenforces', 'coefficient', 'frequency', 'attenuation', 'phase_velocity'),
+            'excitability', 'eigenvectors', 'eigenforces', 'coefficient', 'power flow', 'frequency', 'attenuation', 'phase_velocity'),
             x[1], y[1], c[1] are the functions applied to x[0], y[0] and c[0] respectively (e.g. np.abs, np.angle, np.real, np.imag, etc.).
             If x is None but not y, x is set to ['omega', np.real] if results are normalized, or set to ['frequency', np.real] if they are
             dimensional. If both x and are None, plot dispersion curves Re(omega) or Re(frequency) vs. Re(wavenumber).
@@ -887,6 +1015,8 @@ class Waveguide:
             +1 for positive-going modes, -1 for negative-going modes, None for plotting all modes
         pml_threshold: float
             threshold to filter out PML modes (modes such that pml_ratio<pml_threshold)
+        mode: index list
+            index list identifying the mode position at each frequency
         ax: matplotlib axis
             the matplotlib axis on which to plot data (created if None)
         color: str, marker: str, markersize: int, linestyle: str, **kwargs are passed to ax.plot
@@ -908,9 +1038,9 @@ class Waveguide:
                     x[0] = 'frequency'
             else:
                 x = ['omega' if normalized else 'frequency', np.real]
-        if x[0] in ('coefficient', 'excitability') and len(getattr(self, x[0]))==0:
+        if x[0] in ('coefficient', 'excitability', 'complex_power') and len(getattr(self, x[0]))==0:
             raise NotImplementedError('No ' + x[0] + ' has been computed')
-        if y[0] in ('coefficient', 'excitability') and len(getattr(self, y[0]))==0:
+        if y[0] in ('coefficient', 'excitability', 'complex_power') and len(getattr(self, y[0]))==0:
             raise NotImplementedError('No ' + y[0] + ' has been computed')
         if x[0] in ('energy_velocity', 'group_velocity') and len(getattr(self, x[0]))==0:
             eval('self.compute_' + x[0] + '()')
@@ -920,6 +1050,8 @@ class Waveguide:
             c = [None, lambda c: None]
         if ax is None:
             fig, ax = plt.subplots(1, 1)
+        if mode is not None and (direction is not None or pml_threshold is not None):
+            raise NotImplementedError('Do not give any direction or pml_threshold when mode is specified')
         
         # Scaling and labels
         xscale, yscale, cscale = self.plot_scaler[x[0]], self.plot_scaler[y[0]], self.plot_scaler[c[0]] if c[0] is not None else 1
@@ -934,8 +1066,13 @@ class Waveguide:
         if c[0] is None: #single color plot (no colorbar)
             c_array = color
         
-        # Re(omega) vs. Re(k)
-        sc = ax.scatter(x_array, y_array, s=markersize, c=c_array, marker=marker, **kwargs)
+        # Plot
+        if mode is None: #all modes
+            sc = ax.scatter(x_array, y_array, s=markersize, c=c_array, marker=marker, **kwargs)
+        else: #single mode (trick to find the right index)
+            index = mode + np.insert(np.array([self.eigenvalues[i].size for i in range(self.omega.size-1)]).cumsum(), 0, 0).astype('int32')
+            index = index[mode>=0]
+            sc = ax.plot(x_array[index], y_array[index], c=color, marker=marker, markersize=markersize, **kwargs) #here, sc should be understood as ll (line of lines)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.figure.tight_layout()
@@ -949,16 +1086,18 @@ class Waveguide:
         Define the characteristic length, time and mass in order to visualize plots in a dimensional form (by default, they are equal to 1).
         Set dim=3 for three-dimensional waveguides, dim=2 for two-dimensional waveguides (e.g. plates).
         Scaling factors for 'omega', 'wavenumber', 'energy_velocity', 'group_velocity', 'pml_ratio', 'eigenvalues', 'excitability',
-        'eigenvectors', 'eigenforces', 'coefficient', 'frequency', 'attenuation', 'phase_velocity' are stored in the attribute name plot_scaler.
+        'eigenvectors', 'eigenforces', 'coefficient', 'complex_power', 'frequency', 'attenuation', 'phase_velocity' are stored in the
+        attribute name plot_scaler.
         If poynting normalization has already been applied, then the scalers for 'eigenvectors', 'eigenforces' and 'coefficient' are such that
-        the dimensional cross-section power flow of eigenmodes is equal to 1 Watt (if no poynting normalization applied, these scalers are left to 1).
+        the dimensional cross-section power flow of eigenmodes is equal to 1 Watt (if no poynting normalization applied, these scalers are
+        left to 1).
         Reminder: while the dimension of U (displacement) is in meter, the dimension of F (force) is in Newton for 3D waveguides
         and in Newton/meter for 2D waveguides (F is in mass*length**(dim-2)/time**2).
         """
         force = mass*length**(dim-2)/time**2
         self.plot_scaler = {'omega':1/time, 'wavenumber':1/length, 'energy_velocity':length/time, 'group_velocity':length/time, 'pml_ratio':1,
                             'eigenvalues':1/length if self.problem_type=='omega' else 1/time, 'excitability':length/force,
-                            'eigenvectors':1, 'eigenforces':1, 'coefficient':1}
+                            'eigenvectors':1, 'eigenforces':1, 'coefficient':1, 'complex_power':force*length/time}
         self.plot_scaler.update({'frequency':self.plot_scaler['omega'], 'attenuation':self.plot_scaler['eigenvalues'], 'phase_velocity':self.plot_scaler['energy_velocity']})
         if self._poynting_normalization:
             normalization_factor_1W = 1/np.sqrt(force*length/time) #factor to normalize eigenmodes such that their dimensional cross-section power flow is equal to 1 Watt
@@ -983,7 +1122,7 @@ class Waveguide:
 
         Returns
         -------
-        ax: the plot axe used for display
+        sc: the matplotlib collection
         """
         if ax is None:
             fig, ax = plt.subplots(1, 1)
@@ -1223,9 +1362,9 @@ class Signal:
         Generate a toneburst signal
     chirp(fs, T, f0, f1, chirp_duration):
         Generate a chirp signal
-    plot():
+    plot(ax=None, color="k", linewidth=1, linestyle="-", **kwargs):
         Plot time waveform (waveform vs. time)
-    plot_spectrum():
+    plot_spectrum(ax=None, color="k", linewidth=1, linestyle="-", **kwargs):
         Plot the spectrum (spectrum vs. frequency), in magnitude and phase
     """
     def __init__(self, time=None, waveform=None, frequency=None, spectrum=None, alpha=0):
@@ -1401,31 +1540,57 @@ class Signal:
         self.fft()
 
     def plot(self, ax=None, color="k", linewidth=1, linestyle="-", **kwargs):
-        """ Plot time waveform (waveform vs. time) """
+        """
+        Plot time waveform (waveform vs. time)
+
+        Parameters
+        ----------
+        ax: matplotlib axis
+            the matplotlib axis on which to plot data (created if None)
+        color: str, linewidth: int, linestyle: str, **kwargs are passed to ax.plot
+        
+        Returns
+        -------
+        ll: the matplotlib list of lines
+        """                                                     
         # Initialization
         if ax is None:
             fig, ax = plt.subplots(1, 1)
         # Plot waveform vs. time
-        ax.plot(self.time, self.waveform.T, color=color, linewidth=linewidth, linestyle=linestyle, **kwargs)
+        ll = ax.plot(self.time, self.waveform.T, color=color, linewidth=linewidth, linestyle=linestyle, **kwargs)
         ax.set_xlabel('t')
         ax.set_ylabel('x')
         ax.figure.tight_layout()
-        return ax
+        return ll
 
-    def plot_spectrum(self, color="k", linewidth=2, linestyle="-", **kwargs):
-        """ Plot the spectrum (spectrum vs. frequency), in magnitude and phase """
+    def plot_spectrum(self, ax=None, color="k", linewidth=1, linestyle="-", **kwargs):
+        """
+        Plot the spectrum (spectrum vs. frequency), in magnitude and phase
+        
+        Parameters
+        ----------
+        ax: matplotlib axis
+            the matplotlib axis on which to plot data (created if None)
+        color: str, linewidth: int, linestyle: str, **kwargs are passed to ax.plot
+        
+        Returns
+        -------
+        ll_abs: the matplotlib list of lines for magnitude plot
+        ll_angle: same but for phase plot
+        """
+        # Initialization
+        if ax is None:
+            fig, ax = plt.subplots(1, 1)
         # Plot spectrum magnitude vs. frequency
-        fig, ax_abs = plt.subplots(1, 1)
-        ax_abs.plot(self.frequency.real, np.abs(self.spectrum.T), color=color, linewidth=1, linestyle=linestyle, **kwargs)
-        ax_abs.set_xlabel('f')
-        ax_abs.set_ylabel('|X|')
+        fig, ax = plt.subplots(1, 1)
+        ll_abs = ax.plot(self.frequency.real, np.abs(self.spectrum.T), color=color, linewidth=linewidth, linestyle=linestyle, **kwargs)
+        ax.set_xlabel('f')
+        ax.set_ylabel('|X|')
         fig.tight_layout()
-        
         # Plot spectrum phase vs. frequency
-        fig, ax_angle = plt.subplots(1, 1)
-        ax_angle.plot(self.frequency.real, np.angle(self.spectrum.T), color=color, linestyle=linestyle, **kwargs)
-        ax_angle.set_xlabel('f')
-        ax_angle.set_ylabel('arg(X)')
+        fig, ax = plt.subplots(1, 1)
+        ll_angle = ax.plot(self.frequency.real, np.angle(self.spectrum.T), color=color, linewidth=linewidth, linestyle=linestyle, **kwargs)
+        ax.set_xlabel('f')
+        ax.set_ylabel('arg(X)')
         fig.tight_layout()
-        
-        return ax_abs, ax_angle
+        return ll_abs, ll_angle

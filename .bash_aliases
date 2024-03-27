@@ -5,6 +5,7 @@ alias real='source /usr/local/bin/dolfinx-real-mode'
 alias python=python3
 alias py=python
 alias ipy='ipython'
+alias jn='jupyter notebook'
 alias c=clear
 alias ll='pwd; ls --time-style="+%Y-%m-%dT%H:%M:%S" -l1hv --color'
 

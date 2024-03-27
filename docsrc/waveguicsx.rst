@@ -11,4 +11,8 @@ waveguicsx.waveguide
    :undoc-members:
    :show-inheritance:
 
+.. automodule:: waveguicsx.scattering
+   :members:
+   :undoc-members:
+   :show-inheritance:
 

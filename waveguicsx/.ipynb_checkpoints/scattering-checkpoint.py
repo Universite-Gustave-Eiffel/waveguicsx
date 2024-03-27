@@ -33,14 +33,13 @@ class Scattering:
     This kind of problem typically typically stems from a finite element (FE) model of a small portion of waveguide
     including a local inhomogeneity (e.g. defects). The cross-section extremities of the truncated FE model are then
     handled as transparent boundary conditions (BCs) to reproduce semi-infinite waveguides.
-    The so-obtained scattering problem is solved repeatedly for each frequency.
+    The so-obtained scattering problem is solved repeatedly for each frequency. The loops over the angular frequency can
+    be parallelized, as shown in some tutorials (using mpi4py).
     
     This class enables to deal with scattering in complex waveguides, two-dimensional (e.g. plates) or three-dimensional
     (arbitrarily shaped cross-section), inhomogeneous in the transverse directions, anisotropic. Complex-valued problems
     can be handled including the effects of non-propagating modes (evanescent, inhomogeneous), viscoelastic loss (complex
     material properties) or perfectly matched layers (PML) to simulate buried waveguides.
-    
-    !!!The loops over the angular frequency can be parallelized, as shown in some tutorials (using mpi4py)!!!!
     
     Transparent BCs are Waveguide objects, which must have been solved prior to the scattering
     problem solution, yielding the following object attributes: omega, eigenvalues, eigenvectors, eigenforces and traveling
@@ -69,7 +68,36 @@ class Scattering:
     
     Example::
     
-        ..................TO DO...................   
+        # This simple example involves only one transparent boundary condition (e.g. waveguide scattering by a free edge)
+        # The tbc (the "inlet") is supposed to be at the left-hand side of the FE box so that its outward normal is negative
+
+        from waveguicsx.waveguide import Waveguide
+        from waveguicsx.scattering import Scattering
+
+        # Input parameters
+        omega = 2*np.sqrt(3)*np.linspace(1.48, 1.60, num=100) #normalized angular frequency range
+        nev = 30 #tbc number of eigenvalues requested at each frequency
+
+        # Scattering initialization
+        ws = Scattering(MPI.COMM_WORLD, M, K, 0*M, [('waveguide0', -tbc_dofs)]) #M and K are the mass and stiffness matrices of the FE box
+        #reminder: tbc_dofs are the global degrees of freedom, set negative by convention when the normal is negative (here, we suppose n=-ey)
+
+        #Solve waveguide problem associated with the tbc
+        ws.waveguide0 = Waveguide(MPI.COMM_WORLD, Ms, K0, K1, K2) #Ms, K0, K1 and K2 are SAFE matrices associated with the tbc (here, named 'waveguide0')
+        ws.waveguide0.set_parameters(omega=omega)
+        ws.waveguide0.solve(nev)
+        ws.waveguide0.compute_traveling_direction()
+        ws.waveguide0.compute_poynting_normalization()
+
+        # Solving scattering problem
+        mode = ws.waveguide0.track_mode(frequency_index, mode_index, threshold=0.98, plot=True) #track a mode, specified by its index at a given frequency, over the whole frequency range
+        ws.set_ingoing_mode('waveguide0', mode) #set mode as a single ingoing mode, coeff is 1 (here, power is also 1 thanks to poynting normalization)
+        ws.set_parameters()
+        ws.solve()
+
+        # Plot reflected power coefficients vs. angular frequency
+        ws.waveguide0.compute_complex_power()
+        ws.waveguide0.plot(y=('complex_power', lambda x:np.abs(np.real(x))), direction=-1)
     
     
     Attributes

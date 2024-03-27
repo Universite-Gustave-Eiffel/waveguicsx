@@ -15,8 +15,8 @@
 # The cross-section is a 2D disk with free boundary conditions on its boundaries\
 # The inhomogeneous part, including free edge or notch, is a 3D cylinder\
 # material: elastic steel\
-# The problem is solved using FEM with transparent boundary condition in the inlet cross-section\
-# The inlet eigenproblem is solved using SAFE as a function of frequency (eigenvalues are wavenumbers)\
+# The problem is solved using FEM with transparent boundary condition in the inlet and outlet cross-sections\
+# The tbc eigenproblem is solved using SAFE as a function of frequency (eigenvalues are wavenumbers)\
 # Results can be compared with the following papers, for free edge and notch respectively:
 # - Gregory and Gladwell, Q. J. Mech. Appl. Math.  42 (1989), 327–337
 # - Benmeddour et al., IJSS 48 (2011), 764-774.
@@ -34,7 +34,7 @@ import pyvista
 from waveguicsx.waveguide import Waveguide
 from waveguicsx.scattering import Scattering
 #For proper use with a jupyter notebook, uncomment the following line:
-pyvista.set_jupyter_backend("static"); pyvista.start_xvfb() #try also: "static", "pythreejs", "ipyvtklink"...
+#pyvista.set_jupyter_backend("static"); pyvista.start_xvfb() #try also: "static", "pythreejs", "ipyvtklink"...
 
 ##################################
 # Input parameters
@@ -259,3 +259,6 @@ plotter = pyvista.Plotter()
 plotter.add_mesh(grid)
 plotter.show_axes()
 plotter.show()
+
+""
+

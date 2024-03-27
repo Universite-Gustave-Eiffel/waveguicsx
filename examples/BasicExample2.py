@@ -20,11 +20,11 @@ import matplotlib.pyplot as plt
 from waveguicsx.waveguide import Waveguide, Signal
 
 ###########################################
-# Load PETSc matrices, K0, K1, K2 and M, as well as PETSc vector F, saved into the binary file 'BasicExample_K0K1K2MF.dat'.\
+# Load PETSc matrices, K0, K1, K2 and M, as well as PETSc vector F, saved into the binary file 'BasicExample.dat'.\
 # This file contains matrices for a homogeneous plate of thickness 1 and Poisson ratio 0.3.\
 # It can be found in the subfolder 'examples'\
 # (file generated from the tutorial 'Elastic_Waveguide_Plate2D_TransientResponse.py')
-viewer = PETSc.Viewer().createBinary('BasicExample_K0K1K2MF.dat', 'r') #note: calls below must be in order that objects have been stored
+viewer = PETSc.Viewer().createBinary('BasicExample.dat', 'r') #note: calls below must be in order that objects have been stored
 K0 = PETSc.Mat().load(viewer)
 K1 = PETSc.Mat().load(viewer)
 K2 = PETSc.Mat().load(viewer)

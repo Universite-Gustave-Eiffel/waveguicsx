@@ -109,3 +109,36 @@ The FE mesh is built from gmsh with a .geo file.
 
 .. literalinclude:: ../examples/Rail60E1/Elastic_Waveguide_Rail_Gmsh.py
 
+
+8. Reflection of Lamb modes by the free edge of a plate
+-------------------------------------------------------
+
+Scattering in 2D elastic waveguide example (reflection of Lamb modes by the free edge of a plate).
+The cross-section is a 1D line with free boundary conditions on its boundaries.
+The inhomogeneous part, including the free edge, is a 2D rectangle.
+Material: elastic steel.
+The problem is solved using FEM with transparent boundary condition (tbc) in the inlet cross-section.
+The inlet eigenproblem is solved using SAFE as a function of frequency (eigenvalues are wavenumbers).
+Results can be compared with Fig. 4 of paper: Karunasena et al., CMAME 125 (1995), 221-233 (see also
+Gregory and Gladwell, J. of Elast. 13 (1983), 185-206).
+
+.. literalinclude:: ../examples/Scattering_Elastic_Waveguide_Plate2D_Gmsh.py
+
+
+9. Reflection and transmission of Pochhammer-Chree modes inside a cylinder
+--------------------------------------------------------------------------
+
+Scattering in 3D elastic waveguide example.
+Reflection of Pochhammer-Chree modes by the free edge of a cylinder or by notch.
+The cross-section is a 2D disk with free boundary conditions on its boundaries.
+The inhomogeneous part, including free edge or notch, is a 3D cylinder.
+Material: elastic steel.
+The problem is solved using FEM with transparent boundary condition in the inlet and outlet cross-sections.
+The tbc eigenproblem is solved using SAFE as a function of frequency (eigenvalues are wavenumbers)\
+Results can be compared with the following papers, for free edge and notch respectively:
+
+* Gregory and Gladwell, Q. J. Mech. Appl. Math.  42 (1989), 327–337
+* Benmeddour et al., IJSS 48 (2011), 764-774.
+
+.. literalinclude:: ../examples/Scattering_Elastic_Waveguide_Cylinder3D_Gmsh.py
+

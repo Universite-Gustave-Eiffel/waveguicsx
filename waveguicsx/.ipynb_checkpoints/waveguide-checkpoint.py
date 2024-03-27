@@ -51,41 +51,39 @@ class Waveguide:
     
     
     Example::
-    
+
+        # In this example, the matrices M, K0, K1, K2 and the excitation vector F are supposed to be dimensional for simplicity
+        # Yet, in practice, the problem would better be normalized to avoid ill-conditioning (see tutorials)
+
         from waveguicsx.waveguide import Waveguide
-        
+
         # Definition of the excitation signal (here, a toneburst)
         excitation = Signal()
-        excitation.toneburst(fs=8/(2*np.pi), T=49.75*(2*np.pi), fc=2/(2*np.pi), n=5) 
-        excitation.plot()
-        excitation.plot_spectrum()
-        omega = 2*np.pi*excitation.frequency  #omega = np.linspace(0.02, 4, 200)
-        
+        excitation.toneburst(fs=400e3, T=2e-3, fc=100e3, n=8) #central frequency 100 kHz, 8 cycles, duration 2 ms, sampling frequency 400 kHz
+        excitation.plot() #plot time signal
+        excitation.plot_spectrum() #plot spectrum
+        omega = 2*np.pi*excitation.frequency #angular frequency range
+
         # Initialization of waveguide
         wg = Waveguide(MPI.COMM_WORLD, M, K0, K1, K2)
-        wg.set_parameters(omega=omega)
-        
-        # Solution of eigenvalue problem (iteration over the parameter omega)
-        wg.solve(nev=50, target=0) #access to components with: wg.eigenvalues[iomega][imode], wg.eigenvectors[iomega][idof,imode]
-        
-        # Plot dispersion curves
-        wg.plot()
-        wg.compute_energy_velocity()
-        wg.plot_energy_velocity()
-        
-        # Computation of modal coefficients and excitabilities
-        wg.compute_response_coefficient(F=F, dof=dof)
-        wg.plot_coefficient()
-        wg.plot_excitability()
-        
-        # Forced response in the frequency domain, due to a toneburst excitation, at degree of freedom dof and axial coordinates z
-        frequency, response = wg.compute_response(dof=dof, z=[50, 100, 150, 200], spectrum=excitation.spectrum)
-        
-        # Transient response
-        response = Signal(frequency=frequency, spectrum=response)
-        response.plot_spectrum()
-        response.ifft()
-        response.plot()
+        wg.set_parameters(omega=omega) #set the parameter range (here, angular frequency)
+
+        # Free response (dispersion curves)
+        wg.solve(nev=20, target=0) #solution of eigenvalue problem (iteration over the parameter omega), 20 eigenvalues requested at each frequency
+        wg.compute_energy_velocity() #post-process energy velocity
+        wg.plot() #plot k vs. omega
+        wg.plot_energy_velocity() #plot ve vs. omega
+
+        # Computation of modal coefficients due to an excitation vector F
+        wg.compute_response_coefficient(F=F) #F should be a PETSc vector
+        wg.plot_coefficient() #plot modal coefficients vs. omega
+
+        # Forced response at degree of freedom dof and axial coordinates z (dof should be an integer)
+        frequency, response = wg.compute_response(dof=dof, z=[0.5, 1., 1.5, 2.], spectrum=excitation.spectrum, plot=False) #response in the frequency domain
+        response = Signal(frequency=frequency, spectrum=response) #define response as a Signal object
+        response.plot_spectrum() #plot frequency response
+        response.ifft() #response in the time domain
+        response.plot() #plot time response
         plt.show()
     
     

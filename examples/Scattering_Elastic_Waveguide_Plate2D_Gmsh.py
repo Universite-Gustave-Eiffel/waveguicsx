@@ -14,7 +14,7 @@
 # The cross-section is a 1D line with free boundary conditions on its boundaries\
 # The inhomogeneous part, including the free edge, is a 2D rectangle\
 # material: elastic steel\
-# The problem is solved using FEM with transparent boundary condition in the inlet cross-section\
+# The problem is solved using FEM with transparent boundary condition (tbc) in the inlet cross-section\
 # The inlet eigenproblem is solved using SAFE as a function of frequency (eigenvalues are wavenumbers)\
 # Results can be compared with Fig. 4 of paper: Karunasena et al., CMAME 125 (1995), 221-233 (see also\
 # Gregory and Gladwell, J. of Elast. 13 (1983), 185-206).
@@ -32,7 +32,7 @@ import pyvista
 from waveguicsx.waveguide import Waveguide
 from waveguicsx.scattering import Scattering
 #For proper use with a jupyter notebook, uncomment the following line:
-pyvista.set_jupyter_backend("static"); pyvista.start_xvfb() #try also: "static", "pythreejs", "ipyvtklink"...
+#pyvista.set_jupyter_backend("static"); pyvista.start_xvfb() #try also: "static", "pythreejs", "ipyvtklink"...
 
 ##################################
 # Input parameters
@@ -41,10 +41,10 @@ L = 1 #plate length (m) for the inhomogeneous part
 le = h/5 #finite element characteristic length (m)
 E, nu, rho = 2.0e+11, 0.25, 7800 #Young's modulus (Pa), Poisson ratio, density (kg/m3)
 kappas, kappal = 0.008*0, 0.003*0 #shear and longitudinal bulk wave attenuations (Np/wavelength)
-cs, cl = np.sqrt(E/rho/(2*(1+nu))), np.sqrt(E/rho*(1-nu)/((1+nu)*(1-2*nu)))
+cs, cl = np.sqrt(E/rho/(2*(1+nu))), np.sqrt(E/rho*(1-nu)/((1+nu)*(1-2*nu))) #shear and longitudinal wave celerities
 omega = 2*np.sqrt(3)*np.linspace(1.48, 1.60, num=100)*cs/h #angular frequencies (rad/s)
 nev = 30 #number of eigenvalues
-free_end = True #True: only one tbc (at one end), False: two tbcs (at both ends, check that an incident mode is outgoing properly)
+free_end = True #True: only one tbc (at one end), False: two tbcs (at both ends, to check that an incident mode is outgoing properly)
 
 ##################################
 # Re-scaling
@@ -54,7 +54,7 @@ M0 = rho*h**3 #characteristic mass
 h, L, le = h/L0, L/L0, le/L0
 rho, cs, cl = rho/M0*L0**3, cs/L0*T0, cl/L0*T0
 omega = omega*T0
-cs, cl = cs/(1+1j*kappas/2/np.pi), cl/(1+1j*kappal/2/np.pi) #complex celerities (core)
+cs, cl = cs/(1+1j*kappas/2/np.pi), cl/(1+1j*kappal/2/np.pi) #complex celerities
 
 ##################################
 # Create FE mesh (2D)
@@ -71,7 +71,7 @@ gmsh.model.geo.addCurveLoop([1, 2, 3, 4], 1)
 domain = gmsh.model.geo.addPlaneSurface([1])
 gmsh.model.geo.synchronize()
 gmsh.model.addPhysicalGroup(1, [tbc0], tag=0) #tag=0: 1st transparent boundary condition, 'inlet'
-gmsh.model.addPhysicalGroup(1, [tbc1], tag=1) #tag=1: 2nd transprent boundary condition, 'outlet'
+gmsh.model.addPhysicalGroup(1, [tbc1], tag=1) #tag=1: 2nd transparent boundary condition, 'outlet'
 gmsh.model.addPhysicalGroup(2, [domain], tag=2) #tag=2: the whole FE domain (2D mesh)
 gmsh.model.mesh.generate(2)
 gmsh.model.mesh.setOrder(2)
@@ -116,7 +116,7 @@ C = dolfinx.fem.Constant(mesh, PETSc.ScalarType(C))
 bcs = []
 
 ###############################################################################
-# Define the 2D variational formulation
+# Define the 2D variational formulation (FE problem inside the box)
 dx = ufl.Measure("dx", domain=mesh)
 u = ufl.TrialFunction(V)
 v = ufl.TestFunction(V)
@@ -208,8 +208,8 @@ print(f'\n')
 ##################################
 # Solving scattering problem
 index = np.argmin(np.abs(ws.waveguide0.eigenvalues[0]-4.36)) #4.36 is the S1 wavenumber value at angular frequency 5.13 (roughly)
-mode = ws.waveguide0.track_mode(0, index, threshold=0.98, plot=True) #track mode (freq. index, mode index)=(0,1) over the whole frequency range
-ws.set_ingoing_mode('waveguide0', mode) #set mode as a single ingoing mode, coeff is 1 (its power is also 1 thansk to poynting normalization)
+mode = ws.waveguide0.track_mode(0, index, threshold=0.98, plot=True) #track ingoing S1 mode over the whole frequency range
+ws.set_ingoing_mode('waveguide0', mode) #set mode as a single ingoing mode, coeff is 1 (its power is also 1 thanks to poynting normalization)
 ws.set_parameters()
 print(f'KSP solver type: {ws.ksp.getType()}')
 ws.solve()
@@ -217,7 +217,7 @@ ws.plot_energy_balance() #checking tbc modal truncature
 plt.show()
 
 ###############################################################################
-# Plot modal coefficients w.r.t angular frequency\
+# Plot modal coefficients vs. angular frequency\
 # Results can be compared with Fig. 4 of paper: Karunasena et al., CMAME 125 (1995), 221-233\
 # (see also Gregory and Gladwell, J. of Elast. 13 (1983), 185-206).
 
@@ -235,9 +235,8 @@ if not free_end:
 
 ###############################################################################
 # Example of plot for a single mode
-
 index = np.argmin(np.abs(ws.waveguide0.eigenvalues[0]+4.36)) #-4.36 is the opposite S1 wavenumber value at angular frequency 5.13 (roughly)
-mode2 = ws.waveguide0.track_mode(0, index, threshold=0.98, plot=False) #track mode (0, 0))
+mode2 = ws.waveguide0.track_mode(0, index, threshold=0.98, plot=False) #track reflected S1 mode
 sc = ws.waveguide0.plot_complex_power(mode=mode2)
 sc[0].axes.legend()
 plt.show()
@@ -254,3 +253,11 @@ plotter.add_mesh(grid)
 plotter.show_axes()
 plotter.view_xy()
 plotter.show()
+
+###############################################################################
+# Save matrices into file (for basic usage of waveguicsx, see README examples)
+viewer = PETSc.Viewer().createBinary('BasicScatteringExample.dat', 'w')
+dofs = PETSc.Vec().createSeq(tbc_dofs[0].size)
+dofs.setValues(range(tbc_dofs[0].size), tbc_dofs[0])
+for obj in [M, K, Ms[0], K0[0], K1[0], K2[0], dofs]:
+    obj.view(viewer=viewer)

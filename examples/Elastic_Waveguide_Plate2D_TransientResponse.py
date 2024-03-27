@@ -185,7 +185,7 @@ u_plotter.show()
 
 ###############################################################################
 # Save matrices into file (for basic usage of waveguicsx, see README examples)
-viewer = PETSc.Viewer().createBinary('BasicExample_K0K1K2MF.dat', 'w')
+viewer = PETSc.Viewer().createBinary('BasicExample.dat', 'w')
 K0.view(viewer=viewer)
 K1.view(viewer=viewer)
 K2.view(viewer=viewer)

@@ -52,9 +52,10 @@
 <li class="toctree-l2"><a class="reference internal" href="#installation">3. Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#documentation">4. Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tutorials">5. Tutorials</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#authors-and-contributors">6. Authors and contributors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#how-to-cite">7. How to cite</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#license">8. License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scattering-by-local-inhomogeneities">6. Scattering by local inhomogeneities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#authors-and-contributors">7. Authors and contributors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-cite">8. How to cite</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license">9. License</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="documentation.html">Documentation</a><ul>
@@ -70,6 +71,8 @@
 <li class="toctree-l2"><a class="reference internal" href="tutorials.html#excitation-of-a-three-dimensional-elastic-bar-of-circular-cross-section-with-parallelization">5. Excitation of a three-dimensional elastic bar of circular cross-section with parallelization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorials.html#time-response-of-a-two-dimensional-plate-excited-near-its-first-zgv-resonance">6. Time response of a two-dimensional plate excited near its first ZGV resonance</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorials.html#dispersion-curves-of-a-rail">7. Dispersion curves of a rail</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#reflection-of-lamb-modes-by-the-free-edge-of-a-plate">8. Reflection of Lamb modes by the free edge of a plate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#reflection-and-transmission-of-pochhammer-chree-modes-inside-a-cylinder">9. Reflection and transmission of Pochhammer-Chree modes inside a cylinder</a></li>
 </ul>
 </li>
 </ul>
@@ -111,14 +114,15 @@
 <section id="introduction">
 <h2>0. Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading"></a></h2>
 <p>Waveguicsx is a python library for solving complex waveguide problems based on SLEPc eigensolver.</p>
-<p>The full documentation is entirely defined in the `waveguide.py’ module.</p>
-<p>Waveguicsx can deal with complex waveguides, two-dimensional (e.g. plates) or three-dimensional (arbitrarily shaped cross-section), inhomogeneous in the transverse directions, anisotropic. Complex-valued problems can be handled including the effects of non-propagating modes (evanescent, inhomogeneous), viscoelastic loss (complex material properties) or perfectly matched layers (PML) to simulate buried waveguides.</p>
+<p>Waveguicsx is freely available under the GNU GPL, version 3, thus providing an accessible solution to the scientific community. Waveguicsx stems from expertise gained over the past 15 years through the guided wave research activity of the GeoEND team at Université Gustave Eiffel in the fields of non-destructive evaluation and geophysics.</p>
+<p>The full documentation is entirely defined in the `waveguide.py’ module. See also https://universite-gustave-eiffel.github.io/waveguicsx.</p>
+<p>Waveguicsx can deal with complex elastic waveguides, two-dimensional (e.g. plates) or three-dimensional (arbitrarily shaped cross-section), inhomogeneous in the transverse directions, anisotropic. Complex-valued problems can be handled including the effects of non-propagating modes (evanescent, inhomogeneous), viscoelastic loss (complex material properties) or perfectly matched layers (PML) to simulate buried waveguides.</p>
 <p>More precisely, waveguicsx solves the following matrix problem: <span class="math notranslate nohighlight">\((\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1+\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{F}\)</span>. This kind of problem typically stems from the so-called semi-analytical finite element (FE) method. See references below for theoretical details.</p>
 <p>The inputs of waveguicsx are: the matrices <span class="math notranslate nohighlight">\(\textbf{K}_0\)</span>, <span class="math notranslate nohighlight">\(\textbf{K}_1\)</span>, <span class="math notranslate nohighlight">\(\textbf{K}_2\)</span>, <span class="math notranslate nohighlight">\(\textbf{M}\)</span> (PETSc matrix format) to compute the free response of waveguide (dispersion curves), as well as the excitation vector <span class="math notranslate nohighlight">\(\textbf{F}\)</span> if computing forced response is required. These matrices can be built from your own favorite code. In this case, you just need to import these matrices to Python and converted them to PETSc format (see basic examples below). In case you do not have any code to generate these matrices, you can use the open finite element software FEniCSX (installation required) as shown in the tutorials.</p>
-<p>The free response (<span class="math notranslate nohighlight">\(\textbf{F}=\textbf{0}\)</span>) corresponds an eigenvalue problem, solved iteratively by varying the parameter which can be
-the angular frequency <span class="math notranslate nohighlight">\(\omega\)</span> or the wavenumber <span class="math notranslate nohighlight">\(k\)</span>, leading to dispersion curve results. In the former case, the eigenvalue is <span class="math notranslate nohighlight">\(k\)</span>, while in the latter case, the eigenvalue is <span class="math notranslate nohighlight">\(\omega^2\)</span>. The loops over the parameter (angular frequency or wavenumber) can be parallelized, as shown in some tutorials (using mpi4py). Various modal properties (energy velocity, group velocity, excitability…) can be post-processed as a function of the frequency and plotted as dispersion curves.</p>
+<p>The free response (<span class="math notranslate nohighlight">\(\textbf{F}=\textbf{0}\)</span>) corresponds an eigenvalue problem, solved iteratively by varying the angular frequency <span class="math notranslate nohighlight">\(\omega\)</span>, or alternatively, the wavenumber <span class="math notranslate nohighlight">\(k\)</span>, leading to dispersion curve results. In the former case, the eigenvalue is <span class="math notranslate nohighlight">\(k\)</span>, while in the latter case, the eigenvalue is <span class="math notranslate nohighlight">\(\omega^2\)</span>. The loops over the parameter (angular frequency or wavenumber) can be parallelized, as shown in some tutorials (using mpi4py). Various modal properties (energy velocity, group velocity, excitability…) can be post-processed as a function of the frequency and plotted as dispersion curves.</p>
 <p>The forced reponse (<span class="math notranslate nohighlight">\(\textbf{F}\neq\textbf{0}\)</span>) is solved in the frequency domain by expanding the solution as a sum of eigenmodes using biorthogonality relationship, leading to very fast computations of the excited wavefields. The transient response can finally be processed in the time domain by inverse FFT.</p>
 <p>The library contains two classes. The main class, the class Waveguide, enables to solve the waveguide problem defined by the following inputs: <span class="math notranslate nohighlight">\(\textbf{K}_0\)</span>, <span class="math notranslate nohighlight">\(\textbf{K}_1\)</span>, <span class="math notranslate nohighlight">\(\textbf{K}_2\)</span>, <span class="math notranslate nohighlight">\(\textbf{M}\)</span> and <span class="math notranslate nohighlight">\(\textbf{F}\)</span>. The other class, the class Signal, is provided to easily handle the transforms of signals from frequency to time and inversely, as well as the generation of excitation pulses.</p>
+<p>Waveguicsx can also solve scattering problems by local inhomogeneities based on transparent boundary conditions (so-called hybrid FE-SAFE method), please see the dedicated section below.</p>
 </section>
 <section id="basic-examples">
 <h2>1. Basic examples<a class="headerlink" href="#basic-examples" title="Permalink to this heading"></a></h2>
@@ -145,11 +149,11 @@ the angular frequency <span class="math notranslate nohighlight">\(\omega\)</spa
 <span class="kn">from</span> <span class="nn">waveguicsx.waveguide</span> <span class="kn">import</span> <span class="n">Waveguide</span>
 
 <span class="c1">###########################################</span>
-<span class="c1"># Load PETSc matrices, K0, K1, K2 and M saved into the binary file &#39;BasicExample_K0K1K2MF.dat&#39;.\</span>
+<span class="c1"># Load PETSc matrices, K0, K1, K2 and M saved into the binary file &#39;BasicExample.dat&#39;.\</span>
 <span class="c1"># This file contains matrices for a homogeneous plate of thickness 1 and Poisson ratio 0.3.\</span>
 <span class="c1"># It can be found in the subfolder &#39;examples&#39;\</span>
 <span class="c1"># (file generated from the tutorial &#39;Elastic_Waveguide_Plate2D_TransientResponse.py&#39;)</span>
-<span class="n">viewer</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Viewer</span><span class="p">()</span><span class="o">.</span><span class="n">createBinary</span><span class="p">(</span><span class="s1">&#39;BasicExample_K0K1K2MF.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="c1">#note: calls below must be in order that objects have been stored</span>
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Viewer</span><span class="p">()</span><span class="o">.</span><span class="n">createBinary</span><span class="p">(</span><span class="s1">&#39;BasicExample.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="c1">#note: calls below must be in order that objects have been stored</span>
 <span class="n">K0</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">()</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">viewer</span><span class="p">)</span>
 <span class="n">K1</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">()</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">viewer</span><span class="p">)</span>
 <span class="n">K2</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">()</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">viewer</span><span class="p">)</span>
@@ -210,11 +214,11 @@ the angular frequency <span class="math notranslate nohighlight">\(\omega\)</spa
 <span class="kn">from</span> <span class="nn">waveguicsx.waveguide</span> <span class="kn">import</span> <span class="n">Waveguide</span><span class="p">,</span> <span class="n">Signal</span>
 
 <span class="c1">###########################################</span>
-<span class="c1"># Load PETSc matrices, K0, K1, K2 and M, as well as PETSc vector F, saved into the binary file &#39;BasicExample_K0K1K2MF.dat&#39;.\</span>
+<span class="c1"># Load PETSc matrices, K0, K1, K2 and M, as well as PETSc vector F, saved into the binary file &#39;BasicExample.dat&#39;.\</span>
 <span class="c1"># This file contains matrices for a homogeneous plate of thickness 1 and Poisson ratio 0.3.\</span>
 <span class="c1"># It can be found in the subfolder &#39;examples&#39;\</span>
 <span class="c1"># (file generated from the tutorial &#39;Elastic_Waveguide_Plate2D_TransientResponse.py&#39;)</span>
-<span class="n">viewer</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Viewer</span><span class="p">()</span><span class="o">.</span><span class="n">createBinary</span><span class="p">(</span><span class="s1">&#39;BasicExample_K0K1K2MF.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="c1">#note: calls below must be in order that objects have been stored</span>
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Viewer</span><span class="p">()</span><span class="o">.</span><span class="n">createBinary</span><span class="p">(</span><span class="s1">&#39;BasicExample.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="c1">#note: calls below must be in order that objects have been stored</span>
 <span class="n">K0</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">()</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">viewer</span><span class="p">)</span>
 <span class="n">K1</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">()</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">viewer</span><span class="p">)</span>
 <span class="n">K2</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">()</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">viewer</span><span class="p">)</span>
@@ -330,24 +334,107 @@ so that it is not necessary to reinstall the package with pip each time the cont
 <p>Various tutorials are provided in the subfolder ‘examples’. These tutorials fully depict simple as well as more complex problems, two-dimensional (plates) or three-dimensional (bars, rail…), including viscoelastic loss or perfectly matched layers (used for buried waveguides). In particular, these tutorials show how to build the finite element matrices <span class="math notranslate nohighlight">\(\textbf{K}_0\)</span>, <span class="math notranslate nohighlight">\(\textbf{K}_1\)</span>, <span class="math notranslate nohighlight">\(\textbf{K}_2\)</span>, <span class="math notranslate nohighlight">\(\textbf{M}\)</span> with FEniCSX. Installing FEniCSX is therefore required to run the tutorials.</p>
 <p>In case you have your own code to generate these matrices, you can readily forget FEniCSX parts in each tutorial, and only consider the part dedicated to waveguicsx.</p>
 </section>
+<section id="scattering-by-local-inhomogeneities">
+<h2>6. Scattering by local inhomogeneities<a class="headerlink" href="#scattering-by-local-inhomogeneities" title="Permalink to this heading"></a></h2>
+<p>Waveguicsx can also solve scattering problems by local inhomogeneities based on transparent boundary conditions.</p>
+<p>This has been implemented in the scattering.py module, defining a third class named Scattering. The full documentation is entirely defined in the scattering.py module.</p>
+<p>The following matrix problem is considered: <span class="math notranslate nohighlight">\((\textbf{K}-\omega^2\textbf{M}-\text{i}\omega\textbf{C})\textbf{U}=\textbf{F}\)</span>. This kind of problem typically typically stems from a finite element (FE) model of a small portion of waveguide including a local inhomogeneity (e.g. defects). The cross-section extremities of the truncated FE model are then handled by transparent boundary conditions (BCs) to reproduce semi-infinite waveguides. Such an approach is sometimes called as hybrid FE-SAFE method (see references below for theoretical details). The so-obtained scattering problem is solved repeatedly for each frequency (using PETSc). The loops over the angular frequency can be parallelized, as shown in some tutorials (using mpi4py).</p>
+<p>The user must supply the following inputs: the global FE matrices <span class="math notranslate nohighlight">\(\textbf{K}\)</span>, <span class="math notranslate nohighlight">\(\textbf{M}\)</span>, <span class="math notranslate nohighlight">\(\textbf{C}\)</span> (stiffness, mass and viscous damping), the global FE vector <span class="math notranslate nohighlight">\(\textbf{F}\)</span> (excitation inside the FE model) and the transparent BCs (localized by their degrees of freedom in the global vector U). Transparent BCs are Waveguide objects, which must have been solved prior to the scattering problem solution (see waveguide.py module).</p>
+<p>For each angular frequency <span class="math notranslate nohighlight">\(\omega\)</span>, the solution to the scattering problem yields the displacement <span class="math notranslate nohighlight">\(\textbf{U}\)</span> of the FE model, as well as the outgoing modal coefficients of every transparent BC.</p>
+<p>Note that the FE matrices can be built from any code (then imported to Python and converted to PETSc format). In the tutorials, these matrices are built from the open finite element (FE) platform FEniCSX (see subfolder ‘examples’).</p>
+<p><strong>Basic scattering example: reflection of Lamb modes by the free edge of a plate</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">###########################################</span>
+<span class="c1"># Basic scattering example: reflection of Lamb modes by the free edge of a plate\</span>
+<span class="c1"># This simple example involves only one transparent boundary condition (the &quot;inlet&quot;),\</span>
+<span class="c1"># supposed to be at the left-hand side of the FE box (negative outward normal)\</span>
+<span class="c1">#</span>
+<span class="c1"># Important note:\</span>
+<span class="c1"># This basic example uses previously built PETSc matrices stored into a binary file.\</span>
+<span class="c1"># If you want to use your own matrices, you have to convert them to PETSc format. Examples of conversion are given below.\</span>
+<span class="c1"># ** Conversion of a 2d numpy array M to PETSc (dense matrix): **\</span>
+<span class="c1"># M = PETSc.Mat().createDense(M.shape, array=M)\</span>
+<span class="c1"># ** Importing sparse matrix M from Matlab to scipy (sparse matrix): **\</span>
+<span class="c1"># matrices = scipy.io.loadmat(&#39;matlab_file.mat&#39;) #here, the Matlab file &#39;matlab_file.mat&#39; is supposed to contain the variable M (Matlab sparse matrix)\</span>
+<span class="c1"># M = matrices[&#39;M&#39;] #&#39;M&#39; is the name of the Matlab variable\</span>
+<span class="c1"># ** Conversion of a scipy sparse matrix M to PETSc: **\</span>
+<span class="c1"># M = M.tocsr() #convert to csr format first\</span>
+<span class="c1"># M = PETSc.Mat().createAIJ(size=M.shape, csr=(M.indptr, M.indices, M.data))</span>
+
+<span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
+<span class="kn">from</span> <span class="nn">petsc4py</span> <span class="kn">import</span> <span class="n">PETSc</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">waveguicsx.waveguide</span> <span class="kn">import</span> <span class="n">Waveguide</span>
+<span class="kn">from</span> <span class="nn">waveguicsx.scattering</span> <span class="kn">import</span> <span class="n">Scattering</span>
+
+<span class="c1">###########################################</span>
+<span class="c1"># Load PETSc matrices, M, K, Ms, K0, K1, K2 saved into the binary file &#39;BasicScatteringExample.dat&#39;.\</span>
+<span class="c1"># This file contains matrices for the reflection of Lamb modes by the free edge of a homogeneous plate of thickness 1 and Poisson ratio 0.25.\</span>
+<span class="c1"># It can be found in the subfolder &#39;examples&#39;\</span>
+<span class="c1"># (file generated from the tutorial &#39;Scattering_Elastic_Waveguide_Plate2D_Gmsh.py&#39;)</span>
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Viewer</span><span class="p">()</span><span class="o">.</span><span class="n">createBinary</span><span class="p">(</span><span class="s1">&#39;BasicScatteringExample.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="c1">#note: calls below must be in order that objects have been stored</span>
+<span class="k">for</span> <span class="n">string</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="s1">&#39;Ms&#39;</span><span class="p">,</span> <span class="s1">&#39;K0&#39;</span><span class="p">,</span> <span class="s1">&#39;K1&#39;</span><span class="p">,</span> <span class="s1">&#39;K2&#39;</span><span class="p">]:</span>
+    <span class="nb">globals</span><span class="p">()[</span><span class="n">string</span><span class="p">]</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">()</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">viewer</span><span class="p">)</span>
+<span class="n">tbc_dofs</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Vec</span><span class="p">()</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">viewer</span><span class="p">)</span> <span class="c1">#loading dofs of the tbc</span>
+<span class="n">tbc_dofs</span> <span class="o">=</span> <span class="n">tbc_dofs</span><span class="p">[:]</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
+
+<span class="c1">###########################################</span>
+<span class="c1"># Input parameters</span>
+<span class="n">omega</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1.48</span><span class="p">,</span> <span class="mf">1.60</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span> <span class="c1">#normalized angular frequency range</span>
+<span class="n">nev</span> <span class="o">=</span> <span class="mi">30</span> <span class="c1">#tbc number of eigenvalues requested at each frequency</span>
+
+<span class="c1">###########################################</span>
+<span class="c1"># Scattering initialization</span>
+<span class="n">ws</span> <span class="o">=</span> <span class="n">Scattering</span><span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="mi">0</span><span class="o">*</span><span class="n">M</span><span class="p">,</span> <span class="p">[(</span><span class="s1">&#39;waveguide0&#39;</span><span class="p">,</span> <span class="o">-</span><span class="n">tbc_dofs</span><span class="p">)])</span> <span class="c1">#M and K are the mass and stiffness matrices of the FE box</span>
+<span class="c1">#reminder: tbc_dofs are the global degrees of freedom, set negative by convention when the normal is negative (here, we suppose n=-ey)</span>
+
+<span class="c1">###########################################</span>
+<span class="c1"># Solve waveguide problem associated with the tbc</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span> <span class="o">=</span> <span class="n">Waveguide</span><span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="p">,</span> <span class="n">Ms</span><span class="p">,</span> <span class="n">K0</span><span class="p">,</span> <span class="n">K1</span><span class="p">,</span> <span class="n">K2</span><span class="p">)</span> <span class="c1">#Ms, K0, K1 and K2 are SAFE matrices associated with the tbc (here, named &#39;waveguide0&#39;)</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">omega</span><span class="o">=</span><span class="n">omega</span><span class="p">)</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">nev</span><span class="p">)</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span><span class="o">.</span><span class="n">compute_traveling_direction</span><span class="p">()</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span><span class="o">.</span><span class="n">compute_poynting_normalization</span><span class="p">()</span>
+
+<span class="c1">###########################################</span>
+<span class="c1"># Solving scattering problem</span>
+<span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span><span class="o">.</span><span class="n">eigenvalues</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mf">4.36</span><span class="p">))</span> <span class="c1">#4.36 is the S1 wavenumber value at angular frequency 5.13 roughly (normalized values)</span>
+<span class="n">mode</span> <span class="o">=</span> <span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span><span class="o">.</span><span class="n">track_mode</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.98</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1">#track a mode, specified by its index at a given frequency, over the whole frequency range</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">set_ingoing_mode</span><span class="p">(</span><span class="s1">&#39;waveguide0&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> <span class="c1">#set mode as a single ingoing mode, coeff is 1 (here, power is also 1 thanks to poynting normalization)</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">()</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+
+<span class="c1">###########################################</span>
+<span class="c1"># Plot reflected power coefficients vs. angular frequency</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span><span class="o">.</span><span class="n">compute_complex_power</span><span class="p">()</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">ws</span><span class="o">.</span><span class="n">waveguide0</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;complex_power&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">x</span><span class="p">))),</span> <span class="n">direction</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">sc</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">)</span>
+<span class="n">sc</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Reflected power&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
 <section id="authors-and-contributors">
-<h2>6. Authors and contributors<a class="headerlink" href="#authors-and-contributors" title="Permalink to this heading"></a></h2>
+<h2>7. Authors and contributors<a class="headerlink" href="#authors-and-contributors" title="Permalink to this heading"></a></h2>
 <p>Waveguicsx is currently developed and maintained at Université Gustave Eiffel by Dr. Fabien Treyssède, with some contributions from Dr. Maximilien Lehujeur (github software management, python formatting, beta testing) and Dr. Pierric Mora (parallelization of loops in tutorials, beta testing). Please see the AUTHORS file for a list of contributors.</p>
 <p>Feel free to contact me by email for further information or questions about waveguicsx.</p>
 <p>contact: fabien.treyssede&#64;univ-eiffel.fr</p>
 </section>
 <section id="how-to-cite">
-<h2>7. How to cite<a class="headerlink" href="#how-to-cite" title="Permalink to this heading"></a></h2>
+<h2>8. How to cite<a class="headerlink" href="#how-to-cite" title="Permalink to this heading"></a></h2>
 <p>Please cite the software project as follows if used for your own projects or academic publications:</p>
-<p>F. Treyssède, waveguicsx (a python library for solving complex waveguides problems), 2023; software available at https://github.com/treyssede/waveguicsx.</p>
-<p>For theoretical details about finite element modeling of waveguide problems, here are also a few references by the author about the SAFE modeling of waveguides:</p>
+<p>F. Treyssède, waveguicsx (a python library for solving complex waveguides problems), 2023; software available at https://github.com/Universite-Gustave-Eiffel/waveguicsx.</p>
+<p>For theoretical details about finite element modeling of waveguide problems, here are also a few references by the author about the SAFE modeling of elastic waveguides:</p>
 <p>F. Treyssède, L. Laguerre, Numerical and analytical calculation of modal excitability for elastic wave generation in lossy waveguides, Journal of the Acoustical Society of America 133 (2013), 3827–3837</p>
 <p>K. L. Nguyen, F. Treyssède, C. Hazard, Numerical modeling of three-dimensional open elastic waveguides combining semi-analytical finite element and perfectly matched layer methods, Journal of Sound and Vibration 344 (2015), 158-178</p>
 <p>F. Treyssède, Spectral element computation of high-frequency leaky modes in three-dimensional solid waveguides, Journal of Computational Physics 314 (2016), 341-354</p>
 <p>M. Gallezot, F. Treyssède, L. Laguerre, A modal approach based on perfectly matched layers for the forced response of elastic open waveguides, Journal of Computational Physics 356 (2018), 391-409</p>
+<p>And here are a few references by the author about the hybrid FE-SAFE method for modeling scattering in elastic waveguides:</p>
+<p>F. Benmeddour, F. Treyssède, L. Laguerre, Numerical modeling of guided wave interaction with non-axisymmetric cracks in elastic cylinders, International Journal of Solids and Structures 48 (2011), 764-774</p>
+<p>M. Gallezot, F. Treyssède, L. Laguerre, Numerical modelling of wave scattering by local inhomogeneities in elastic waveguides embedded into infinite media, Journal of Sound and Vibration 443 (2019), 310-327</p>
 </section>
 <section id="license">
-<h2>8. License<a class="headerlink" href="#license" title="Permalink to this heading"></a></h2>
+<h2>9. License<a class="headerlink" href="#license" title="Permalink to this heading"></a></h2>
 <p>Waveguicsx is freely available under the GNU GPL, version 3.</p>
 </section>
 </section>

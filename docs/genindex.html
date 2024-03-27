@@ -47,9 +47,10 @@
 <li class="toctree-l2"><a class="reference internal" href="readme_link.html#installation">3. Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="readme_link.html#documentation">4. Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="readme_link.html#tutorials">5. Tutorials</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme_link.html#authors-and-contributors">6. Authors and contributors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme_link.html#how-to-cite">7. How to cite</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme_link.html#license">8. License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#scattering-by-local-inhomogeneities">6. Scattering by local inhomogeneities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#authors-and-contributors">7. Authors and contributors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#how-to-cite">8. How to cite</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#license">9. License</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="documentation.html">Documentation</a><ul>
@@ -65,6 +66,8 @@
 <li class="toctree-l2"><a class="reference internal" href="tutorials.html#excitation-of-a-three-dimensional-elastic-bar-of-circular-cross-section-with-parallelization">5. Excitation of a three-dimensional elastic bar of circular cross-section with parallelization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorials.html#time-response-of-a-two-dimensional-plate-excited-near-its-first-zgv-resonance">6. Time response of a two-dimensional plate excited near its first ZGV resonance</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorials.html#dispersion-curves-of-a-rail">7. Dispersion curves of a rail</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#reflection-of-lamb-modes-by-the-free-edge-of-a-plate">8. Reflection of Lamb modes by the free edge of a plate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#reflection-and-transmission-of-pochhammer-chree-modes-inside-a-cylinder">9. Reflection and transmission of Pochhammer-Chree modes inside a cylinder</a></li>
 </ul>
 </li>
 </ul>
@@ -112,16 +115,18 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="waveguicsx.html#waveguicsx.waveguide.Signal.chirp">chirp() (waveguicsx.waveguide.Signal method)</a>
 </li>
+      <li><a href="waveguicsx.html#waveguicsx.waveguide.Waveguide.compute_complex_power">compute_complex_power() (waveguicsx.waveguide.Waveguide method)</a>
+</li>
       <li><a href="waveguicsx.html#waveguicsx.waveguide.Waveguide.compute_eigenforces">compute_eigenforces() (waveguicsx.waveguide.Waveguide method)</a>
 </li>
       <li><a href="waveguicsx.html#waveguicsx.waveguide.Waveguide.compute_energy_velocity">compute_energy_velocity() (waveguicsx.waveguide.Waveguide method)</a>
 </li>
       <li><a href="waveguicsx.html#waveguicsx.waveguide.Waveguide.compute_group_velocity">compute_group_velocity() (waveguicsx.waveguide.Waveguide method)</a>
 </li>
-      <li><a href="waveguicsx.html#waveguicsx.waveguide.Waveguide.compute_opposite_going">compute_opposite_going() (waveguicsx.waveguide.Waveguide method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="waveguicsx.html#waveguicsx.waveguide.Waveguide.compute_opposite_going">compute_opposite_going() (waveguicsx.waveguide.Waveguide method)</a>
+</li>
       <li><a href="waveguicsx.html#waveguicsx.waveguide.Waveguide.compute_pml_ratio">compute_pml_ratio() (waveguicsx.waveguide.Waveguide method)</a>
 </li>
       <li><a href="waveguicsx.html#waveguicsx.waveguide.Waveguide.compute_poynting_normalization">compute_poynting_normalization() (waveguicsx.waveguide.Waveguide method)</a>
@@ -179,10 +184,12 @@
 </li>
       <li><a href="waveguicsx.html#waveguicsx.waveguide.Waveguide.plot_coefficient">plot_coefficient() (waveguicsx.waveguide.Waveguide method)</a>
 </li>
-      <li><a href="waveguicsx.html#waveguicsx.waveguide.Waveguide.plot_energy_velocity">plot_energy_velocity() (waveguicsx.waveguide.Waveguide method)</a>
+      <li><a href="waveguicsx.html#waveguicsx.waveguide.Waveguide.plot_complex_power">plot_complex_power() (waveguicsx.waveguide.Waveguide method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="waveguicsx.html#waveguicsx.waveguide.Waveguide.plot_energy_velocity">plot_energy_velocity() (waveguicsx.waveguide.Waveguide method)</a>
+</li>
       <li><a href="waveguicsx.html#waveguicsx.waveguide.Waveguide.plot_excitability">plot_excitability() (waveguicsx.waveguide.Waveguide method)</a>
 </li>
       <li><a href="waveguicsx.html#waveguicsx.waveguide.Waveguide.plot_group_velocity">plot_group_velocity() (waveguicsx.waveguide.Waveguide method)</a>
@@ -226,6 +233,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="waveguicsx.html#waveguicsx.waveguide.Signal.toneburst">toneburst() (waveguicsx.waveguide.Signal method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="waveguicsx.html#waveguicsx.waveguide.Waveguide.track_mode">track_mode() (waveguicsx.waveguide.Waveguide method)</a>
 </li>
   </ul></td>
 </tr></table>

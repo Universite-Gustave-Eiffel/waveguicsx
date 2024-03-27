@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>waveguicsx.waveguide &mdash; waveguicsx 2.1 documentation</title>
+  <title>waveguide.py &mdash; waveguicsx 2.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -57,7 +57,8 @@
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="reference internal" href="documentation.html">Documentation</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">waveguicsx.waveguide</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">waveguide.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-waveguicsx.scattering">scattering.py</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a><ul>
@@ -90,7 +91,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a></li>
           <li class="breadcrumb-item"><a href="documentation.html">Documentation</a></li>
-      <li class="breadcrumb-item active">waveguicsx.waveguide</li>
+      <li class="breadcrumb-item active">waveguide.py</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/waveguicsx.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -100,9 +101,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-waveguicsx">
-<span id="waveguicsx-waveguide"></span><h1>waveguicsx.waveguide<a class="headerlink" href="#module-waveguicsx" title="Permalink to this heading"></a></h1>
-<span class="target" id="module-waveguicsx.waveguide"></span><dl class="py class">
+  <section id="module-waveguicsx.waveguide">
+<span id="waveguide-py"></span><h1>waveguide.py<a class="headerlink" href="#module-waveguicsx.waveguide" title="Permalink to this heading"></a></h1>
+<dl class="py class">
 <dt class="sig sig-object py" id="waveguicsx.waveguide.Waveguide">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">waveguicsx.waveguide.</span></span><span class="sig-name descname"><span class="pre">Waveguide</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_MPI.Comm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/waveguide.html#Waveguide"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.waveguide.Waveguide" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
@@ -780,7 +781,10 @@ ll_angle: same but for phase plot</p>
 </section>
 </dd></dl>
 
-<span class="target" id="module-waveguicsx.scattering"></span><dl class="py class">
+</section>
+<section id="module-waveguicsx.scattering">
+<span id="scattering-py"></span><h1>scattering.py<a class="headerlink" href="#module-waveguicsx.scattering" title="Permalink to this heading"></a></h1>
+<dl class="py class">
 <dt class="sig sig-object py" id="waveguicsx.scattering.Scattering">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">waveguicsx.scattering.</span></span><span class="sig-name descname"><span class="pre">Scattering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_MPI.Comm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tbcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/waveguicsx/scattering.html#Scattering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#waveguicsx.scattering.Scattering" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>

@@ -1,15 +1,14 @@
-waveguicsx.waveguide
---------------------
-
-.. automodule:: waveguicsx
-   :members:
-   :undoc-members:
-   :show-inheritance:
+waveguide.py
+------------
 
 .. automodule:: waveguicsx.waveguide
    :members:
    :undoc-members:
    :show-inheritance:
+
+
+scattering.py
+-------------
 
 .. automodule:: waveguicsx.scattering
    :members:

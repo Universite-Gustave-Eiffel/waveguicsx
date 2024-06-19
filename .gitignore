@@ -1,4 +1,5 @@
 .private/*
+.ipynb_checkpoints/*
 examples/.ipynb_checkpoints/
 waveguicsx.egg-info/
 waveguicsx/__pycache__/

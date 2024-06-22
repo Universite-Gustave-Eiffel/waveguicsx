@@ -1258,9 +1258,14 @@ class Waveguide:
         if pml_threshold is not None and len(self.pml_ratio)==0:  #compute the pml_ratio if not yet computed
             self.compute_pml_ratio()
 
-    def _diag(self, vec):
+    def _diag(self, vec: Union[np.ndarray, list]):
         """ Return the PETSc diagonal matrix with diagonal entries given by vector vec (for internal use)"""
-        diag = PETSc.Mat().createAIJ(vec.size, nnz=1, comm=self.comm)
+        if isinstance(vec, np.ndarray):
+            diag = PETSc.Mat().createAIJ(vec.size, nnz=1, comm=self.comm)
+        elif isinstance(vec, list):
+            diag = PETSc.Mat().createAIJ(len(vec), nnz=1, comm=self.comm)            
+        else:
+            raise TypeError(type(vec))
         diag.setUp()
         diag.setDiagonal(PETSc.Vec().createWithArray(vec, comm=self.comm))
         diag.assemble()
@@ -1493,6 +1498,26 @@ class Signal:
         # Ricker waveform
         t0 = 1/fc
         self.waveform = (1-2*(self.time-t0)**2*np.pi**2*fc**2)*np.exp(-(self.time-t0)**2*np.pi**2*fc**2)
+        self.fft()
+
+    def ricker1(self, fs:float, T:float, fc: float, t0: float) -> None:
+        """
+        Generate a Ricker wavelet signal of unit amplitude (fs: sampling frequency, T: time duration, fc: Ricker central frequency, t0: pre trigger time)
+        
+        Note that for better accuracy:
+        
+        - fs is rounded so that fs/fc is an integer
+        - T is adjusted so that the number of points is even
+        """
+        # Time
+        fs = np.ceil(fs/fc)*fc  #redefine fs so that fs/fc is an integer
+        dt = 1/fs  #time step
+        T = np.round(T/2/dt)*2*dt + dt  #redefine T so that the number of points is equal to an even integer
+        self.time = t0 + np.arange(0, T+1e-6*dt, dt)  #time vector
+        #N = len(self.time)  # number of points (N=T/dt+1, even)
+        
+        # Ricker waveform
+        self.waveform = (1-2*(self.time)**2*np.pi**2*fc**2)*np.exp(-(self.time)**2*np.pi**2*fc**2)
         self.fft()
 
     def toneburst(self, fs, T, fc, n):

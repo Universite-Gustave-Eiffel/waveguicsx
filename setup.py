@@ -72,7 +72,8 @@ setuptools.setup(
         },
     install_requires=[
         # required packages
-        'numpy', 'matplotlib',
+        'numpy==1.26.4',  # numpy 2 is crashing => https://stackoverflow.com/questions/78634235/numpy-dtype-size-changed-may-indicate-binary-incompatibility-expected-96-from
+        'matplotlib',
         'petsc4py', 'slepc4py', 'mpi4py',  # <- fail with pip, use conda -c conda-forge ... see readme
         # packages useful for the tutorials
         'pyvista',

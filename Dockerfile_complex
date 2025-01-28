@@ -1,0 +1,19 @@
+FROM dolfinx/dolfinx:v0.6.0
+
+# THIS DOCKER FILE CAN BE USED FOR THE PYCHARM INTERPRETER
+
+# Set up the environment varialbles like /usr/local/bin/dolfinx-complex-mode
+# Pycharm won't source the file
+ENV PYV="3.10" \
+    PKG_CONFIG_PATH=/usr/local/dolfinx-complex/lib/pkgconfig:$PKG_CONFIG_PATH \
+    PETSC_ARCH=linux-gnu-complex-32 \
+    LD_LIBRARY_PATH=/usr/local/dolfinx-complex/lib:$LD_LIBRARY_PATH \
+    PYTHONPATH=/usr/local/dolfinx-complex/lib/python$PYV/dist-packages:$PYTHONPATH
+
+## persistant source of complex libs
+RUN echo '' >> /usr/lib/python3.10/sitecustomize.py &&\
+    echo 'import sys, os' >> /usr/lib/python3.10/sitecustomize.py &&\
+    echo 'sys.path.append("/usr/local/dolfinx-complex/lib/python3.10/dist-packages")' >> /usr/lib/python3.10/sitecustomize.py
+
+RUN /usr/bin/python3 -m pip install pyvista
+

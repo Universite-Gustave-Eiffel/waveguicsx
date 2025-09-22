@@ -19,7 +19,6 @@
 # Results are to be compared with Figs. 5b, 7a and 8a of paper: Treyssede and Laguerre, JASA 133 (2013), 3827-3837\
 # Note: the depth direction is x, the axis of propagation is z
 
-import dolfinx
 import dolfinx.fem.petsc
 import ufl
 import basix

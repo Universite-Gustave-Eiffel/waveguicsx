@@ -20,7 +20,9 @@
 # Note: the depth direction is x, the axis of propagation is z
 
 import dolfinx
+import dolfinx.fem.petsc
 import ufl
+import basix
 from mpi4py import MPI
 from petsc4py import PETSc
 from slepc4py import SLEPc
@@ -63,8 +65,10 @@ cs, cl = cs/(1+1j*kappas/2/np.pi), cl/(1+1j*kappal/2/np.pi) #complex celerities 
 ##################################
 # Create mesh and finite elements (three-node lines with two dofs per node for the two components of displacement)
 mesh = dolfinx.mesh.create_interval(MPI.COMM_WORLD, N, np.array([0, h]))
-element = ufl.VectorElement("CG", "interval", 2, 2) #Lagrange element, line element, quadratic "P2", 2D vector
-V = dolfinx.fem.FunctionSpace(mesh, element)
+
+
+elem = basix.ufl.element(family="Lagrange", cell="interval", degree=2, shape=(2, )) #Lagrange element, line element, quadratic "P2", 2D vector
+V = dolfinx.fem.functionspace(mesh, elem)
 
 ##################################
 # Create Material properties (isotropic)
@@ -152,7 +156,7 @@ response.ifft(coeff=1)
 fig, ax = plt.subplots(1,1)
 fig.set_figheight(4)
 fig.set_figwidth(10)
-ax = response.plot(ax=ax)
+hdls = response.plot(ax=ax)
 ax.set_xlim([0, 5e-3])
 ax.set_xlabel('time (s)')
 ax.set_ylim([-2e-3, 2e-3])
@@ -162,7 +166,7 @@ plt.show()
 
 ##################################
 # Mesh visualization
-grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(mesh, mesh.topology.dim))
+grid = pyvista.UnstructuredGrid(*dolfinx.plot.vtk_mesh(mesh, mesh.topology.dim))
 plotter = pyvista.Plotter()
 plotter.add_mesh(grid, show_edges=True)
 plotter.add_mesh(grid, style='points', render_points_as_spheres=True, point_size=10)
@@ -173,8 +177,8 @@ plotter.show()
 # Mode shape visualization
 ik, imode = 100, 5 #parameter index, mode index to visualize
 vec = wg.eigenvectors[ik].getColumnVector(imode)*wg.plot_scaler["eigenvectors"] #note: multiplying by wg.plot_scaler["eigenvectors"] enables to normalize the cross-section power flow of eigenmodes to 1 Watt(/m)
-u_grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(V))
-u_grid["u"] = np.array(vec).real.reshape(int(np.array(vec).size/V.element.value_shape), int(V.element.value_shape)) #V.element.value_shape is equal to 2
+u_grid = pyvista.UnstructuredGrid(*dolfinx.plot.vtk_mesh(V))
+u_grid["u"] = np.array(vec).real.reshape(int(np.array(vec).size/V.element.num_sub_elements), int(V.element.num_sub_elements)) #V.element.num_sub_elements is equal to 2
 u_grid["u"] = np.insert(u_grid["u"], 1, 0, axis=1) #insert a zero column to the second component (the y component)
 u_plotter = pyvista.Plotter()
 u_plotter.add_mesh(grid, style="wireframe", color="k") #FE mesh

@@ -20,8 +20,9 @@
 # Gregory and Gladwell, J. of Elast. 13 (1983), 185-206).
 
 import gmsh #full documentation entirely defined in the `gmsh.py' module
-import dolfinx
+import dolfinx.fem.petsc
 import ufl
+import basix
 from mpi4py import MPI
 from petsc4py import PETSc
 from slepc4py import SLEPc
@@ -82,18 +83,18 @@ tbc_tags = [0] if free_end else [0, 1]
 
 ##################################
 # Finite element space (2D)
-element = ufl.VectorElement("CG", "triangle", 2, 2) #Lagrange element, triangle, quadratic "P2", 2D vector
-V = dolfinx.fem.FunctionSpace(mesh, element)
+elem = basix.ufl.element(family="Lagrange", cell="triangle", degree=2, shape=(2, )) #Lagrange element, triangle, quadratic "P2", 2D vector
+V = dolfinx.fem.functionspace(mesh, elem)
 
 ##################################
 # Visualize FE mesh with pyvista
-Vmesh = dolfinx.fem.FunctionSpace(mesh, ufl.FiniteElement("CG", "triangle", 1)) #cell of order 1 is properly handled with pyvista
+Vmesh = dolfinx.fem.functionspace(mesh, basix.ufl.element("Lagrange", "triangle", 1)) #cell of order 1 is properly handled with pyvista
 plotter = pyvista.Plotter()
-grid = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(Vmesh))
+grid = pyvista.UnstructuredGrid(*dolfinx.plot.vtk_mesh(Vmesh))
 grid.cell_data["Marker"] = cell_tags.values
 grid.set_active_scalars("Marker")
 plotter.add_mesh(grid, show_edges=True)
-grid_nodes = pyvista.UnstructuredGrid(*dolfinx.plot.create_vtk_mesh(V)) #add higher-order nodes
+grid_nodes = pyvista.UnstructuredGrid(*dolfinx.plot.vtk_mesh(V)) #add higher-order nodes
 plotter.add_mesh(grid_nodes, style='points', render_points_as_spheres=True, point_size=2)
 plotter.view_xy()
 plotter.show()
@@ -130,7 +131,7 @@ M.assemble()
 K = dolfinx.fem.petsc.assemble_matrix(k_form, bcs=bcs)
 K.assemble()
 dofs = dolfinx.fem.Function(V)
-dofs.vector.setValues(range(M.size[0]), range(M.size[0])) #global dof vector
+dofs.x.petsc_vec.setValues(range(M.size[0]), range(M.size[0])) #global dof vector
 
 ###############################################################################
 # Determination of sign of outward normal of transparent boundaries (for check)
@@ -151,13 +152,16 @@ print(tbc_normal)
 # - define the variational form (SAFE formulation)
 # - assemble matrices
 # - locate tbc dofs in the global matrix
+
+ERROR HERE : RuntimeError: Cannot interpolate between elements defined on different cell types.
+
 Ms, K0, K1, K2, tbc_dofs = [], [], [], [], []
 for tag in tbc_tags:  
     #Extract the 1D mesh
     safe_mesh = dolfinx.mesh.create_submesh(mesh, mesh.topology.dim-1, facet_tags.indices[facet_tags.values==tag])[0]
     #Define the variational form
-    safe_element = ufl.VectorElement("CG", safe_mesh.ufl_cell(), 2, 2)
-    safe_V = dolfinx.fem.FunctionSpace(safe_mesh, safe_element)
+    safe_element = basix.ufl.element(family="Lagrange", cell=safe_mesh.ufl_cell().cellname(), degree=2, shape=(2, ))
+    safe_V = dolfinx.fem.functionspace(safe_mesh, safe_element)
     dx = ufl.Measure("dx", domain=safe_mesh)
     u = ufl.TrialFunction(safe_V)
     v = ufl.TestFunction(safe_V)

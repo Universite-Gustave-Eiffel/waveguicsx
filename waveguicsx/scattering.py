@@ -55,8 +55,9 @@ class Scattering:
       attribute name of a given transparent BC (this attribute will be a Waveguide object) and dofs is a numpy array
       of the global degrees of freedom for this transparent BC.
     - the ingoing mode coefficients, specified by the attribute coefficient in each transparent BC
-    Important convention: if the waveguide axis of a transparent BC is oriented outward (i.e. outside the FE box), dofs are
-    positive, but if oriented inward (i.e. inside the FE box), a negative sign has to be assigned to dofs by the user.
+    Important convention: if a transparent BC has its outward normal (i.e. outside the FE box) oriented in the positive
+    direction of the waveguide axis, dofs are positive, but if oriented in the negative direction, a negative sign has
+    to be assigned to dofs by the user.
     
     The solution to the scattering problem yields:
     - the displacement U of the FE model for each angular frequency omega
@@ -80,7 +81,7 @@ class Scattering:
 
         # Scattering initialization
         ws = Scattering(MPI.COMM_WORLD, M, K, 0*M, [('waveguide0', -tbc_dofs)]) #M and K are the mass and stiffness matrices of the FE box
-        #reminder: tbc_dofs are the global degrees of freedom, set negative by convention when the normal is negative (here, we suppose n=-ey)
+        #reminder: tbc_dofs are the global degrees of freedom, set negative by convention when the outward normal is negative (here, we suppose n=-ey)
 
         #Solve waveguide problem associated with the tbc
         ws.waveguide0 = Waveguide(MPI.COMM_WORLD, Ms, K0, K1, K2) #Ms, K0, K1 and K2 are SAFE matrices associated with the tbc (here, named 'waveguide0')
@@ -112,8 +113,8 @@ class Scattering:
         the modulation spectrum of F (size must be the same as omega)
     tbc : list of pairs (name, dofs)
         name is a string corresponding to the desired attribute name of a tbc (Waveguide object),
-        dofs is a numpy array of the degrees of freedom of the tbc (positive if outward
-        negative if inward)
+        dofs is a numpy array of the degrees of freedom of the tbc (positive if the outward normal is positive,
+        negative otherwise)
     omega : numpy.ndarray
         the angular frequency range, specified by the user in tbcs (Waveguide objects)
     ksp: KSP object (PETSc object)
@@ -168,8 +169,8 @@ class Scattering:
             FE matrices
         tbcs : list of pairs (name, dofs)
             name is a string corresponding to the desired attribute name of a tbc (Waveguide object),
-            dofs is a numpy array of the degrees of freedom of the tbc (positive if outward
-            negative if inward)
+            dofs is a numpy array of the degrees of freedom of the tbc (positive if the outward normal is
+            positive, negative otherwise)
         """
         self.comm = comm
         self.M = M
@@ -391,7 +392,7 @@ class Scattering:
         # Plot energy balance
         energy_balance = np.concatenate(self.energy_balance)
         energy_balance = (np.abs(energy_balance[1::3])-np.abs(energy_balance[2::3]))/np.abs(energy_balance[::3])
-        ll = ax.plot(np.abs(energy_balance[::3]), color=color, linewidth=linewidth, linestyle=linestyle, **kwargs)
+        ll = ax.plot(np.abs(energy_balance), color=color, linewidth=linewidth, linestyle=linestyle, **kwargs)
         ax.set_xlabel('frequency index')
         ax.set_ylabel('energy balance')
         fig.tight_layout()

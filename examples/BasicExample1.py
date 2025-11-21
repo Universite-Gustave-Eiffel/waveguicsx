@@ -12,19 +12,27 @@
 # ** Conversion of a scipy sparse matrix M to PETSc: **\
 # M = M.tocsr() #convert to csr format first\
 # M = PETSc.Mat().createAIJ(size=M.shape, csr=(M.indptr, M.indices, M.data))
-
+import os
 from mpi4py import MPI
 from petsc4py import PETSc
 import numpy as np
 import matplotlib.pyplot as plt
 from waveguicsx.waveguide import Waveguide
 
+if PETSc.ScalarType != np.dtype('complex128'):
+    raise TypeError(f'Wrong petsc scalar type {PETSc.ScalarType=} '
+                    f'please source the complex libraries '
+                    f'of dolfinx to run this example ')
+
 ###########################################
 # Load PETSc matrices, K0, K1, K2 and M saved into the binary file 'BasicExample.dat'.\
 # This file contains matrices for a homogeneous plate of thickness 1 and Poisson ratio 0.3.\
 # It can be found in the subfolder 'examples'\
 # (file generated from the tutorial 'Elastic_Waveguide_Plate2D_TransientResponse.py')
-viewer = PETSc.Viewer().createBinary('BasicExample.dat', 'r') #note: calls below must be in order that objects have been stored
+
+example_folder = os.path.dirname(os.path.abspath(__file__))
+example_data_file = os.path.join(example_folder, 'BasicExample.dat')
+viewer = PETSc.Viewer().createBinary(example_data_file, 'r') #note: calls below must be in order that objects have been stored
 K0 = PETSc.Mat().load(viewer)
 K1 = PETSc.Mat().load(viewer)
 K2 = PETSc.Mat().load(viewer)

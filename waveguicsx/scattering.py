@@ -5,11 +5,16 @@
 # 
 # This file is part of waveguicsx.
 # 
-# waveguicsx is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+# waveguicsx is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
 # 
-# waveguicsx is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# waveguicsx is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
 # 
-# You should have received a copy of the GNU General Public License along with waveguicsx. If not, see <https://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License along with waveguicsx.
+# If not, see <https://www.gnu.org/licenses/>.
 # 
 # Contact: fabien.treyssede@univ-eiffel.fr
 #####################################################################
@@ -157,7 +162,7 @@ class Scattering:
     plot_energy_balance():
         Plot the three terms of energy_balance (complex modulus) at each frequency index for checking modal tbc truncature        
     """
-    def __init__(self, comm:'_MPI.Comm', M:PETSc.Mat, K:PETSc.Mat, C:PETSc.Mat, tbcs:list):
+    def __init__(self, comm: '_MPI.Comm', M: PETSc.Mat, K: PETSc.Mat, C: PETSc.Mat, tbcs: list):
         """
         Constructor
         
@@ -177,6 +182,7 @@ class Scattering:
         self.K = K
         self.C = C
         self.tbcs = tbcs
+
         for tbc in tbcs:
             setattr(self, tbc[0], None)
         
@@ -201,17 +207,23 @@ class Scattering:
         frequency (default: 1 for all frequencies).
         """
         size = getattr(self, tbc_name).omega.size
+
         if spectrum is None:
             spectrum = np.ones(size)
+
         if len(spectrum) != size:
             raise NotImplementedError('The length of spectrum must be equal to the length of omega')
+
         #Initialization of modal coefficients to zero
-        getattr(self, tbc_name).coefficient = [np.zeros(getattr(self, tbc_name).eigenvalues[i].size).astype('complex')
-                                               for i in range(size)]
+        getattr(self, tbc_name).coefficient = \
+            [np.zeros(getattr(self, tbc_name).eigenvalues[i].size).astype('complex')
+            for i in range(size)]
+
         getattr(self, tbc_name).complex_power = []
-        #Set mode index to 1
+
+        # Set mode index to 1
         for i in range(size):
-            if mode[i]>=0:
+            if mode[i] >= 0:
                 getattr(self, tbc_name).coefficient[i][mode[i]] = spectrum[i]
     
     def set_internal_excitation(self, F, F_spectrum=None):
@@ -222,7 +234,7 @@ class Scattering:
         F and F_spectrum are stored as attributes.
         """
         self.F = F
-        self.F_spectrum = spectrum
+        self.F_spectrum = F_spectrum
     
     def set_parameters(self, solver='iterative'):
         """
@@ -232,17 +244,27 @@ class Scattering:
         After calling this method, various PETSc parameters can be set by changing the attribute ksp manually.
         """       
         self.ksp = PETSc.KSP().create(comm=self.comm)
-        if solver=='iterative': #iterative solver setup by default
-            self.ksp.setType(PETSc.KSP.Type.CGS) #CGS seems to be faster than: GMRES (ksp default), BCGS, ...
+
+        if solver == 'iterative':
+            # iterative solver setup by default
+
+            # CGS seems to be faster than: GMRES (ksp default), BCGS, ...
+            self.ksp.setType(PETSc.KSP.Type.CGS)
+
             pc = self.ksp.getPC()
             pc.setType('ilu')
-        elif solver=='direct': #direct solver setup
+
+        elif solver == 'direct': #direct solver setup
             self.ksp.setType('preonly')
             pc = self.ksp.getPC()
             pc.setType('lu')
-            pc.setFactorSolverType('mumps') #mumps seems to be faster than: umfpack, superlu_dist, petsc, superlu, klu...
+
+            # mumps seems to be faster than: umfpack, superlu_dist, petsc, superlu, klu...
+            pc.setFactorSolverType('mumps')
+
         else:
             raise NotImplementedError('The string solver must be iterative or direct')
+
         self.ksp.setFromOptions()
     
     def solve(self):
@@ -259,104 +281,155 @@ class Scattering:
         - Uout is the solution containing outgoing modal amplitudes and internal dofs
         """
         
-        #Checks        
+        # Checks
         for index, tbc in enumerate(self.tbcs):
+
             if getattr(self, tbc[0]).__class__.__name__ == Waveguide:
                 raise NotImplementedError(f'The attribute {tbc[0]} is not an instance of class Waveguide!')
+
             if len(getattr(self, tbc[0]).eigenvalues)==0:
                 raise NotImplementedError(f'The eigenvalue problem of {tbc[0]} has not been solved!')
+
             if len(getattr(self, tbc[0]).eigenforces)==0:
                 raise NotImplementedError(f'The eigenforces of {tbc[0]} have not been computed!')
+
             if len(getattr(self, tbc[0]).traveling_direction)==0:
                 raise NotImplementedError(f'The traveling direction of {tbc[0]} has not been computed!')
+
             if index==0:
                 self.omega = getattr(self, tbc[0]).omega
+
             else:
                 if not np.allclose(getattr(self, tbc[0]).omega, self.omega):
-                    raise NotImplementedError(f'The angular frequencies of {tbc[0]} are different from those of {self.tbcs[0][0]}!')
-            if len(getattr(self, tbc[0]).coefficient)==0: #create zero arrays if no coefficient has been computed
-                getattr(self, tbc[0]).coefficient = [np.zeros(eigenvalues.size).astype('complex') for eigenvalues in getattr(self, tbc[0]).eigenvalues]
-            getattr(self, tbc[0]).complex_power = [] #re-initialization of modal complex power
-        if self.F is None: #create zero vector F by default
+                    raise NotImplementedError(
+                        f'The angular frequencies of {tbc[0]} are different from those of {self.tbcs[0][0]}!')
+
+            if len(getattr(self, tbc[0]).coefficient) == 0:
+                # create zero arrays if no coefficient has been computed
+                getattr(self, tbc[0]).coefficient = [np.zeros(eigenvalues.size).astype('complex')
+                                                     for eigenvalues in getattr(self, tbc[0]).eigenvalues]
+
+            # re-initialization of modal complex power
+            getattr(self, tbc[0]).complex_power = []
+
+        if self.F is None:
+            # create zero vector F by default
             self.F = self.M.createVecRight()
-        if self.F_spectrum is None: #create vector of 1 by default
+
+        if self.F_spectrum is None:
+            # create vector of 1 by default
             self.F_spectrum = np.ones(self.omega.size)
+
         if len(self.F_spectrum) != self.omega.size:
             raise NotImplementedError('The length of spectrum of F must be equal to the length of omega')
         
         print(f'Scattering problem ({len(self.omega)} iterations)')
         
-        #Loop on frequency
+        # Loop on frequency
         for i, omega in enumerate(self.omega):
             
             start = time.perf_counter()
             
-            #Pointers
+            # Pointers
             tbc_dofs = np.concatenate([np.abs(tbc[1]) for tbc in self.tbcs])
             internal_dofs = np.setdiff1d(range(self.M.getSize()[0]), tbc_dofs).astype('int32')
             ingoing_col_pointer = [internal_dofs.size]
             outgoing_col_pointer = [internal_dofs.size]
+
             for tbc in self.tbcs:
-                normal_sign = -1 if any(tbc[1]<0) else +1 #outward normal sign along the waveguide axis
+                # outward normal sign along the waveguide axis
+                normal_sign = -1 if any(tbc[1]<0) else +1
+
                 traveling_direction = getattr(self, tbc[0]).traveling_direction[i]    
-                ingoing_col_pointer.extend([ingoing_col_pointer[-1] + np.nonzero(traveling_direction==-normal_sign)[0].size])
-                outgoing_col_pointer.extend([outgoing_col_pointer[-1] + np.nonzero(traveling_direction==+normal_sign)[0].size])
+                ingoing_col_pointer.extend([ingoing_col_pointer[-1] + np.nonzero(traveling_direction == -normal_sign)[0].size])
+                outgoing_col_pointer.extend([outgoing_col_pointer[-1] + np.nonzero(traveling_direction == +normal_sign)[0].size])
+
             ingoing_ncol = ingoing_col_pointer[-1]
             outgoing_ncol = outgoing_col_pointer[-1]
             
-            #Initialization of global projection matrices, filled with ones or zeroes at internal dofs
+            # Initialization of global projection matrices,
+            # filled with ones or zeroes at internal dofs
             Bu_in = self._build_global_internal(internal_dofs=[], ncol=ingoing_ncol)
             Bf_in = self._build_global_internal(internal_dofs=internal_dofs, ncol=ingoing_ncol)
             Bu_out = self._build_global_internal(internal_dofs=internal_dofs, ncol=outgoing_ncol)
             Bf_out = self._build_global_internal(internal_dofs=[], ncol=outgoing_ncol)
             
-            #Assemble projection matrices
+            # Assemble projection matrices
             for j, tbc in enumerate(self.tbcs):
-                #Outgoing matrices
-                Bu_temp, Bf_temp = self._build_global_modal(i=i, tbc=tbc, direction_str='outgoing', ncol=outgoing_ncol,
-                                                       col_pointer=outgoing_col_pointer[j])
+                # Outgoing matrices
+                Bu_temp, Bf_temp = self._build_global_modal(
+                    i=i, tbc=tbc, direction_str='outgoing', ncol=outgoing_ncol,
+                    col_pointer=outgoing_col_pointer[j])
+
                 Bu_out = Bu_out + Bu_temp
                 Bf_out = Bf_out + Bf_temp
-                #Ingoing matrices
-                Bu_temp, Bf_temp = self._build_global_modal(i=i, tbc=tbc, direction_str='ingoing', ncol=ingoing_ncol,
-                                                       col_pointer=ingoing_col_pointer[j])
+
+                # Ingoing matrices
+                Bu_temp, Bf_temp = self._build_global_modal(
+                    i=i, tbc=tbc, direction_str='ingoing', ncol=ingoing_ncol,
+                    col_pointer=ingoing_col_pointer[j])
+
                 Bu_in = Bu_in + Bu_temp
                 Bf_in = Bf_in + Bf_temp
             
-            #Assemble global excitation vector (internal force and ingoing modal amplitudes)
+            # Assemble global excitation vector (internal force and ingoing modal amplitudes)
             U_in = PETSc.Vec().createSeq(ingoing_ncol, comm=self.comm)
-            U_in.setValues(range(internal_dofs.size), self.F.getValues(internal_dofs)*self.F_spectrum[i]) #fill with the external force vector at internal dofs
+
+            # fill with the external force vector at internal dofs
+            U_in.setValues(range(internal_dofs.size), self.F.getValues(internal_dofs)*self.F_spectrum[i])
+
             for j, tbc in enumerate(self.tbcs):
-                normal_sign = -1 if any(tbc[1]<0) else +1 #outward normal sign along the waveguide axis
+                # outward normal sign along the waveguide axis
+                normal_sign = -1 if any(tbc[1]<0) else +1
+
                 traveling_direction = getattr(self, tbc[0]).traveling_direction[i]
                 imodes = np.nonzero(traveling_direction==-normal_sign)[0]
                 tbc_coeff = getattr(self, tbc[0]).coefficient[i][imodes]
-                U_in.setValues(range(ingoing_col_pointer[j], ingoing_col_pointer[j+1]), tbc_coeff) #fill with ingoing modal coefficients
+
+                # fill with ingoing modal coefficients
+                U_in.setValues(range(ingoing_col_pointer[j], ingoing_col_pointer[j+1]), tbc_coeff)
             
-            #Solve scattering system
+            # Solve scattering system
             D = self.K - omega**2*self.M - 1j*omega*self.C
             Bu_out_transpose = Bu_out.copy().transpose()
             U_out = PETSc.Vec().createSeq(outgoing_ncol, comm=self.comm)
-            if i>0 and self.ksp.getInitialGuessNonzero() is True: #try to set initial value from previous solution...
-                U_out.setValues(range(internal_dofs.size), self.displacement[-1].getValues(internal_dofs)) #internal dofs only->inefficient?
-            self.ksp.reset() #reset is necessary because the size of A and b can change at every iteration
-            self.ksp.setOperators(Bu_out_transpose*(D*Bu_out-Bf_out)) #the operator A of system Ax=b
-            #self.ksp.setUp(); FM = pc.getFactorMatrix(); FM.setMumpsIcntl(14, 50); FM.setMumpsCntl(3, 1e-12) #uncomment if mumps was to be parametrized (see mumps doc)
+
+            if i>0 and self.ksp.getInitialGuessNonzero() is True:
+                # try to set initial value from previous solution...
+
+                # internal dofs only->inefficient?
+                U_out.setValues(range(internal_dofs.size), self.displacement[-1].getValues(internal_dofs))
+
+            # reset is necessary because the size of A and b can change at every iteration
+            self.ksp.reset()
+
+            # the operator A of system Ax=b
+            self.ksp.setOperators(Bu_out_transpose*(D*Bu_out-Bf_out))
+
+            # # uncomment if mumps was to be parametrized (see mumps doc)
+            # self.ksp.setUp()
+            # FM = pc.getFactorMatrix()
+            # FM.setMumpsIcntl(14, 50)
+            # FM.setMumpsCntl(3, 1e-12)
+
             self.ksp.solve(Bu_out_transpose*(Bf_in-D*Bu_in)*U_in, U_out)
             
-            #Back to initial dofs
+            # Back to initial dofs
             self.displacement.append(Bu_out*U_out + Bu_in*U_in)
             
-            #Energy balance
-            self.energy_balance.append(-1j*omega/2*np.array([(Bf_in*U_in).dot(Bu_in*U_in)+(self.F*self.F_spectrum[i]).dot(self.displacement[-1]),
-                                                           (Bf_in*U_in+Bf_out*U_out).dot(Bu_in*U_in+Bu_out*U_out),
-                                                           (D*self.displacement[-1]).dot(self.displacement[-1])]))
+            # Energy balance
+            self.energy_balance.append(-1j * omega / 2 * np.array(
+                [(Bf_in * U_in).dot(Bu_in * U_in) + (self.F * self.F_spectrum[i]).dot(self.displacement[-1]),
+                 (Bf_in * U_in + Bf_out * U_out).dot(Bu_in * U_in + Bu_out * U_out),
+                 (D*self.displacement[-1]).dot(self.displacement[-1])]))
             
-            #Store outgoing modal amplitudes
+            # Store outgoing modal amplitudes
             for j, tbc in enumerate(self.tbcs):
-                normal_sign = -1 if any(tbc[1]<0) else +1 #outward normal sign along the waveguide axis
+                # outward normal sign along the waveguide axis
+                normal_sign = -1 if any(tbc[1] < 0) else +1
+
                 traveling_direction = getattr(self, tbc[0]).traveling_direction[i]
-                imodes = np.nonzero(traveling_direction==+normal_sign)[0]
+                imodes = np.nonzero(traveling_direction == +normal_sign)[0]
                 getattr(self, tbc[0]).coefficient[i][imodes] = U_out.getValues(range(outgoing_col_pointer[j], outgoing_col_pointer[j+1]))
             
             print(f'Iteration {i}, elapsed time :{(time.perf_counter() - start):.2f}s')
@@ -408,19 +481,27 @@ class Scattering:
         where to start the storage of the tbc modal basis.
         Note: this method assumes that eigenvectors and eigenforces are stored as dense PETSc matrices.
         """
-        #Initialization
+
+        # Initialization
         name, dofs = tbc
-        normal_sign = -1 if any(dofs<0) else +1 #outward normal sign along the waveguide axis
-        direction = -normal_sign if direction_str=='ingoing' else +normal_sign
+        normal_sign = -1 if any(dofs<0) else +1  # outward normal sign along the waveguide axis
+        direction = -normal_sign if direction_str == 'ingoing' else +normal_sign
         dofs = np.abs(dofs)
+
         traveling_direction = getattr(self, name).traveling_direction[i]
-        imodes = np.nonzero(traveling_direction==direction)[0]
-        tbc_size, nmodes = getattr(self, name).eigenvectors[i].getSize() #transparent boundary dofs size, number of modes
-        tbc_row = range(0, (tbc_size+1)*len(imodes), len(imodes)) #this line assumes dense PETSC matrix
+        imodes = np.nonzero(traveling_direction == direction)[0]
+
+        # transparent boundary dofs size, number of modes
+        tbc_size, nmodes = getattr(self, name).eigenvectors[i].getSize()
+
+        # this line assumes dense PETSC matrix
+        tbc_row = range(0, (tbc_size+1)*len(imodes), len(imodes))
+
         size = self.M.getSize()[0] #K, M, C size
         row = np.zeros(size, dtype='int32')
         row[dofs] = np.diff(tbc_row)
-        #Build Bu and Bf (modal basis for displacement and force)
+
+        # Build Bu and Bf (modal basis for displacement and force)
         Bu = PETSc.Mat().createAIJ((size, ncol), comm=self.comm)
         Bu.setPreallocationNNZ(nnz=row)
         Bf = PETSc.Mat().createAIJ((size, ncol), comm=self.comm)
@@ -443,16 +524,20 @@ class Scattering:
         ncol is the total number of columns of the global projection matrix (i.e. number of internal dofs plus
         total number of ingoing/outgoing modes).
         """
-        size = self.M.getSize()[0] #K, M, C size
+        # K, M, C size
+        size = self.M.getSize()[0]
+
         if len(internal_dofs)!=0:
             row = np.zeros(size)
             row[internal_dofs] = 1
             row = np.cumsum(row, dtype='int32')
             row = np.insert(row, 0, 0)
-            col = range(internal_dofs.size) #internal dofs are set at the beginning of global matrix
+            col = range(internal_dofs.size)  # internal dofs are set at the beginning of global matrix
             val = np.ones(internal_dofs.size, dtype='int32')
             B = PETSc.Mat().createAIJWithArrays((size, ncol), [row, col, val], comm=self.comm)
-        else: #if internal_dofs is empty, return a zero matrix
+
+        else:
+            # if internal_dofs is empty, return a zero matrix
             B = PETSc.Mat().createAIJ((size, ncol), nnz=0, comm=self.comm)
             B.assemble()
         return B

@@ -5,23 +5,30 @@
 # 
 # This file is part of waveguicsx.
 # 
-# waveguicsx is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+# waveguicsx is free software: you can redistribute it and/or modify it under the terms
+# of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
 # 
-# waveguicsx is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# waveguicsx is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
 # 
-# You should have received a copy of the GNU General Public License along with waveguicsx. If not, see <https://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License along with waveguicsx.
+# If not, see <https://www.gnu.org/licenses/>.
 # 
 # Contact: fabien.treyssede@univ-eiffel.fr
 #####################################################################
 
 
 from typing import Union, List, Optional, Literal, Callable
+import time
+import warnings
+
+import numpy as np
+import matplotlib.pyplot as plt
+
 from petsc4py import PETSc
 from slepc4py import SLEPc
-
-import matplotlib.pyplot as plt
-import numpy as np
-import time
 
 
 class Waveguide:
@@ -34,17 +41,17 @@ class Waveguide:
     This kind of problem typically stems from the so-called SAFE (Semi-Analytical Finite Element) method.
     
     The class enables to deal with complex waveguides, two-dimensional (e.g. plates) or three-dimensional (arbitrarily
-    shaped cross-section), inhomogeneous in the transverse directions, anisotropic. Complex-valued problems can be handled
-    including the effects of non-propagating modes (evanescent, inhomogeneous), viscoelastic loss (complex material
-    properties) or perfectly matched layers (PML) to simulate buried waveguides.
+    shaped cross-section), inhomogeneous in the transverse directions, anisotropic.
+    Complex-valued problems can be handled including the effects of non-propagating modes (evanescent, inhomogeneous),
+    viscoelastic loss (complex material properties) or perfectly matched layers (PML) to simulate buried waveguides.
     
     The free response (F=0) is an eigenvalue problem, solved iteratively by varying the parameter
     which can be the angular frequency omega or the wavenumber k. In the former case, the eigenvalue is k,
     while in the latter case, the eigenvalue is omega^2. The loops over the parameter (angular frequency or wavenumber)
     can be parallelized, as shown in some tutorials (using mpi4py).
     
-    Various modal properties (energy velocity, group velocity, excitability...) can be post-processed as a function of the
-    frequency and plotted as dispersion curves.
+    Various modal properties (energy velocity, group velocity, excitability...)
+    can be post-processed as a function of the frequency and plotted as dispersion curves.
     
     The forced reponse (F is not 0) is solved in the frequency domain by expanding the solution as a sum of
     eigenmodes using biorthogonality relationship, leading to very fast computations of excited wavefields.
@@ -52,14 +59,18 @@ class Waveguide:
     
     Example::
 
-        # In this example, the matrices M, K0, K1, K2 and the excitation vector F are supposed to be dimensional for simplicity
+        # In this example, the matrices M, K0, K1, K2
+        # and the excitation vector F are supposed to be dimensional for simplicity
         # Yet, in practice, the problem would better be normalized to avoid ill-conditioning (see tutorials)
 
         from waveguicsx.waveguide import Waveguide
 
         # Definition of the excitation signal (here, a toneburst)
         excitation = Signal()
-        excitation.toneburst(fs=400e3, T=2e-3, fc=100e3, n=8) #central frequency 100 kHz, 8 cycles, duration 2 ms, sampling frequency 400 kHz
+
+        # central frequency 100 kHz, 8 cycles, duration 2 ms, sampling frequency 400 kHz
+        excitation.toneburst(fs=400e3, T=2e-3, fc=100e3, n=8)
+
         excitation.plot() #plot time signal
         excitation.plot_spectrum() #plot spectrum
         omega = 2*np.pi*excitation.frequency #angular frequency range
@@ -69,7 +80,11 @@ class Waveguide:
         wg.set_parameters(omega=omega) #set the parameter range (here, angular frequency)
 
         # Free response (dispersion curves)
-        wg.solve(nev=20, target=0) #solution of eigenvalue problem (iteration over the parameter omega), 20 eigenvalues requested at each frequency
+
+        # solution of eigenvalue problem (iteration over the parameter omega),
+        # 20 eigenvalues requested at each frequency
+        wg.solve(nev=20, target=0)
+
         wg.compute_energy_velocity() #post-process energy velocity
         wg.plot() #plot k vs. omega
         wg.plot_energy_velocity() #plot ve vs. omega
@@ -79,8 +94,14 @@ class Waveguide:
         wg.plot_coefficient() #plot modal coefficients vs. omega
 
         # Forced response at degree of freedom dof and axial coordinates z (dof should be an integer)
-        frequency, response = wg.compute_response(dof=dof, z=[0.5, 1., 1.5, 2.], spectrum=excitation.spectrum, plot=False) #response in the frequency domain
-        response = Signal(frequency=frequency, spectrum=response) #define response as a Signal object
+
+        # response in the frequency domain
+        frequency, response = wg.compute_response(
+                                dof=dof, z=[0.5, 1., 1.5, 2.], spectrum=excitation.spectrum, plot=False)
+
+        # define response as a Signal object
+        response = Signal(frequency=frequency, spectrum=response)
+
         response.plot_spectrum() #plot frequency response
         response.ifft() #response in the time domain
         response.plot() #plot time response
@@ -189,7 +210,8 @@ class Waveguide:
         Define the characteristic length, time, mass, as well as dim, and calculate the scaling factors of modal
         properties, which are stored in the attribute name plot_scaler (useful to visualize plots in a dimensional form)
     """
-    def __init__(self, comm:'_MPI.Comm', M:PETSc.Mat, K0:PETSc.Mat, K1:PETSc.Mat, K2:PETSc.Mat):
+
+    def __init__(self, comm: '_MPI.Comm', M: PETSc.Mat, K0: PETSc.Mat, K1: PETSc.Mat, K2: PETSc.Mat):
         """
         Constructor
         
@@ -226,19 +248,19 @@ class Waveguide:
         self.excitability: List[np.ndarray[complex]] = []
         self.complex_power: List[np.ndarray[complex]] = []
         self.plot_scaler = dict.fromkeys(
-            ['omega','wavenumber','energy_velocity','group_velocity','pml_ratio',
-                     'eigenvalues','excitability',
-                     'eigenvectors','eigenforces','coefficient','complex_power',
-                     'frequency','attenuation','phase_velocity'], 1)
+            ['omega', 'wavenumber', 'energy_velocity', 'group_velocity', 'pml_ratio',
+             'eigenvalues', 'excitability',
+             'eigenvectors', 'eigenforces', 'coefficient', 'complex_power',
+             'frequency', 'attenuation', 'phase_velocity'], 1)
         self._poynting_normalization = None
         self._biorthogonality_factor: list = []
-        
+
         # Print the number of degrees of freedom
         print(f'Total number of degrees of freedom: {self.M.size[0]}')
 
     def set_parameters(self,
                        omega: Optional[np.ndarray[complex]] = None,
-                       wavenumber:Optional[np.ndarray[complex]] = None,
+                       wavenumber: Optional[np.ndarray[complex]] = None,
                        two_sided: bool = False):
         """
         Set the parameter range (omega or wavenumber) as well as default parameters of the SLEPc eigensolver (evp).
@@ -254,55 +276,74 @@ class Waveguide:
         two_sided : bool
             False if left eigenvectiors are not needed, True if they must be solved also
         """
-        if len(self.eigenvalues)!=0:
-            print('Eigenvalue problem already solved (re-initialize the Waveguide object to solve a new eigenproblem)')
+        if len(self.eigenvalues) != 0:
+            print('Eigenvalue problem already solved '
+                  '(re-initialize the Waveguide object to solve a new eigenproblem)')
             return
+
         if not (wavenumber is None) ^ (omega is None):
-            raise NotImplementedError('Please specify omega or wavenumber (and not both)')
-        
+            # ^ = exclusive or
+            raise Exception('Please specify omega or wavenumber (and not both)')
+
         # The parameter is the frequency omega, the eigenvalue is the wavenumber k
         if wavenumber is None:
             self.problem_type = "omega"
             self.omega = np.array(omega)
-            if not two_sided: #left eigenvectors not required
+
+            if not two_sided:
+                # left eigenvectors not required
                 # Setup the SLEPc solver for the quadratic eigenvalue problem
                 self.evp = SLEPc.PEP()
                 self.evp.create(comm=self.comm)
-                self.evp.setProblemType(SLEPc.PEP.ProblemType.GENERAL) #note: for the undamped case, HERMITIAN is possible with QARNOLDI and TOAR but surprisingly not faster
-                self.evp.setType(SLEPc.PEP.Type.LINEAR) #note: the computational speed of LINEAR, QARNOLDI and TOAR seems to be almost identical
+
+                # note: for the undamped case, HERMITIAN is possible with QARNOLDI and TOAR but surprisingly not faster
+                self.evp.setProblemType(SLEPc.PEP.ProblemType.GENERAL)
+
+                # note: the computational speed of LINEAR, QARNOLDI and TOAR seems to be almost identical
+                self.evp.setType(SLEPc.PEP.Type.LINEAR)
                 self.evp.setWhichEigenpairs(SLEPc.PEP.Which.TARGET_IMAGINARY)
-            else: #left eigenvectors required by user
-                # Setup the SLEPc solver for the quadratic eigenvalue problem linearized externally! (SLEPc.EPS used, setTwoSided is not available in SLEPc.PEP)
+
+            else:
+                # left eigenvectors required by user
+                # Setup the SLEPc solver for the quadratic eigenvalue problem linearized externally!
+                # (SLEPc.EPS used, setTwoSided is not available in SLEPc.PEP)
                 self.evp = SLEPc.EPS()
                 self.evp.create(comm=self.comm)
-                self.evp.setProblemType(SLEPc.EPS.ProblemType.GNHEP) #note: GHEP (generalized Hermitian) is surprinsingly a little bit slower...
-                self.evp.setType(SLEPc.EPS.Type.KRYLOVSCHUR) #note: ARNOLDI also works although slightly slower
+                # note: GHEP (generalized Hermitian) is surprinsingly a little bit slower...
+                self.evp.setProblemType(
+                    SLEPc.EPS.ProblemType.GNHEP)
+                # note: ARNOLDI also works although slightly slower
+                self.evp.setType(SLEPc.EPS.Type.KRYLOVSCHUR)
                 self.evp.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_IMAGINARY)
                 self.evp.setTwoSided(two_sided)
 
         # The parameter is the frequency omega, the eigenvalue is the wavenumber k
         elif omega is None:
             if two_sided:
-                raise NotImplementedError('two_sided has been set to True: not implemented in case wavenumber is the parameter')
+                raise NotImplementedError(
+                    'two_sided has been set to True: not implemented in case wavenumber is the parameter')
             self.problem_type = "wavenumber"
             self.wavenumber = np.array(wavenumber)
             # Setup the SLEPc solver for the generalized eigenvalue problem
             self.evp = SLEPc.EPS()
             self.evp.create(comm=self.comm)
-            self.evp.setProblemType(SLEPc.EPS.ProblemType.GNHEP) #note: GHEP (generalized Hermitian) is surprinsingly a little bit slower...
-            self.evp.setType(SLEPc.EPS.Type.KRYLOVSCHUR) #note: ARNOLDI also works although slightly slower
+            # note: GHEP (generalized Hermitian) is surprinsingly a little bit slower...
+            self.evp.setProblemType(
+                SLEPc.EPS.ProblemType.GNHEP)
+            # note: ARNOLDI also works although slightly slower
+            self.evp.setType(SLEPc.EPS.Type.KRYLOVSCHUR)
             self.evp.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_MAGNITUDE)
-            #self.evp.setTwoSided(two_sided) #two_sided not implemented: left for future work if necessary
-        
+            # self.evp.setTwoSided(two_sided) #two_sided not implemented: left for future work if necessary
+
         # Common setup
         self.two_sided = two_sided
         self.evp.setTolerances(tol=1e-8, max_it=20)
         ST = self.evp.getST()
         ST.setType(SLEPc.ST.Type.SINVERT)
-        #ST.setShift(1e-6) #do not set shift here: it will be set automatically to target later (see solve method)
+        # ST.setShift(1e-6) #do not set shift here: it will be set automatically to target later (see solve method)
         self.evp.setST(ST)
-        #self.evp.st.ksp.setType('preonly') #'preonly' is the default, other choice could be 'gmres', 'bcgs'...
-        #self.evp.st.ksp.pc.setType('lu') #'lu' is the default, other choice could be 'bjacobi'...
+        # self.evp.st.ksp.setType('preonly') #'preonly' is the default, other choice could be 'gmres', 'bcgs'...
+        # self.evp.st.ksp.pc.setType('lu') #'lu' is the default, other choice could be 'bjacobi'...
         self.evp.setFromOptions()
 
     def solve(self, nev=1, target=0):
@@ -322,74 +363,107 @@ class Waveguide:
             target around which eigenpairs are looked for
             a small shift might sometimes prevent errors (e.g. zero pivot with dirichlet bc)
         """
-        if len(self.eigenvalues)!=0:
+        if len(self.eigenvalues) != 0:
             print('Eigenvalue problem already solved (re-initialize the Waveguide object to solve a new eigenproblem)')
             return
+
         self.target = target
-        if self.target==0 and self.two_sided:
-            raise NotImplementedError('Setting two_sided to True is useless here, please set two_sided to False (target has been set to zero, so that both positive and negative-going modes will be computed) ')
-        
+
+        if self.target == 0 and self.two_sided:
+            raise NotImplementedError(
+                'Setting two_sided to True is useless here, please set two_sided to False '
+                '(target has been set to zero, so that both positive and negative-going modes will be computed) ')
+
         # Eigensolver setup
         self.evp.setDimensions(nev=nev)
-        if isinstance(target, (float, int, complex)): #redefine target as a constant function if target is given as a number
+
+        if isinstance(target,
+                      (float, int, complex)):  #redefine target as a constant function if target is given as a number
             target_constant = target
             target = lambda parameter_value: target_constant
-        if self.problem_type == "omega" and self.two_sided: #build Zero and Id matrices
+
+        if self.problem_type == "omega" and self.two_sided:  #build Zero and Id matrices
             Zero = PETSc.Mat().createAIJ(self.M.getSize(), comm=self.comm)
             Zero.setUp()
             Zero.assemble()
             Id = PETSc.Mat().createAIJ(self.M.getSize(), comm=self.comm)
             Id.setUp()
-            Id.setDiagonal(self.M.createVecRight()+1)
+            Id.setDiagonal(self.M.createVecRight() + 1)
             Id.assemble()
-        
+
         # Loop over the parameter
-        K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
+        # K1^T is stored before loop (faster computations)
+        K1T = self.K1.copy().transpose()
+
         parameters = {"omega": self.omega, "wavenumber": self.wavenumber}[self.problem_type]
         print(f'Waveguide parameter: {self.problem_type} ({len(parameters)} iterations)')
+
         for i, parameter_value in enumerate(parameters):
             start = time.perf_counter()
             self.evp.setTarget(target(parameter_value))
-            if self.problem_type=="wavenumber":
-                 self.evp.setOperators(self.K0 + 1j*parameter_value*(self.K1-K1T) + parameter_value**2*self.K2, self.M)
+            if self.problem_type == "wavenumber":
+                self.evp.setOperators(self.K0 + 1j * parameter_value * (self.K1 - K1T) + parameter_value ** 2 * self.K2,
+                                      self.M)
             elif self.problem_type == "omega":
-                if not self.two_sided: #left eigenvectors not required -> PEP class is used
-                    self.evp.setOperators([self.K0-parameter_value**2*self.M, 1j*(self.K1-K1T), self.K2])
-                else: #left eigenvectors are required -> linearize the quadratic evp and use EPS class (PEP class is not possible)
-                    coeff = 1 #self.K2.norm(norm_type=PETSc.NormType.FROBENIUS) #NORM_1, FROBENIUS (same as NORM_2 for vectors), INFINITY
-                    self.evp.setOperators(self._build_block_matrix(-(self.K0-parameter_value**2*self.M), -1j*(self.K1-K1T), Zero, coeff*Id),
-                                          self._build_block_matrix(Zero, self.K2, coeff*Id, Zero))
-                    #Note: the operators below enable to get the eigenforces but increase computation time -> discarded...
-                    #self.evp.setOperators(self._build_block_matrix(self.K0-parameter_value**2*self.M, Zero, -K1T, Id),
+
+                if not self.two_sided:
+                    # left eigenvectors not required -> PEP class is used
+                    self.evp.setOperators([self.K0 - parameter_value ** 2 * self.M, 1j * (self.K1 - K1T), self.K2])
+                else:
+                    # left eigenvectors are required
+                    # -> linearize the quadratic evp and use EPS class (PEP class is not possible)
+
+                    # # NORM_1, FROBENIUS (same as NORM_2 for vectors), INFINITY
+                    # self.K2.norm(norm_type=PETSc.NormType.FROBENIUS)
+                    coeff = 1
+
+                    self.evp.setOperators(
+                        self._build_block_matrix(-(self.K0 - parameter_value ** 2 * self.M), -1j * (self.K1 - K1T),
+                                                 Zero, coeff * Id),
+                        self._build_block_matrix(Zero, self.K2, coeff * Id, Zero))
+                    # # Note: the operators below enable to get the eigenforces
+                    # # but increase computation time -> discarded...
+                    # self.evp.setOperators(self._build_block_matrix(self.K0-parameter_value**2*self.M, Zero, -K1T, Id),
                     #                      self._build_block_matrix(-1j*self.K1, 1j*Id, 1j*self.K2, Zero))
             self.evp.solve()
-            #self.evp.errorView()
-            #self.evp.valuesView()
+            # self.evp.errorView()
+            # self.evp.valuesView()
             eigenvalues, eigenvectors = self._get_eigenpairs(two_sided=self.two_sided)
             self.eigenvalues.append(eigenvalues)
             self.eigenvectors.append(eigenvectors)
+
             print(f'Iteration {i}, elapsed time :{(time.perf_counter() - start):.2f}s')
-            #self.evp.setInitialSpace(self.eigenvectors[-1]) #self.evp.setLeftInitialSpace(....) #try to use current modal basis to compute next, but may be only the first eigenvector...
+
+            # # try to use current modal basis to compute next, but may be only the first eigenvector...
+            # self.evp.setInitialSpace(self.eigenvectors[-1]) #self.evp.setLeftInitialSpace(....)
+
         self._poynting_normalization = False
-        #print('\n---- SLEPc setup (based on last iteration) ----\n')
-        #self.evp.view()
+        # print('\n---- SLEPc setup (based on last iteration) ----\n')
+        # self.evp.view()
         print('')
-        
+
         # Memory saving
         K1T.destroy()
         self.evp.destroy()
 
     def compute_eigenforces(self):
         """ Post-process the eigenforces F=(K1^T+1j*k*K2)*U for every mode in the whole parameter range"""
-        if len(self.eigenforces)==len(self.eigenvalues):
+        if len(self.eigenforces) == len(self.eigenvalues):
             print('Eigenforces already computed')
             return
+
         start = time.perf_counter()
-        K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
+
+        # K1^T is stored before loop (faster computations)
+        K1T = self.K1.copy().transpose()
+
         for i, eigenvectors in enumerate(self.eigenvectors):
-            wavenumber = self._concatenate('wavenumber', i=i) #repeat parameter as many times as the number of eigenvalues
-            self.eigenforces.append(K1T*eigenvectors+1j*self.K2*eigenvectors*self._diag(wavenumber))
+            # repeat parameter as many times as the number of eigenvalues
+            wavenumber = self._concatenate('wavenumber', i=i)
+            self.eigenforces.append(K1T * eigenvectors + 1j * self.K2 * eigenvectors * self._diag(wavenumber))
+
         K1T.destroy()
+
         print(f'Computation of eigenforces, elapsed time : {(time.perf_counter() - start):.2f}s')
 
     def compute_poynting_normalization(self):
@@ -399,28 +473,43 @@ class Waveguide:
         After normalization, every mode is such that |P|=1 and the attribute _poynting_normalization is set to True.
         Normalization is not mandatory but, when applied, has to be done before any response coefficient computation.
         """
-        if len(self.coefficient)!=0: #response already computed
+
+        if len(self.coefficient) != 0:
+            # response already computed
             raise NotImplementedError('Normalization has to be applied before response coefficient computation')
+
         if self._poynting_normalization:
             print('Poynting normalization of eigenvectors already computed')
             return
-        if len(self.eigenforces)==0: #compute the eigenforces if not yet computed      
+
+        if len(self.eigenforces) == 0:
+            # compute the eigenforces if not yet computed
             self.compute_eigenforces()
+
         start = time.perf_counter()
         for i in range(len(self.eigenvalues)):
-            #repeat parameter as many times as the number of eigenvalues
+
+            # repeat parameter as many times as the number of eigenvalues
             omega = self._concatenate('omega', i=i)
-            #Normalization
+
+            # Normalization
             normalization = []
+
             for mode in range(self.eigenvalues[i].size):
                 U = self.eigenvectors[i].getColumnVector(mode)
                 F = self.eigenforces[i].getColumnVector(mode)
-                normalization = np.append(normalization, 1/np.sqrt(np.abs(-1j*omega[mode]/2*F.dot(U))))
-            self.eigenvectors[i] = self.eigenvectors[i]*self._diag(normalization)
-            self.eigenforces[i] = self.eigenforces[i]*self._diag(normalization)
+                normalization = np.append(normalization, 1 / np.sqrt(np.abs(-1j * omega[mode] / 2 * F.dot(U))))
+
+            self.eigenvectors[i] = self.eigenvectors[i] * self._diag(normalization)
+            self.eigenforces[i] = self.eigenforces[i] * self._diag(normalization)
+
         self._poynting_normalization = True
+
         print(f'Computation of Poynting normalization, elapsed time : {(time.perf_counter() - start):.2f}s')
-        #print(np.array([-1j*omega[mode]/2*np.vdot(self.eigenvectors[i][:,mode], self.eigenforces[i][:,mode]) for mode in range(self.eigenvalues[i].size)])) #check for last iteration
+
+        # check for last iteration
+        # print(np.array([-1j*omega[mode]/2*np.vdot(self.eigenvectors[i][:,mode], self.eigenforces[i][:,mode])
+        #                   for mode in range(self.eigenvalues[i].size)]))
 
     def compute_energy_velocity(self):
         """
@@ -429,167 +518,253 @@ class Waveguide:
         Warning in case of PML: the integration is currently applied over the whole cross-section (including PML),
         the so-defined energy velocity is questionable.
         """
-        if len(self.energy_velocity)==len(self.eigenvalues):
+        if len(self.energy_velocity) == len(self.eigenvalues):
             print('Energy velocity already computed')
             return
-        
+
         # Compute the eigenforces if not yet computed
-        if len(self.eigenforces)==0:
+        if len(self.eigenforces) == 0:
             self.compute_eigenforces()
-        
+
         # Energy velocity, integration on the whole domain
         start = time.perf_counter()
-        K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
+        # K1^T is stored before loop (faster computations)
+        K1T = self.K1.copy().transpose()
+
         for i, eigenvectors in enumerate(self.eigenvectors):
-            #repeat parameter as many times as the number of eigenvalues
+            # repeat parameter as many times as the number of eigenvalues
             wavenumber, omega = self._concatenate('wavenumber', 'omega', i=i)
-            #time averaged kinetic energy
-            E = 0.25*np.abs(omega**2)*np.real(self._dot_eigenvectors(i, self.M*eigenvectors)) 
-            #add time averaged potential energy
-            E = E + 0.25*np.real(self._dot_eigenvectors(i, self.K0*eigenvectors + 1j*self.K1*eigenvectors*self._diag(wavenumber)
-                                                        -1j*K1T*eigenvectors*self._diag(wavenumber.conjugate()) + self.K2*eigenvectors*self._diag(np.abs(wavenumber)**2)))
-            #time averaged complex Poynting vector (normal component)
-            Pn = -1j*omega/2*self._dot_eigenvectors(i, self.eigenforces[i])
-            #cross-section and time averaged energy velocity
-            self.energy_velocity.append(np.real(Pn)/E)
+
+            # time averaged kinetic energy
+            E = 0.25 * np.abs(omega ** 2) * np.real(self._dot_eigenvectors(i, self.M * eigenvectors))
+
+            # add time averaged potential energy
+            E = E + 0.25 * np.real(
+                self._dot_eigenvectors(i, self.K0 * eigenvectors + 1j * self.K1 * eigenvectors * self._diag(wavenumber)
+                                       - 1j * K1T * eigenvectors * self._diag(
+                    wavenumber.conjugate()) + self.K2 * eigenvectors * self._diag(np.abs(wavenumber) ** 2)))
+
+            # time averaged complex Poynting vector (normal component)
+            Pn = -1j * omega / 2 * self._dot_eigenvectors(i, self.eigenforces[i])
+
+            # cross-section and time averaged energy velocity
+            self.energy_velocity.append(np.real(Pn) / E)
+
         K1T.destroy()
         print(f'Computation of energy velocity, elapsed time : {(time.perf_counter() - start):.2f}s')
-        
+
         # Warning for pml problems (integration restricted on the core is currently not possible)
         dofs_pml = np.iscomplex(self.M.getDiagonal()[:])
         if any(dofs_pml):
             print("Warning: the energy velocity is currently integrated on the whole domain including PML region")
-        ## Future works: a possible trick to restrict the integration on physical dofs
-        #dofs_pml = np.iscomplex(M.getDiagonal()[:]) #problem: if not stuck to the core, can include part of the exterior domain
-        #Mat = M.copy(); Mat.zeroRowsColumns(dofs_pml, diag=0) #or: eigenvectors.zeroRows(dofs_pml, diag=0)
+
+        # # Future works: a possible trick to restrict the integration on physical dofs
+        # # problem: if not stuck to the core, can include part of the exterior domain
+        # dofs_pml = np.iscomplex(M.getDiagonal()[:])
+        # Mat = M.copy(); Mat.zeroRowsColumns(dofs_pml, diag=0) #or: eigenvectors.zeroRows(dofs_pml, diag=0)
 
     def compute_opposite_going(self, plot=False):
         """
-        Post-process the pairing of opposite-going modes, based on wavenumber and biorthogonality criteria, and store them
-        as a an attribute (name: opposite_going, -1 value for unpaired modes).
+        Post-process the pairing of opposite-going modes, based on wavenumber and biorthogonality criteria,
+        and store them as a an attribute (name: opposite_going, -1 value for unpaired modes).
         Compute their biorthogonality normalization factors, Um^T*F-m - U-m^T*Fm, where m and -m denote opposite-going
         modes, for the whole parameter range and store them as an attribute (name: _biorthogonality_factor).
         If plot is set to True, the biorthogonality criterion found by the algorithm is plotted as a function
-        of frequency index, allowing visual check that there is no values close to zero (a factor close to zero probably means
-        a lack of biorthogonality). The biorthogonality criterion is defined as |biorthogonality_factor*omega/4|.
+        of frequency index, allowing visual check that there is no values close to zero
+        (a factor close to zero probably means a lack of biorthogonality).
+        The biorthogonality criterion is defined as |biorthogonality_factor*omega/4|.
         
         Notes:
         
-        - when an unpaired mode is found, the value -1 is stored in opposite_going (and NaN value in _biorthogonality_factor),
-          meaning that this mode will be discarded in the computation of group velocity, traveling direction, coefficient and
-          excitability (NaN values stored)
+        - when an unpaired mode is found, the value -1 is stored in opposite_going
+          (and NaN value in _biorthogonality_factor),
+          meaning that this mode will be discarded in the computation of group velocity,
+          traveling direction, coefficient and excitability (NaN values stored)
         - if modes with lack of biorthogonality or two many unpaired modes occur, try to recompute the eigenproblem by
           increasing the accuracy (e.g. reducing the tolerance)
-        - lack of biorthogonality may be also due to multiple modes (*); in this case, try to use an unstructured mesh instead
-        - if two_sided is True, lack of biorthogonolity may occur for specific target: try another target (e.g. add a small
-          imaginary part)
+        - lack of biorthogonality may be also due to multiple modes (*); in this case,
+          try to use an unstructured mesh instead
+        - if two_sided is True, lack of biorthogonolity may occur for specific target:
+          try another target (e.g. add a small imaginary part)
            
         (*) e.g. flexural modes in a cylinder with structured mesh
         """
-        tol1 = 1e-4 #tolerance for relative difference between opposite wavenumbers (wavenumber criterion)
-        tol2_rel = 100 #minimum ratio between the first two candidate biorthogonality factors (biorthogonality criterion)
-        tol2_abs = 1e-3 #minimum biorthogonality factor to keep a given opposite pair (biorthogonality criterion)
-        if self.problem_type=='wavenumber' or (self.target!=0 and not self.two_sided):
-            raise NotImplementedError('Computation of biorthogonality factor is not possible: opposite-going modes cannot be paired for this kind of problem (check that the problem is of omega type and that target has been set to 0)')
-        if len(self.opposite_going)==len(self.eigenvalues):
+        tol1 = 1e-4  # tolerance for relative difference between opposite wavenumbers (wavenumber criterion)
+        tol2_rel = 100  # min ratio between the first two candidate biorthogonality factors (biorthogonality criterion)
+        tol2_abs = 1e-3  # min biorthogonality factor to keep a given opposite pair (biorthogonality criterion)
+
+        if self.problem_type == 'wavenumber' or (self.target != 0 and not self.two_sided):
+            raise ValueError(
+                'Computation of biorthogonality factor is not possible: '
+                'opposite-going modes cannot be paired for this kind of problem '
+                '(check that the problem is of omega type and that target has been set to 0)')
+
+        if len(self.opposite_going) == len(self.eigenvalues):
             print('Opposite-going pairs already computed')
             return
-        if len(self.eigenforces)==0: #compute the eigenforces if not yet computed      
+
+        if len(self.eigenforces) == 0:
+            # compute the eigenforces if not yet computed
             self.compute_eigenforces()
+
         if not self._poynting_normalization:
-            self.compute_poynting_normalization() #this normalization matters for a proper use of tol2_abs, because it ensures that the biorthogonality factor x omega/4 is equal to 1 for pairs of pure propagating modes
+            # this normalization matters for a proper use of tol2_abs,
+            # because it ensures that the biorthogonality factor x omega/4
+            # is equal to 1 for pairs of pure propagating modes
+            self.compute_poynting_normalization()
+
         start = time.perf_counter()
         for i, eigenvalues in enumerate(self.eigenvalues):
-            #Loop over half of complex plane
-            upper_half = np.nonzero(np.logical_and(np.angle(eigenvalues)>=-np.pi/4, np.angle(eigenvalues)<3*np.pi/4))[0]
+            # Loop over half of complex plane
+            upper_half = \
+                np.nonzero(np.logical_and(
+                    np.angle(eigenvalues) >= -np.pi / 4,
+                    np.angle(eigenvalues) < 3 * np.pi / 4))[0]
+
             lower_half = np.setdiff1d(range(eigenvalues.size), upper_half, assume_unique=True)
             opposite_going = np.zeros(eigenvalues.size, dtype=int) - 1
-            biorthogonality_factor = np.zeros(eigenvalues.size, dtype=complex) + (1+1j)*np.NaN
+            biorthogonality_factor = np.zeros(eigenvalues.size, dtype=complex) + (1 + 1j) * np.NaN
+
             for mode in upper_half:
-                #First criterion: based on wavenumber
-                criterion1 = np.abs((eigenvalues[mode]+eigenvalues[lower_half])/eigenvalues[mode])
-                candidates = np.array(lower_half[np.nonzero(criterion1<=tol1)]) #candidates of lower half
-                if len(candidates)!=0: #candidates found
-                    #If only one candidate found: add a second candidate to allow the test of second criterion
-                    if len(candidates)==1:
-                        temp = eigenvalues[candidates] #store initial value
-                        eigenvalues[candidates]= np.inf #trick to discard the first candidate
-                        candidates2 = lower_half[np.argmin(np.abs(eigenvalues[mode]+eigenvalues[lower_half]))] #find the second candidate
-                        eigenvalues[candidates] = temp #back to initial
+                # First criterion: based on wavenumber
+                criterion1 = np.abs((eigenvalues[mode] + eigenvalues[lower_half]) / eigenvalues[mode])
+
+                # candidates of lower half
+                candidates = np.array(lower_half[np.nonzero(criterion1 <= tol1)])
+
+                if len(candidates) != 0:
+                    # candidates found
+
+                    # If only one candidate found: add a second candidate to allow the test of second criterion
+                    if len(candidates) == 1:
+                        temp = eigenvalues[candidates]  # store initial value
+                        eigenvalues[candidates] = np.inf  # trick to discard the first candidate
+
+                        # find the second candidate
+                        candidates2 = lower_half[
+                            np.argmin(np.abs(eigenvalues[mode] + eigenvalues[lower_half]))]
+
+                        # back to initial
+                        eigenvalues[candidates] = temp
                         candidates = np.append(candidates, candidates2)
-                    #Second criterion: based on biorthogonality
+
+                    # Second criterion: based on biorthogonality
                     biorthogonality_test = []
                     for c in candidates:
-                        biorthogonality_test = np.append(biorthogonality_test,
-                                         self.eigenforces[i].getColumnVector(c).tDot(self.eigenvectors[i].getColumnVector(mode))
-                                       - self.eigenvectors[i].getColumnVector(c).tDot(self.eigenforces[i].getColumnVector(mode)))
-                    #OLD: biorthogonality_test = self.eigenforces[i][:,candidates.tolist()].T @ self.eigenvectors[i][:,mode] - self.eigenvectors[i][:,candidates.tolist()].T @ self.eigenforces[i][:,mode]
-                    criterion2 = np.abs(biorthogonality_test*self.omega[i]/4)
-                    order = np.argsort(criterion2) #sort by ascending order
-                    if criterion2[order[-1]]<tol2_rel*criterion2[order[-2]]: #relative criterion
-                        raise NotImplementedError(f'Iteration {i}: Lack of biorthogonality between mode {mode} and modes [{candidates[order[-2:]]}], with respective biorthogonality factor [{criterion2[order[-2:]]}]!')
-                    if criterion2[order[-1]]>tol2_abs: #absolute value criterion
+                        biorthogonality_test = np.append(
+                            biorthogonality_test,
+                            self.eigenforces[i].getColumnVector(c).tDot(self.eigenvectors[i].getColumnVector(mode))
+                            - self.eigenvectors[i].getColumnVector(c).tDot(self.eigenforces[i].getColumnVector(mode)))
+
+                    # OLD: biorthogonality_test = self.eigenforces[i][:,candidates.tolist()].T @ \
+                    #      self.eigenvectors[i][:,mode] - self.eigenvectors[i][:,candidates.tolist()].T @ \
+                    #      self.eigenforces[i][:,mode]
+                    criterion2 = np.abs(biorthogonality_test * self.omega[i] / 4)
+                    order = np.argsort(criterion2)  # sort by ascending order
+
+                    if criterion2[order[-1]] < tol2_rel * criterion2[order[-2]]:
+                        # relative criterion
+                        raise ValueError(
+                            f'Iteration {i}: Lack of biorthogonality between mode {mode} and modes'
+                            f' [{candidates[order[-2:]]}], '
+                            f'with respective biorthogonality factor [{criterion2[order[-2:]]}]!')
+
+                    if criterion2[order[-1]] > tol2_abs:  # absolute value criterion
                         opposite = candidates[order[-1]]
                         opposite_going[[mode, opposite]] = [opposite, mode]
-                        biorthogonality_factor[[mode, opposite]] = [biorthogonality_test[order[-1]], -biorthogonality_test[order[-1]]]
-            #Final check
-            unique, counts = np.unique(opposite_going[opposite_going>=0], return_counts=True)
-            if any(counts>1): #test for duplicate modes
+                        biorthogonality_factor[[mode, opposite]] = [biorthogonality_test[order[-1]],
+                                                                    -biorthogonality_test[order[-1]]]
+
+            # Final check
+            unique, counts = np.unique(opposite_going[opposite_going >= 0], return_counts=True)
+            if any(counts > 1):
+                # test for duplicate modes
                 print(unique, counts)
-                raise NotImplementedError(f'Iteration {i}: duplicate modes found by the pairing process!')
+                raise ValueError(f'Iteration {i}: duplicate modes found by the pairing process!')
+
             unpaired = np.setdiff1d(range(eigenvalues.size), opposite_going)
-            if len(unpaired)!=0: #test for unpaired modes
+            if len(unpaired) != 0:
+                # test for unpaired modes
                 print(f'Iteration {i}: unpaired modes found, index={unpaired}')
-                if len(self.traveling_direction)==len(self.eigenvalues): #the traveling direction has already been computed but using energy velocity
+
+                if len(self.traveling_direction) == len(self.eigenvalues):
+                    # the traveling direction has already been computed but using energy velocity
                     self.traveling_direction[i][unpaired] = np.NaN
-            #Store pairs and biorthogonality factors
+
+            # Store pairs and biorthogonality factors
             self.opposite_going.append(opposite_going)
             self._biorthogonality_factor.append(biorthogonality_factor)
-        print(f'Computation of pairs of opposite-going modes, elapsed time : {(time.perf_counter() - start):.2f}s')
-        #Plot biorthogonality criterion as a function of frequency index
+
+        print(f'Computation of pairs of opposite-going modes, '
+              f'elapsed time : {(time.perf_counter() - start):.2f}s')
+
+        # Plot biorthogonality criterion as a function of frequency index
         if plot:
             omega = np.repeat(self.omega.real, [len(egv) for egv in self._biorthogonality_factor])
             biorthogonality_factor = np.concatenate(self._biorthogonality_factor)
+
             fig, ax = plt.subplots(1, 1)
-            ax.plot(np.abs(biorthogonality_factor*omega/4), marker="o", markersize=2, linestyle="", color="k")
+            ax.plot(np.abs(biorthogonality_factor * omega / 4), marker="o", markersize=2, linestyle="", color="k")
             ax.set_xlabel('frequency index')
             ax.set_ylabel('biorthogonality criterion')
             ax.set_yscale('log')
-            ax.axhline(y = tol2_abs, color="r", linestyle="--")
+            ax.axhline(y=tol2_abs, color="r", linestyle="--")
             ax.set_title('----- threshold allowed', color='r')
             fig.tight_layout()
 
     def compute_group_velocity(self):
         """
-        Post-process the group velocity, vg=1/Re(dk/domega) for every mode in the whole parameter range (opposite-going modes
-        required). For unpaired modes, NaN values are set.
+        Post-process the group velocity, vg=1/Re(dk/domega) for every mode in the whole parameter range
+        (opposite-going modes required). For unpaired modes, NaN values are set.
         """
-        if len(self.group_velocity)==len(self.eigenvalues):
+        if len(self.group_velocity) == len(self.eigenvalues):
             print('Group velocity already computed')
             return
-        if len(self.opposite_going)==0: #compute opposite-going modes if not yet computed      
+
+        if len(self.opposite_going) == 0:
+            # compute opposite-going modes if not yet computed
             self.compute_opposite_going()
+
         start = time.perf_counter()
-        np.seterr(divide='ignore') #ignore divide by zero message (denominator may sometimes vanish) 
-        K1T = self.K1.copy().transpose() #K1^T is stored before loop (faster computations)
+
+        # ignore divide by zero message (denominator may sometimes vanish)
+        np.seterr(divide='ignore')
+
+        # K1^T is stored before loop (faster computations)
+        K1T = self.K1.copy().transpose()
+
         for i, (eigenvalues, eigenvectors) in enumerate(zip(self.eigenvalues, self.eigenvectors)):
-            #Computation of group velocity
-            wavenumber, omega = self._concatenate('wavenumber', 'omega', i=i) #repeat parameter as many times as the number of eigenvalues
+            # Computation of group velocity
+
+            # repeat parameter as many times as the number of eigenvalues
+            wavenumber, omega = self._concatenate('wavenumber', 'omega', i=i)
+
             group_velocity = np.zeros(eigenvalues.size) + np.NaN
-            numerator = self.M*eigenvectors
-            denominator = 2*self.K2*eigenvectors #note: computing the denominator can probably be avoided if _compute_biorthogonality_factor() has already been done
-            denominator = denominator*self._diag(wavenumber)
-            denominator += 1j*self.K1*eigenvectors
-            denominator -= 1j*K1T*eigenvectors
+            numerator = self.M * eigenvectors
+
+            # note: computing the denominator can probably be avoided
+            # if _compute_biorthogonality_factor() has already been done
+            denominator = 2 * self.K2 * eigenvectors
+
+            denominator = denominator * self._diag(wavenumber)
+            denominator += 1j * self.K1 * eigenvectors
+            denominator -= 1j * K1T * eigenvectors
             for mode in range(eigenvalues.size):
                 opposite = self.opposite_going[i][mode]
-                if opposite>=0: #the mode has been successfully paired
+
+                if opposite >= 0:
+                    # the mode has been successfully paired
                     uleft = eigenvectors.getColumnVector(opposite)
-                    group_velocity[mode] = 1/np.real( 2*omega[mode]*numerator.getColumnVector(mode).tDot(uleft) / denominator.getColumnVector(mode).tDot(uleft) )
+                    group_velocity[mode] = 1. / np.real(
+                        2. * omega[mode] * numerator.getColumnVector(mode).tDot(uleft) \
+                        / denominator.getColumnVector(mode).tDot(uleft))
+
             self.group_velocity.append(group_velocity)
+
         K1T.destroy()
         np.seterr(divide='warn')
-        print(f'Computation of group velocity, elapsed time : {(time.perf_counter() - start):.2f}s')
+        print(f'Computation of group velocity, '
+              f'elapsed time : {(time.perf_counter() - start):.2f}s')
 
     def compute_traveling_direction(self, delta=1e-2):
         """
@@ -599,27 +774,51 @@ class Waveguide:
         This criterion is based on the limiting absorption principle (theoretically, vg should be used
         instead of ve). For unpaired modes, NaN values are set.
         """
-        if len(self.traveling_direction)==len(self.eigenvalues):
+        if len(self.traveling_direction) == len(self.eigenvalues):
             print('Traveling direction already computed')
             return
-        if len(self.group_velocity)==0 and len(self.energy_velocity)==0: #both group velocity and energy velocity have not been already computed
-            if len(self.opposite_going)==0:
-                self.compute_energy_velocity() #the energy velocity is simpler to compute (the pairing of opposite-going is not required)
+        if len(self.group_velocity) == 0 and len(self.energy_velocity) == 0:
+            # both group velocity and energy velocity have not been already computed
+
+            if len(self.opposite_going) == 0:
+                # the energy velocity is simpler to compute (the pairing of opposite-going is not required)
+                self.compute_energy_velocity()
+
             else:
                 self.compute_group_velocity()
+
         start = time.perf_counter()
-        np.seterr(divide='ignore') #ignore divide by zero message (denominator may sometimes vanish)
+
+        # ignore divide by zero message (denominator may sometimes vanish)
+        np.seterr(divide='ignore')
+
         for i in range(len(self.eigenvalues)):
             wavenumber = self._concatenate('wavenumber', i=i)
-            temp = delta/(self.energy_velocity[i] if len(self.group_velocity)==0 else self.group_velocity[i])
-            temp[np.abs(wavenumber.imag)+np.abs(temp)>np.abs(wavenumber.real)] = 0 #do not use the LAP if |Im(k)| + |delta/ve| is significant
-            traveling_direction = np.sign((wavenumber+1j*temp).imag)
+
+            if len(self.group_velocity) == 0:
+                temp = delta / self.energy_velocity[i]
+            else:
+                temp = delta / self.group_velocity[i]
+
+            # do not use the LAP if |Im(k)| + |delta/ve| is significant
+            temp[np.abs(wavenumber.imag) + np.abs(temp) > np.abs(wavenumber.real)] = 0
+
+            traveling_direction = np.sign((wavenumber + 1j * temp).imag)
+
             self.traveling_direction.append(traveling_direction)
-            #Check if any exponentially growing modes (in the numerical LAP, delta is user-defined, which might lead to wrong traveling directions)
-            growing_modes = np.logical_and(wavenumber.imag*traveling_direction<0, np.abs(wavenumber.imag)>1e-6*np.abs(wavenumber.real))
+
+            # Check if any exponentially growing modes (in the numerical LAP, delta is user-defined,
+            # which might lead to wrong traveling directions)
+            growing_modes = np.logical_and(wavenumber.imag * traveling_direction < 0,
+                                           np.abs(wavenumber.imag) > 1e-6 * np.abs(wavenumber.real))
             if any(growing_modes):
-                print('Warning in computing traveling direction: exponentially growing modes found (unproper sign of Im(k) detected)')
-                print(f'for iteration {i}, with |Im(k)/Re(k)| up to {(np.abs(wavenumber[growing_modes].imag/wavenumber[growing_modes].real)).max():.2e}')
+
+                warnings.warn(
+                    'Warning in computing traveling direction: '
+                    'exponentially growing modes found (unproper sign of Im(k) detected)'
+                    f'for iteration {i}, with |Im(k)/Re(k)| up to '
+                    f'{(np.abs(wavenumber[growing_modes].imag / wavenumber[growing_modes].real)).max():.2e}')
+
         np.seterr(divide='warn')
         print(f'Computation of traveling direction, elapsed time : {(time.perf_counter() - start):.2f}s')
 
@@ -629,14 +828,14 @@ class Waveguide:
         the "complex" kinetic energy, for every mode in the whole parameter range.      
         Reminder: the pml ratio tends to 1 for mode shapes vanishing inside the PML.
         """
-        if len(self.pml_ratio)==len(self.eigenvalues):
+        if len(self.pml_ratio) == len(self.eigenvalues):
             print('PML ratio already computed')
             return
         start = time.perf_counter()
         for i, eigenvectors in enumerate(self.eigenvectors):
             omega = self._concatenate('omega', i=i)
-            Ek = 0.25*np.abs(omega**2)*self._dot_eigenvectors(i, self.M*eigenvectors) #"complex" kinetic energy
-            self.pml_ratio.append(1-np.imag(Ek)/np.abs(Ek))
+            Ek = 0.25 * np.abs(omega ** 2) * self._dot_eigenvectors(i, self.M * eigenvectors)  #"complex" kinetic energy
+            self.pml_ratio.append(1 - np.imag(Ek) / np.abs(Ek))
         print(f'Computation of pml ratio, elapsed time : {(time.perf_counter() - start):.2f}s')
 
     def compute_response_coefficient(self, F, spectrum=None, wavenumber_function=None, dof=None):
@@ -657,8 +856,8 @@ class Waveguide:
         F : PETSc vector
             SAFE excitation vector
         spectrum : numpy.ndarray
-            when specified, spectrum is a vector of length omega  used to modulate F in terms of frequency (default: 1 for
-            all frequencies)
+            when specified, spectrum is a vector of length omega  used to modulate F in terms of frequency
+            (default: 1 for all frequencies)
         wavenumber_function: python function
             when specified, wavenumber_function is a python function used to modulate F in terms of wavenumber (example:
             wavenumber_function = lambda x: np.sin(x), default: 1 for all wavenumbers, i.e. source localized at z=0)
@@ -668,44 +867,67 @@ class Waveguide:
             equal to 1)
         """
         #Initialization
-        if self.problem_type=='wavenumber':
-            raise NotImplementedError('Response coefficient computation not implemented in case wavenumber is parameter')
+        if self.problem_type == 'wavenumber':
+            raise NotImplementedError(
+                'Response coefficient computation not implemented in case wavenumber is parameter')
+
         self.F = F
-        self.coefficient = [] #re-initialized every time compute_response_coefficient(..) is executed (F is an input)
-        self.excitability = [] #idem
-        self.complex_power = [] #idem
+
+        self.coefficient = []  # re-initialized every time compute_response_coefficient(..) is executed (F is an input)
+        self.excitability = []  # idem
+        self.complex_power = []  # idem
+
         if spectrum is None:
             spectrum = np.ones(self.omega.size)
+
         if wavenumber_function is None:
-            wavenumber_function = lambda k: 1+0*k
+            wavenumber_function = lambda k: 1 + 0 * k
+
         if dof is not None:
-            force = self.F.sum() #summing elements of F amounts to integrate the (normal) stress over the cross-section 
-        
-        #Check
+            # summing elements of F amounts to integrate the (normal) stress over the cross-section
+            force = self.F.sum()
+
+        # Check
         if len(spectrum) != self.omega.size:
-            raise NotImplementedError('The length of spectrum must be equal to the length of omega')
+            raise ValueError(
+                'The length of spectrum must be equal to the length of omega')
+
         if dof is not None and not isinstance(dof, int):
-            raise NotImplementedError('dof must be an integer')
-        if len(self.opposite_going)==0: #compute opposite-going modes if not yet computed      
+            raise ValueError('dof must be an integer')
+
+        if len(self.opposite_going) == 0:
+            # compute opposite-going modes if not yet computed
             self.compute_opposite_going()
-        if len(self.traveling_direction)==0: #compute traveling direction if not yet computed
+
+        if len(self.traveling_direction) == 0:
+            # compute traveling direction if not yet computed
             self.compute_traveling_direction()
-        
-        #Modal coefficients (loop over frequency)
+
+        # Modal coefficients (loop over frequency)
         start = time.perf_counter()
         for i, opposite_going in enumerate(self.opposite_going):
-            coefficient = np.array(self.eigenvectors[i].copy().transpose()*F)
+            coefficient = np.array(self.eigenvectors[i].copy().transpose() * F)
             mode = np.arange(opposite_going.size)
-            coefficient[mode[opposite_going<0]] = (1+1j)*np.NaN #coefficients of unpaired modes are set to NaN
-            mode, opposite = mode[opposite_going>=0], opposite_going[opposite_going>=0] #consider paired modes only
+
+            # coefficients of unpaired modes are set to NaN
+            coefficient[mode[opposite_going < 0]] = (1 + 1j) * np.NaN
+
+            # consider paired modes only
+            mode, opposite = mode[opposite_going >= 0], opposite_going[opposite_going >= 0]
+
             coefficient[mode] = coefficient[opposite]
-            coefficient[mode] = coefficient[mode]/self._biorthogonality_factor[i][mode]*self.traveling_direction[i][mode]
-            coefficient = coefficient*spectrum[i]*wavenumber_function(self.eigenvalues[i])
+            coefficient[mode] = coefficient[mode] / self._biorthogonality_factor[i][mode] \
+                                 * self.traveling_direction[i][mode]
+            coefficient = coefficient * spectrum[i] * wavenumber_function(self.eigenvalues[i])
+
             self.coefficient.append(coefficient)
+
             if dof is not None:
-                self.excitability.append(coefficient*self.eigenvectors[i][dof,:]/force)
-        print(f'Computation of response coefficient, elapsed time : {(time.perf_counter() - start):.2f}s')
-    
+                self.excitability.append(coefficient * self.eigenvectors[i][dof, :] / force)
+
+        print(f'Computation of response coefficient, '
+              f'elapsed time : {(time.perf_counter() - start):.2f}s')
+
     def compute_complex_power(self):
         """
         Post-process the individual complex power flow of modes given by P=-1j*omega/2*U^H*F (normal
@@ -724,34 +946,46 @@ class Waveguide:
         
         (*) e.g. flexural modes in a cylinder with structured mesh, whether the medium is lossy or lossless 
         """
-        if len(self.complex_power)==len(self.eigenvalues):
+        if len(self.complex_power) == len(self.eigenvalues):
             print('Complex power flow already computed')
             return
-        if len(self.coefficient)==0: #response already computed
-            raise NotImplementedError('Power computation has to be applied after coefficient computation')
-        if len(self.eigenforces)==0: #compute the eigenforces if not yet computed      
+
+        if len(self.coefficient) == 0:
+            # response already computed
+            raise Exception('Power computation must be applied after coefficient computation')
+
+        if len(self.eigenforces) == 0:
+            # compute the eigenforces if not yet computed
             self.compute_eigenforces()
+
         start = time.perf_counter()
         for i in range(len(self.eigenvalues)):
-            #repeat parameter as many times as the number of eigenvalues
+            # repeat parameter as many times as the number of eigenvalues
             omega = self._concatenate('omega', i=i)
-            #complex power flow of modes
+
+            # complex power flow of modes
             complex_power = []
             for mode in range(self.eigenvalues[i].size):
                 U = self.eigenvectors[i].getColumnVector(mode)
                 F = self.eigenforces[i].getColumnVector(mode)
-                complex_power.append(-1j*omega[mode]/2*np.abs(self.coefficient[i][mode])**2*F.dot(U))
+                complex_power.append(-1j * omega[mode] / 2 * np.abs(self.coefficient[i][mode]) ** 2 * F.dot(U))
             self.complex_power.append(np.array(complex_power))
-        print(f'Computation of complex power flow, elapsed time : {(time.perf_counter() - start):.2f}s')
+
+        print(f'Computation of complex power flow, '
+              f'elapsed time : {(time.perf_counter() - start):.2f}s')
 
         # Warning for pml problems (integration restricted on the core is currently not possible)
         dofs_pml = np.iscomplex(self.M.getDiagonal()[:])
+
         if any(dofs_pml):
-            print("Warning: the complex power flow is currently integrated on the whole domain including PML region")
-        ## Future works: a possible trick to restrict the integration on physical dofs
-        #dofs_pml = np.iscomplex(M.getDiagonal()[:]) #problem: if not stuck to the core, can include part of the exterior domain
-        #Mat = M.copy(); Mat.zeroRowsColumns(dofs_pml, diag=0) #or: eigenvectors.zeroRows(dofs_pml, diag=0)
-    
+            print("Warning: the complex power flow is currently integrated "
+                  "on the whole domain including PML region")
+
+        # # Future works: a possible trick to restrict the integration on physical dofs
+        # # problem: if not stuck to the core, can include part of the exterior domain
+        # dofs_pml = np.iscomplex(M.getDiagonal()[:])
+        # Mat = M.copy(); Mat.zeroRowsColumns(dofs_pml, diag=0)  # or: eigenvectors.zeroRows(dofs_pml, diag=0)
+
     def compute_response(self, dof, z, omega_index=None, spectrum=None, wavenumber_function=None, plot=False):
         """
         Post-process the response (modal expansion) at the degree of freedom dof and the axial coordinate z, for the whole
@@ -775,7 +1009,8 @@ class Waveguide:
         Warning: the response calculation is only valid if z lies oustide the source region.
         
         Note: spectrum and wavenumber_function can be specified in compute_response_coefficient(...) instead
-        of compute_response(...), but not in both functions in the same time (otherwise the excitation will be modulated twice).
+        of compute_response(...), but not in both functions in the same time
+        (otherwise the excitation will be modulated twice).
         
         Parameters
         ----------
@@ -803,83 +1038,131 @@ class Waveguide:
         ll_abs : matplotlib list of lines for magnitude plot when plot is set to True
         ll_angle : matplotlib list of lines for phase plot when plot is set to True
         """
-        
-        #Initialization
+
+        # Initialization
         response = []
         dof = np.array(dof)
         z = np.array(z).reshape(-1, 1)
+
         if omega_index is None:
             omega_index = range(self.omega.size)
+
         else:
-            if isinstance(omega_index, int): #single element special case
+            if isinstance(omega_index, int):
+                # single element special case
                 omega_index = [omega_index]
             else:
                 raise NotImplementedError('omega_index must be an integer')
+
         if spectrum is None:
             spectrum = np.ones(self.omega.size)
-        
-        #Check
-        if self.problem_type=='wavenumber':
-            raise NotImplementedError('Response computation not implemented in case wavenumber is parameter')
-        if plot and len(omega_index)==1:
-            raise NotImplementedError('Plot is not possible for a single frequency computation (please set plot to False)')
+
+        # Check
+        if self.problem_type == 'wavenumber':
+            raise NotImplementedError(
+                'Response computation not implemented in case wavenumber is parameter')
+
+        if plot and len(omega_index) == 1:
+            raise NotImplementedError(
+                'Plot is not possible for a single frequency computation (please set plot to False)')
+
         if len(spectrum) != self.omega.size:
             raise NotImplementedError('The length of spectrum must be equal to the length of omega')
-        if any(z==0):
+
+        if any(z == 0):
             raise NotImplementedError('z cannot contain zero values (z must lie outside the source region)')
+
         if wavenumber_function is not None:
             print('Reminder: z should lie outside the source region')
+
         if wavenumber_function is None:
-            wavenumber_function = lambda k: 1+0*k
+            wavenumber_function = lambda k: 1 + 0 * k
+
         direction = np.sign(z)
-        if np.abs(direction.sum())!=direction.size:
+
+        if np.abs(direction.sum()) != direction.size:
             raise NotImplementedError('z cannot contain both negative and positive values')
-        if dof.size>1 and z.size>1 and len(omega_index)>1:
-            raise NotImplementedError('dof and z cannot be both vectors in the same time except for a single frequency computation')
-        if len(self.coefficient)==0: #response coefficient has not yet been computed
+
+        if dof.size > 1 and z.size > 1 and len(omega_index) > 1:
+            raise NotImplementedError(
+                'dof and z cannot be both vectors in the same time except for a single frequency computation')
+
+        if len(self.coefficient) == 0:
+            # response coefficient has not yet been computed
             print('Response coefficient must be computed first (execute compute_response_coefficient(...))')
             return
-        
-        #Response
+
+        # Response
         start = time.perf_counter()
         direction = direction[0]
+
         for i in omega_index:
-            imode = np.nonzero(self.traveling_direction[i]==direction)[0].tolist() #indices of modes traveling in the desired direction
-            temp = self.coefficient[i][imode]*spectrum[i]*wavenumber_function(self.eigenvalues[i][imode])
-            #temp = (self.eigenvectors[i][dof.tolist(),imode] @ np.diag(temp)) @ np.exp(1j*np.outer(self.eigenvalues[i][imode], z)) #OLD: np.diag(temp) may have many zeros
-            temp = PETSc.Mat().createDense([dof.size, len(imode)], array=self.eigenvectors[i][dof.tolist(),imode], comm=self.comm) * self._diag(temp)
-            temp = temp[:,:] @ np.exp(1j*np.outer(self.eigenvalues[i][imode], z)) #note: PETSc matrices have no exponential function (although PETSc vectors have one!) -> going back to numpy arrays here for simplicity...
-            temp = temp.reshape(-1,1) #enforce vector to be column
+            # indices of modes traveling in the desired direction
+            imode = np.nonzero(self.traveling_direction[i] == direction)[0].tolist()
+
+            temp = self.coefficient[i][imode] * spectrum[i] * wavenumber_function(self.eigenvalues[i][imode])
+
+            # #OLD: np.diag(temp) may have many zeros
+            # temp = (self.eigenvectors[i][dof.tolist(),imode] @ np.diag(temp)) \
+            # @ np.exp(1j*np.outer(self.eigenvalues[i][imode], z))
+
+            temp = PETSc.Mat().createDense(
+                [dof.size, len(imode)],
+                array=self.eigenvectors[i][dof.tolist(), imode],
+                comm=self.comm) * self._diag(temp)
+
+            # note: PETSc matrices have no exponential function (although PETSc vectors have one!)
+            # -> going back to numpy arrays here for simplicity...
+            temp = temp[:, :] @ np.exp(1j * np.outer(self.eigenvalues[i][imode], z))
+
+            # enforce vector to be column
+            temp = temp.reshape(-1, 1)
+
             response.append(temp)
-        response = np.squeeze(np.concatenate(response, axis=1)) #numpy array of size len(dof or z)*len(self.omega)
-        if len(omega_index)==1:
-            response = response.reshape(z.size, dof.size) #numpy array of size len(z)*len(dof)
-        print(f'Computation of response, elapsed time : {(time.perf_counter() - start):.2f}s')
-        frequency = self.omega[omega_index]/(2*np.pi)
-        
+
+        # numpy array of size len(dof or z)*len(self.omega)
+        response = np.squeeze(np.concatenate(response, axis=1))
+
+        if len(omega_index) == 1:
+            # numpy array of size len(z)*len(dof)
+            response = response.reshape(z.size, dof.size)
+
+        print(f'Computation of response, '
+              f'elapsed time : {(time.perf_counter() - start):.2f}s')
+
+        frequency = self.omega[omega_index] / (2 * np.pi)
+
         # Scaling
-        xscale, yscale = self.plot_scaler['omega'], 1/self.plot_scaler['wavenumber']
-        frequency, response = frequency*xscale, response*yscale
-        
-        #Plots
+        xscale, yscale = self.plot_scaler['omega'], 1 / self.plot_scaler['wavenumber']
+        frequency, response = frequency * xscale, response * yscale
+
+        # Plots
         if plot:
-            if all(np.array(list(self.plot_scaler.values()))==1): #the dictionnary variables are equal to 1
+            # the dictionnary variables are equal to 1
+            if all(np.array(list(self.plot_scaler.values())) == 1):
                 xlabel, ylabel = "normalized angular frequency", "|normalized displacement|"
             else:
-                xlabel, ylabel, xscale = "frequency", "|displacement|", xscale/(2*np.pi)
-            #Magnitude
+                xlabel, ylabel, xscale = "frequency", "|displacement|", xscale / (2 * np.pi)
+
+            # Magnitude
             fig, ax = plt.subplots(1, 1)
-            ll_abs = ax.plot(self.omega.real*xscale, np.abs(response.T), linewidth=1, linestyle="-") #color="k"
+
+            ll_abs = ax.plot(self.omega.real * xscale, np.abs(response.T),
+                             linewidth=1, linestyle="-")  #color="k"
             ax.set_xlabel(xlabel)
             ax.set_ylabel(ylabel)
             fig.tight_layout()
-            #Phase
+
+            # Phase
             fig, ax = plt.subplots(1, 1)
-            ll_angle = ax.plot(self.omega.real*xscale, np.angle(response.T), linewidth=1, linestyle="-") #color="k"
+            ll_angle = ax.plot(self.omega.real * xscale, np.angle(response.T),
+                               linewidth=1, linestyle="-")  #color="k"
             ax.set_xlabel(xlabel)
             ax.set_ylabel('phase')
             fig.tight_layout()
+
             return frequency, response, ll_abs, ll_angle
+
         else:
             return frequency, response
 
@@ -894,51 +1177,66 @@ class Waveguide:
         If plot is set to True, the real and imaginary parts of eigenvalue are plotted w.r.t. frequency index,
         for visual check that the desired mode has been properly tracked.
         """
-        if len(self.eigenforces)==0: #compute the eigenforces if not yet computed      
+        if len(self.eigenforces) == 0:
+            # compute the eigenforces if not yet computed
             self.compute_eigenforces()
-        if len(self.traveling_direction)==0: #compute traveling direction if not yet computed
+
+        if len(self.traveling_direction) == 0:
+            # compute traveling direction if not yet computed
             self.compute_traveling_direction()
-        
-        #Initialization
-        mode = np.zeros(self.omega.size, dtype='int32') - 1 #fill with -1 by default
+
+        # Initialization
+        mode = np.zeros(self.omega.size, dtype='int32') - 1  # fill with -1 by default
         mode[omega_index] = mode_index
         direction = self.traveling_direction[omega_index][mode_index]
-        upper_part = range(omega_index, self.omega.size-1) #towards increasing frequency
-        lower_part = range(omega_index, 0, -1) #towards decreasing frequency
-        
-        #Track mode based on similarity
+        upper_part = range(omega_index, self.omega.size - 1)  # towards increasing frequency
+        lower_part = range(omega_index, 0, -1)  # towards decreasing frequency
+
+        # Track mode based on similarity
         for p, part in enumerate([upper_part, lower_part]):
             m = mode_index
             for i in part:
-                inext = i+1-2*p #i+1 if p=0 (upper part), i-1 if p=1 (lower part)
+                inext = i + 1 - 2 * p  # i+1 if p=0 (upper part), i-1 if p=1 (lower part)
                 U = self.eigenvectors[i].getColumnVector(m)
-                F =  self.eigenforces[i].getColumnVector(m)
+                F = self.eigenforces[i].getColumnVector(m)
+
                 similarity = np.zeros(self.eigenvectors[inext].size[1])
-                imodes = np.nonzero(self.traveling_direction[inext]==direction)[0] #restriction to modes traveling in the same direction
+
+                # restriction to modes traveling in the same direction
+                imodes = np.nonzero(self.traveling_direction[inext] == direction)[0]
+
                 for m in imodes:
                     test_U = self.eigenvectors[inext].getColumnVector(m)
                     test_F = self.eigenforces[inext].getColumnVector(m)
                     similarity[m] = np.abs(test_U.dot(U) + test_F.dot(F)) \
-                                  / np.sqrt(((U.norm()**2+F.norm()**2)*(test_U.norm()**2+test_F.norm()**2)))
-                if similarity.max()<threshold:
-                    print(f'Mode tracking stopped at frequency index {inext}: similarity equals {similarity.max():.2f}, lower than threshold (try to increase threshold)')
+                                    / np.sqrt(
+                        ((U.norm() ** 2 + F.norm() ** 2) * (test_U.norm() ** 2 + test_F.norm() ** 2)))
+                if similarity.max() < threshold:
+                    print(
+                        f'Mode tracking stopped at frequency index {inext}: '
+                        f'similarity equals {similarity.max():.2f}, '
+                        f'lower than threshold (try to increase threshold)')
                     break
                 else:
                     m = similarity.argmax()
                     mode[inext] = m
-        
-        #Plot for check
+
+        # Plot for check
         if plot:
             fig, ax = plt.subplots(1, 1)
             eigenvalues = np.zeros(self.omega.size, dtype='complex')
+
             for i in range(self.omega.size):
-                eigenvalues[i] = self.eigenvalues[i][mode[i]] if mode[i]>=0 else None
+                eigenvalues[i] = self.eigenvalues[i][mode[i]] if mode[i] >= 0 else None
+
             ax.plot(eigenvalues.real, color='blue', label='real')
             ax.plot(eigenvalues.imag, color='red', label='imag')
+
             ax.set_xlabel('frequency index')
             ax.set_ylabel('eigenvalue')
             ax.set_title('tracked mode curve')
             ax.legend()
+
         return mode
 
     def plot_phase_velocity(self, **kwargs):
@@ -983,7 +1281,7 @@ class Waveguide:
         for dimensional results. Parameters and Returns: see plot(...).
         """
         return self.plot(y=['excitability', np.abs], **kwargs)
-    
+
     def plot_complex_power(self, **kwargs):
         """
         Plot complex power flow of individual modes as a function of frequency, Re(P) and Im(P) vs. Re(omega), 
@@ -994,8 +1292,9 @@ class Waveguide:
         sc = self.plot(y=['complex_power', np.imag], ax=ax, color="gray", label="Im", **kwargs)
         sc = self.plot(y=['complex_power', np.real], ax=ax, label="Re", **kwargs)
         return sc
-    
-    def plot(self, x=None, y=None, c=None, direction=None, pml_threshold=None, mode=None, ax=None, color="k", marker="o", markersize=2, **kwargs):
+
+    def plot(self, x=None, y=None, c=None, direction=None, pml_threshold=None, mode=None, ax=None, color="k",
+             marker="o", markersize=2, **kwargs):
         """
         Plot dispersion curves y[1](y[0]) vs. x[1](x[0]) as scatter plot.
         If the index list, mode, is specified by the user, a single mode is plotted as a continuous single colored curve
@@ -1025,60 +1324,106 @@ class Waveguide:
         -------
         sc: the matplotlib collection
         """
-        
+
         # Initialization
-        self._compute_if_necessary(direction, pml_threshold) #compute traveling direction and pml ratio if necessary
-        normalized = all(np.array(list(self.plot_scaler.values()))==1) #test if the dictionnary variables are equal to 1 (results will be normalized) or not (results will be dimensional)
-        if x is None: #particular cases
+        # compute traveling direction and pml ratio if necessary
+        self._compute_if_necessary(direction, pml_threshold)
+
+        # test if the dictionnary variables are equal to 1
+        # (results will be normalized) or not (results will be dimensional)
+        normalized = all(np.array(list(self.plot_scaler.values())) == 1)
+
+        if x is None:
+            # particular cases
+
             if y is None:
                 x, y = ['wavenumber', np.real], ['omega' if normalized else 'frequency', np.real]
+
             elif y[0] == 'attenuation':
-                x = ['omega' if self.problem_type=='omega' else 'wavenumber', np.real]
-                if self.problem_type=='omega' and not normalized:
+                x = ['omega' if self.problem_type == 'omega' else 'wavenumber', np.real]
+                if self.problem_type == 'omega' and not normalized:
                     x[0] = 'frequency'
+
             else:
                 x = ['omega' if normalized else 'frequency', np.real]
-        if x[0] in ('coefficient', 'excitability', 'complex_power') and len(getattr(self, x[0]))==0:
+
+        if x[0] in ('coefficient', 'excitability', 'complex_power') and len(getattr(self, x[0])) == 0:
             raise NotImplementedError('No ' + x[0] + ' has been computed')
-        if y[0] in ('coefficient', 'excitability', 'complex_power') and len(getattr(self, y[0]))==0:
+
+        if y[0] in ('coefficient', 'excitability', 'complex_power') and len(getattr(self, y[0])) == 0:
             raise NotImplementedError('No ' + y[0] + ' has been computed')
-        if x[0] in ('energy_velocity', 'group_velocity') and len(getattr(self, x[0]))==0:
+
+        if x[0] in ('energy_velocity', 'group_velocity') and len(getattr(self, x[0])) == 0:
             eval('self.compute_' + x[0] + '()')
-        if y[0] in ('energy_velocity', 'group_velocity') and len(getattr(self, y[0]))==0:
+
+        if y[0] in ('energy_velocity', 'group_velocity') and len(getattr(self, y[0])) == 0:
             eval('self.compute_' + y[0] + '()')
+
         if c is None:
             c = [None, lambda c: None]
+
         if ax is None:
             fig, ax = plt.subplots(1, 1)
+
         if mode is not None and (direction is not None or pml_threshold is not None):
-            raise NotImplementedError('Do not give any direction or pml_threshold when mode is specified')
-        
+            raise NotImplementedError(
+                'Do not give any direction or pml_threshold when mode is specified')
+
         # Scaling and labels
-        xscale, yscale, cscale = self.plot_scaler[x[0]], self.plot_scaler[y[0]], self.plot_scaler[c[0]] if c[0] is not None else 1
-        xlabel = 'angular frequency' if x[0]=='omega' else x[0].replace("_", " ") #take the string x and replace underscores with whitespaces
-        ylabel = 'angular frequency' if y[0]=='omega' else y[0].replace("_", " ") #id
-        if normalized: #add string "normalized" to labels
+        xscale = self.plot_scaler[x[0]]
+        yscale = self.plot_scaler[y[0]]
+        cscale = self.plot_scaler[c[0]] if c[0] is not None else 1
+
+        # take the string x and replace underscores with whitespaces
+        xlabel = 'angular frequency' if x[0] == 'omega' else x[0].replace("_", " ")
+
+        # id
+        ylabel = 'angular frequency' if y[0] == 'omega' else y[0].replace("_", " ")
+
+        if normalized:
+            # add string "normalized" to labels
             xlabel, ylabel = "normalized " + xlabel, "normalized " + ylabel
-        
+
         # Build concatenaded arrays from the string x[0] and apply functions x[1] (idem for y and c)
-        x_array, y_array, c_array = self._concatenate(x[0], y[0], c[0], direction=direction, pml_threshold=pml_threshold)
-        x_array, y_array, c_array = x[1](x_array*xscale), y[1](y_array*yscale), c[1](c_array*cscale)
-        if c[0] is None: #single color plot (no colorbar)
+        x_array, y_array, c_array = (
+            self._concatenate(
+                x[0], y[0], c[0],
+                direction=direction,
+                pml_threshold=pml_threshold))
+
+        x_array = x[1](x_array * xscale)
+        y_array = y[1](y_array * yscale)
+        c_array = c[1](c_array * cscale)
+
+        if c[0] is None:
+            # single color plot (no colorbar)
             c_array = color
-        
+
         # Plot
-        if mode is None: #all modes
+        if mode is None:
+            # all modes
             sc = ax.scatter(x_array, y_array, s=markersize, c=c_array, marker=marker, **kwargs)
-        else: #single mode (trick to find the right index)
-            index = mode + np.insert(np.array([self.eigenvalues[i].size for i in range(self.omega.size-1)]).cumsum(), 0, 0).astype('int32')
-            index = index[mode>=0]
-            sc = ax.plot(x_array[index], y_array[index], c=color, marker=marker, markersize=markersize, **kwargs) #here, sc should be understood as ll (line of lines)
+
+        else:
+            # single mode (trick to find the right index)
+            index = mode + np.insert(
+                np.array([self.eigenvalues[i].size for i in range(self.omega.size - 1)]).cumsum(),
+                0, 0).astype('int32')
+
+            index = index[mode >= 0]
+            # here, sc should be understood as ll (line of lines)
+            sc = ax.plot(x_array[index], y_array[index],
+                         c=color, marker=marker, markersize=markersize,
+                         **kwargs)
+
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.figure.tight_layout()
-        # plt.show()  #let user decide whether he wants to interrupt the execution for display, or save to figure...
+        # plt.show()  # let user decide whether he wants to interrupt the execution for display, or save to figure...
+
         if c[0] is not None:
-            plt.colorbar(sc) #label=colors
+            plt.colorbar(sc)  # label=colors
+
         return sc
 
     def set_plot_scaler(self, length=1, time=1, mass=1, dim=3):
@@ -1094,17 +1439,38 @@ class Waveguide:
         Reminder: while the dimension of U (displacement) is in meter, the dimension of F (force) is in Newton for 3D waveguides
         and in Newton/meter for 2D waveguides (F is in mass*length**(dim-2)/time**2).
         """
-        force = mass*length**(dim-2)/time**2
-        self.plot_scaler = {'omega':1/time, 'wavenumber':1/length, 'energy_velocity':length/time, 'group_velocity':length/time, 'pml_ratio':1,
-                            'eigenvalues':1/length if self.problem_type=='omega' else 1/time, 'excitability':length/force,
-                            'eigenvectors':1, 'eigenforces':1, 'coefficient':1, 'complex_power':force*length/time}
-        self.plot_scaler.update({'frequency':self.plot_scaler['omega'], 'attenuation':self.plot_scaler['eigenvalues'], 'phase_velocity':self.plot_scaler['energy_velocity']})
+        force = mass * length ** (dim - 2) / time ** 2
+
+        self.plot_scaler = {
+            'omega': 1 / time,
+            'wavenumber': 1 / length,
+            'energy_velocity': length / time,
+            'group_velocity': length / time,
+            'pml_ratio': 1,
+            'eigenvalues': 1 / length if self.problem_type == 'omega' else 1 / time,
+            'excitability': length / force,
+            'eigenvectors': 1,
+            'eigenforces': 1,
+            'coefficient': 1,
+            'complex_power': force * length / time}
+
+        self.plot_scaler.update({
+            'frequency': self.plot_scaler['omega'],
+            'attenuation': self.plot_scaler['eigenvalues'],
+            'phase_velocity': self.plot_scaler['energy_velocity']})
+
         if self._poynting_normalization:
-            normalization_factor_1W = 1/np.sqrt(force*length/time) #factor to normalize eigenmodes such that their dimensional cross-section power flow is equal to 1 Watt
-            self.plot_scaler.update({'eigenvectors':normalization_factor_1W*length, 'eigenforces':normalization_factor_1W*force, 'coefficient':1/normalization_factor_1W})
+            # factor to normalize eigenmodes such that their dimensional cross-section power flow is equal to 1 Watt
+            normalization_factor_1W = 1 / np.sqrt(force * length / time)
+
+            self.plot_scaler.update({
+                'eigenvectors': normalization_factor_1W * length,
+                'eigenforces': normalization_factor_1W * force,
+                'coefficient': 1 / normalization_factor_1W,
+                })
 
     def plot_spectrum(self, index=0, c=None, ax=None, color="k",
-                        marker="o", markersize=2, **kwargs):
+                      marker="o", markersize=2, **kwargs):
         """
         Plot the spectrum, Im(k) vs. Re(k) computed for omega[index] (if the parameter is the frequency),
         or Im(omega) vs. Re(omega) for wavenumber[index] (if the parameter is the wavenumber).
@@ -1126,38 +1492,64 @@ class Waveguide:
         """
         if ax is None:
             fig, ax = plt.subplots(1, 1)
-        normalized = all(np.array(list(self.plot_scaler.values()))==1)
+
+        normalized = all(np.array(list(self.plot_scaler.values())) == 1)
+
         if self.problem_type == "wavenumber":
             scale = self.plot_scaler['omega']
             title = "normalized angular frequency" if normalized else "angular frequency"
+
         elif self.problem_type == "omega":
             scale = self.plot_scaler['wavenumber']
             title = "normalized wavenumber" if normalized else "wavenumber"
-        c = c[1](getattr(self,c[0])[index])*self.plot_scaler[c[0]] if c is not None else color
-        sc = ax.scatter(self.eigenvalues[index].real*scale, self.eigenvalues[index].imag*scale, s=markersize, c=c, marker=marker, **kwargs)
+
+        c = c[1](getattr(self, c[0])[index]) * self.plot_scaler[c[0]] if c is not None else color
+
+        sc = ax.scatter(
+            self.eigenvalues[index].real * scale,
+            self.eigenvalues[index].imag * scale,
+            s=markersize,
+            c=c,
+            marker=marker,
+            **kwargs)
+
         ax.set_xlabel('real part')
         ax.set_ylabel('imaginary part')
         ax.set_title(title)
         ax.figure.tight_layout()
+
         if c is not color:
-            plt.colorbar(sc) #label=colors
+            plt.colorbar(sc)  #label=colors
+
         return sc
 
     def _check_biorthogonality(self, i):
-        """ Return and plot, for the ith parameter, the Modal Assurance Criterion (MAC) matrix based on the (bi)-orthogonality relation (for internal use)"""
-        if len(self.eigenforces)==0: #the eigenforces has not yet been computed
+        """ Return and plot, for the ith parameter, the Modal Assurance Criterion (MAC) matrix
+        based on the (bi)-orthogonality relation (for internal use)"""
+
+        if len(self.eigenforces) == 0:
+            # the eigenforces has not yet been computed
             print('Eigenforces have not yet been computed')
             return
+
         if self.problem_type == "wavenumber":
-            biorthogonality = self.eigenvectors[i].copy().hermitianTranspose()*self.M*self.eigenvectors[i] #hyp: K0, K1, K2, M and eigenvalues must be real here!
+            # hyp: K0, K1, K2, M and eigenvalues must be real here!
+            biorthogonality = self.eigenvectors[i].copy().hermitianTranspose() * self.M * self.eigenvectors[i]
+
             # Warning for lossy problems
             dofs_complex = np.iscomplex(self.K2.getDiagonal()[:])
             if any(dofs_complex):
-                print("Warning: the orthogonality relation implemented is valid for real matrices only (lossless problems)")
+                warnings.warn(
+                    "Warning: the orthogonality relation implemented "
+                    "is valid for real matrices only (lossless problems)")
+
         elif self.problem_type == "omega":
-            biorthogonality = self.eigenforces[i].copy().transpose()*self.eigenvectors[i]-self.eigenvectors[i].copy().transpose()*self.eigenforces[i]
-        plt.matshow(np.abs(biorthogonality[:,:]))
+            biorthogonality = (self.eigenforces[i].copy().transpose() * self.eigenvectors[i]
+                               - self.eigenvectors[i].copy().transpose() * self.eigenforces[i])
+
+        plt.matshow(np.abs(biorthogonality[:, :]))
         plt.title(f'MAC matrix for iteration {i}')
+
         return biorthogonality
 
     def _get_eigenpairs(self, two_sided=False):
@@ -1165,40 +1557,67 @@ class Waveguide:
         Return all converged eigenpairs of the current EVP object (for internal use).
         Eigenvectors are stored in a PETSc dense matrix.
         If two_sided is set to True, left eigensolutions are also included in the outputs, removing any duplicates.
-        """        
+        """
         nconv = self.evp.getConverged()
-        #Initialization
-        if self.problem_type=='omega' and two_sided: #get rid of one half of complex plane to avoid duplicates
+
+        # Initialization
+        if self.problem_type == 'omega' and two_sided:
+            # get rid of one half of complex plane to avoid duplicates
             eigenvalues = np.array([self.evp.getEigenpair(i) for i in range(nconv)])
-            modes_kept = np.nonzero(np.logical_and(np.angle(eigenvalues)>-np.pi/4, np.angle(eigenvalues)<3*np.pi/4))[0]
-        else: #keep all
-            modes_kept = range(nconv) 
+            modes_kept = \
+                np.nonzero(np.logical_and(
+                    np.angle(eigenvalues) > -np.pi / 4,
+                    np.angle(eigenvalues) < 3 * np.pi / 4))[0]
+
+        else:
+            # keep all
+            modes_kept = range(nconv)
+
         eigenvalues = []
         v = self.evp.getOperators()[0].createVecRight()
-        index = range(v.getSize()) if v.getSize()==self.M.getSize()[0] else range(int(v.getSize()/2)) #1/2 in case of externally linearized quadratic evp
+
+        # index = range(v.getSize()) if v.getSize() == self.M.getSize()[0] else range(
+        #     int(v.getSize() / 2))
+        if v.getSize() == self.M.getSize()[0]:
+            index = range(v.getSize())
+        else:
+            # 1/2 in case of externally linearized quadratic evp
+            index = range(int(v.getSize() / 2))
+
         eigenvectors = PETSc.Mat().create(comm=self.comm)
         eigenvectors.setType("dense")
-        eigenvectors.setSizes([self.M.getSize()[0], 2*len(modes_kept) if two_sided else len(modes_kept)])
+        eigenvectors.setSizes([self.M.getSize()[0], 2 * len(modes_kept) if two_sided else len(modes_kept)])
         eigenvectors.setFromOptions()
         eigenvectors.setUp()
-        #Build eigenpairs
+
+        # Build eigenpairs
         for i, mode in enumerate(modes_kept):
             eigenvalues.append(self.evp.getEigenpair(mode, v))
-            if self.problem_type=='omega' and two_sided: #include left eigensolutions
-                eigenvectors.setValues(index, 2*i, v[index])
+            if self.problem_type == 'omega' and two_sided:
+
+                # include left eigensolutions
+                eigenvectors.setValues(index, 2 * i, v[index])
                 self.evp.getLeftEigenvector(mode, v)
-                v.conjugate() #cancel the conjugate internally applied by SLEPc
-                eigenvectors.setValues(index, 2*i+1, v[index])
+
+                # cancel the conjugate internally applied by SLEPc
+                v.conjugate()
+
+                eigenvectors.setValues(index, 2 * i + 1, v[index])
                 eigenvalues.append(-eigenvalues[-1])
+
             else:
                 eigenvectors.setValues(index, i, v[index])
+
         eigenvectors.assemble()
         eigenvalues = np.array(eigenvalues)
-        if self.problem_type=="wavenumber":
+
+        if self.problem_type == "wavenumber":
             eigenvalues = np.sqrt(eigenvalues)
+
         return eigenvalues, eigenvectors
 
-    def _concatenate(self, *args, direction: Union[int, None]=None, pml_threshold: Union[int, None]=None, i: Union[int, None]=None):
+    def _concatenate(self, *args, direction: Union[int, None] = None, pml_threshold: Union[int, None] = None,
+                     i: Union[int, None] = None):
         """
         Return concatenated modal properties in the whole parameter range as 1D numpy arrays (for internal use).
         The arguments *args are strings which can be 'omega', 'wavenumber', 'energy_velocity', 'group_velocity',
@@ -1210,60 +1629,111 @@ class Waveguide:
         If i is specified, then the function returns the results for the ith parameter only.
         """
         argout = []
-        index = slice(None) if i is None else slice(i, i+1)
-        if 'phase_velocity' in args: #create the temporary attribute 'phase_velocity'
-            np.seterr(divide='ignore') #ignore divide by zero message (denominator may sometimes vanish) 
-            if self.problem_type=="omega":
-                self.phase_velocity = [self.omega[i].real/self.eigenvalues[i].real for i in range(len(self.eigenvalues))]
-            else: #"wavenumber"
-                self.phase_velocity = [self.eigenvalues[i].real/self.wavenumber[i].real for i in range(len(self.eigenvalues))]
+        if i is None:
+            index = slice(None)
+        else:
+            index = slice(i, i+1)
+
+        if 'phase_velocity' in args:
+            # create the temporary attribute 'phase_velocity'
+
+            # ignore divide by zero message (denominator may sometimes vanish)
+            np.seterr(divide='ignore')
+
+            if self.problem_type == "omega":
+                self.phase_velocity = [self.omega[i].real / self.eigenvalues[i].real
+                                       for i in range(len(self.eigenvalues))]
+            else:
+                # "wavenumber"
+                self.phase_velocity = [self.eigenvalues[i].real / self.wavenumber[i].real
+                                       for i in range(len(self.eigenvalues))]
+
             np.seterr(divide='warn')
+
         for arg in args:
-            (arg, one_or_two_pi) = ('omega', 2*np.pi) if arg=='frequency' else (arg, 1)
-            if arg=="omega" and self.problem_type=="omega":
-                array = np.repeat(self.omega[index], [len(egv) for egv in self.eigenvalues[index]])/one_or_two_pi
-            elif arg=="wavenumber" and self.problem_type=="wavenumber":
+
+            if arg == 'frequency':
+                arg = "omega"
+                one_or_two_pi = 2 * np.pi
+            else:
+                one_or_two_pi = 1
+
+            if arg == "omega" and self.problem_type == "omega":
+                array = np.repeat(self.omega[index], [len(egv) for egv in self.eigenvalues[index]]) / one_or_two_pi
+
+            elif arg == "wavenumber" and self.problem_type == "wavenumber":
                 array = np.repeat(self.wavenumber[index], [len(egv) for egv in self.eigenvalues[index]])
-            elif arg=="attenuation":
+
+            elif arg == "attenuation":
                 array = np.concatenate(getattr(self, "eigenvalues")[index]).imag
+
             elif arg is None:
                 array = []
+
             else:
-                if (arg=="wavenumber" and self.problem_type=="omega") or (arg=="omega" and self.problem_type=="wavenumber"):
+                if (arg == "wavenumber" and self.problem_type == "omega") \
+                        or (arg == "omega" and self.problem_type == "wavenumber"):
                     arg = "eigenvalues"
-                if len(getattr(self, arg))==0:
-                    raise NotImplementedError(f'{arg} has not been computed: please compute it before plotting')
-                array = np.concatenate(getattr(self, arg)[index])/one_or_two_pi
-            argout.append(array) 
+
+                if len(getattr(self, arg)) == 0:
+                    raise Exception(
+                        f'{arg} has not been computed: '
+                        f'please compute it before plotting')
+                array = np.concatenate(getattr(self, arg)[index]) / one_or_two_pi
+
+            argout.append(array)
+
         if direction is not None:
             traveling_direction = np.concatenate(self.traveling_direction[index])
-            imode = traveling_direction==direction #indices of modes traveling in the desired direction
-            argout = [argout[j][imode] if len(argout[j])>0 else [] for j in range(len(argout))]
+            # indices of modes traveling in the desired direction
+            imode = traveling_direction == direction
+
+            argout = [argout[j][imode] if len(argout[j]) > 0 else [] for j in range(len(argout))]
+
         else:
             imode = slice(None)
+
         if pml_threshold is not None:
             pml_ratio = np.concatenate(self.pml_ratio[index])
-            iphysical = pml_ratio[imode]>=pml_threshold #indices of physical modes (i.e. excluding PML modes)
-            argout = [argout[j][iphysical] if len(argout[j])>0 else [] for j in range(len(argout))]
-        if len(argout)==1:
+            # indices of physical modes (i.e. excluding PML modes)
+            iphysical = pml_ratio[imode] >= pml_threshold
+            argout = [argout[j][iphysical] if len(argout[j]) > 0 else [] for j in range(len(argout))]
+
+        if len(argout) == 1:
             argout = argout[0]
-        if 'phase_velocity' in args: #delete the attribute 'phase_velocity'
-            del(self.phase_velocity)
+
+        if 'phase_velocity' in args:
+            # delete the attribute 'phase_velocity'
+            del (self.phase_velocity)
+
         return argout
 
     def _compute_if_necessary(self, direction, pml_threshold):
         """ Compute traveling direction and pml ratio if necessary before plot (for internal use) """
-        if direction is not None and len(self.traveling_direction)==0:  #compute the traveling direction if not yet computed
+        if direction is not None and len(self.traveling_direction) == 0:
+            # compute the traveling direction if not yet computed
             self.compute_traveling_direction()
-        if pml_threshold is not None and len(self.pml_ratio)==0:  #compute the pml_ratio if not yet computed
+
+        if pml_threshold is not None and len(self.pml_ratio) == 0:
+            # compute the pml_ratio if not yet computed
             self.compute_pml_ratio()
 
-    def _diag(self, vec):
+    def _diag(self, vec: Union[np.ndarray, list]):
         """ Return the PETSc diagonal matrix with diagonal entries given by vector vec (for internal use)"""
-        diag = PETSc.Mat().createAIJ(vec.size, nnz=1, comm=self.comm)
+
+        if isinstance(vec, np.ndarray):
+            diag = PETSc.Mat().createAIJ(vec.size, nnz=1, comm=self.comm)
+
+        elif isinstance(vec, list):
+            diag = PETSc.Mat().createAIJ(len(vec), nnz=1, comm=self.comm)
+
+        else:
+            raise TypeError(type(vec))
+
         diag.setUp()
         diag.setDiagonal(PETSc.Vec().createWithArray(vec, comm=self.comm))
         diag.assemble()
+
         return diag
 
     def _dot_eigenvectors(self, i, eigenfield):
@@ -1274,25 +1744,45 @@ class Waveguide:
         """
         res = []
         for mode in range(self.eigenvectors[i].getSize()[1]):
-            res.append(eigenfield.getColumnVector(mode).dot(self.eigenvectors[i].getColumnVector(mode))) #dot: conjugate, tDot: without
+            # dot: conjugate, tDot: without
+            res.append(eigenfield.getColumnVector(mode).dot(
+                self.eigenvectors[i].getColumnVector(mode)))
         res = np.array(res)
+
         return res
 
     def _build_block_matrix(self, A, B, C, D):
-        """ Return the block matrix [[A, B], [C, D]] given the equal-sized blocks A, B, C, D (for internal use) """    
-        bs = A.getSize() #block size
-        #Block A
+        """ Return the block matrix [[A, B], [C, D]] given the equal-sized blocks A, B, C, D (for internal use) """
+        bs = A.getSize()  # block size
+
+        # Block A
         csr = A.getValuesCSR()
-        Mat = PETSc.Mat().createAIJWithArrays([2*bs[0], 2*bs[1]], [np.insert(csr[0], len(csr[0]), np.full(bs[0], csr[0][-1])), csr[1], csr[2]], comm=self.comm)
-        #Block B
+        Mat = PETSc.Mat().createAIJWithArrays(
+            [2 * bs[0], 2 * bs[1]],
+            [np.insert(csr[0], len(csr[0]), np.full(bs[0], csr[0][-1])), csr[1], csr[2]],
+            comm=self.comm)
+
+        # Block B
         csr = B.getValuesCSR()
-        Mat = Mat + PETSc.Mat().createAIJWithArrays([2*bs[0], 2*bs[1]], [np.insert(csr[0], len(csr[0]), np.full(bs[0], csr[0][-1])), csr[1]+bs[1], csr[2]], comm=self.comm)
-        #Block C
+        Mat = Mat + PETSc.Mat().createAIJWithArrays(
+            [2 * bs[0], 2 * bs[1]],
+            [np.insert(csr[0], len(csr[0]), np.full(bs[0], csr[0][-1])), csr[1] + bs[1], csr[2]],
+            comm=self.comm)
+
+        # Block C
         csr = C.getValuesCSR()
-        Mat = Mat + PETSc.Mat().createAIJWithArrays([2*bs[0], 2*bs[1]], [np.insert(csr[0], 0, np.zeros(bs[0])), csr[1], csr[2]], comm=self.comm)
-        #Block D
+        Mat = Mat + PETSc.Mat().createAIJWithArrays(
+            [2 * bs[0], 2 * bs[1]],
+            [np.insert(csr[0], 0, np.zeros(bs[0])), csr[1], csr[2]],
+            comm=self.comm)
+
+        # Block D
         csr = D.getValuesCSR()
-        Mat = Mat + PETSc.Mat().createAIJWithArrays([2*bs[0], 2*bs[1]], [np.insert(csr[0], 0, np.zeros(bs[0])), csr[1]+bs[1], csr[2]], comm=self.comm)
+        Mat = Mat + PETSc.Mat().createAIJWithArrays(
+            [2 * bs[0], 2 * bs[1]],
+            [np.insert(csr[0], 0, np.zeros(bs[0])), csr[1] + bs[1], csr[2]],
+            comm=self.comm)
+
         return Mat
 
 
@@ -1367,6 +1857,7 @@ class Signal:
     plot_spectrum(ax=None, color="k", linewidth=1, linestyle="-", **kwargs):
         Plot the spectrum (spectrum vs. frequency), in magnitude and phase
     """
+
     def __init__(self, time=None, waveform=None, frequency=None, spectrum=None, alpha=0):
         """
         Constructor
@@ -1389,9 +1880,10 @@ class Signal:
         self.frequency = frequency
         self.spectrum = spectrum
         self.alpha = alpha
-        
+
         if (time is None) ^ (waveform is None):
             raise NotImplementedError('Please specify both time and waveform')
+
         if (frequency is None) ^ (spectrum is None):
             raise NotImplementedError('Please specify both frequency and spectrum')
 
@@ -1406,77 +1898,130 @@ class Signal:
         # Check waveform
         if self.time is None:
             raise ValueError("Time waveform is missing")
+
         self.waveform = self.waveform.reshape(-1, len(self.time))
         dt = np.mean(np.diff(self.time))
-        if len(self.time)%2 != 0:  #if the number of points is odd, complete with one point
+
+        if len(self.time) % 2 != 0:
+            # if the number of points is odd, complete with one point
             print("One point added in order to have length of t even")
+
             self.time = np.append(self.time, self.time[-1] + dt)
-            self.waveform = np.append(self.waveform, np.array([0]*self.waveform.shape[0]).reshape(-1, 1), axis=1)  #complete with one zero
+
+            # complete with one zero
+            self.waveform = np.append(self.waveform, np.array([0] * self.waveform.shape[0]).reshape(-1, 1), axis=1)
+
         self.waveform = np.squeeze(self.waveform)
         temp = np.diff(self.time)
-        if np.max(np.abs(temp-dt))/dt >= 1e-3:
+
+        if np.max(np.abs(temp - dt)) / dt >= 1e-3:
             raise ValueError("Time steps might be unequally spaced! Please check")
-        
+
         # FFT of excitation (the time signal x is multiplied by exp(-alpha*t) for complex Fourier transform)
-        #T = self.time[-1] #time duration
+        # T = self.time[-1] #time duration
         N = len(self.time)
-        fs = 1/dt #sampling frequency
-        self.spectrum = np.fft.rfft(self.waveform * np.exp(-self.alpha * self.time)[np.newaxis, :], N).conj() / N  #conj() because our convention is +i*omega*t, as opposed to fft function
-        Np = N//2+1  #number of points of the positive part of the spectrum (N is even)
-        self.frequency = fs/2*np.linspace(0, 1, Np)  #frequency vector
-        self.frequency = self.frequency + 1j*self.alpha/(2*np.pi)  #complex frequency
-        self.spectrum = 2*self.spectrum.reshape(-1, Np)
-        if self.frequency[0]==0:  #suppress first frequency if zero
+
+        # sampling frequency
+        fs = 1 / dt
+
+        # conj() because our convention is +i*omega*t, as opposed to fft function
+        self.spectrum = np.fft.rfft(
+            self.waveform * np.exp(-self.alpha * self.time)[np.newaxis, :], N).conj() / N
+
+        # number of points of the positive part of the spectrum (N is even)
+        Np = N // 2 + 1
+
+        # frequency vector
+        self.frequency = fs / 2 * np.linspace(0, 1, Np)
+
+        # complex frequency
+        self.frequency = self.frequency + 1j * self.alpha / (2 * np.pi)
+
+        self.spectrum = 2 * self.spectrum.reshape(-1, Np)
+
+        if self.frequency[0] == 0:
+            # suppress first frequency if zero
             self.frequency = self.frequency[1:]
             self.spectrum = self.spectrum[:, 1:]
+
         self.spectrum = np.squeeze(self.spectrum)
 
     def ifft(self, coeff=1):
         """
         Compute inverse Fourier transform (only the positive frequency part is needed, time waveform are assumed to be real).
-        Zero padding is applied in the low-frequency range (if missing) and in the high-frequency range (if coeff is greater than 1).
+        Zero padding is applied in the low-frequency range (if missing) and in the high-frequency range
+        (if coeff is greater than 1).
         Zero padding in the high frequency range is applied up to the frequency coeff*max(frequency).
         Results are stored as attributes (names: time, waveform).
         waveform is an array of size number_of_signals*len(time).
-        """    
+        """
         # Check spectrum
         if self.frequency is None:
             raise ValueError("Frequency spectrum is missing")
         if len(np.unique(np.imag(self.frequency))) > 1:
             raise ValueError('The imaginary part of the frequency vector must remain constant')
-        
+
         # Zero padding in low and high frequencies
         frequency = np.real(self.frequency)
-        df = np.mean(np.diff(frequency))  #frequency step
-        if abs(frequency[0]) < 1e-3*df:  #the first frequency is zero
+
+        # frequency step
+        df = np.mean(np.diff(frequency))
+
+        if abs(frequency[0]) < 1e-3 * df:
+            # the first frequency is zero
             frequency[0] = 0
             f_low = np.array([])
-        else:  #non-zero first frequency
-            f_low = np.arange(0, frequency[0]-1e-6*df, df)  #low frequency
-        f_high = np.arange(frequency[-1]+df, coeff*frequency[-1]+1e-6*df, df)  #high frequency
+
+        else:
+            # non-zero first frequency
+
+            # low frequency
+            f_low = np.arange(0, frequency[0] - 1e-6 * df, df)
+
+        # high frequency
+        f_high = np.arange(frequency[-1] + df, coeff * frequency[-1] + 1e-6 * df, df)
+
         frequency = np.concatenate([f_low, frequency, f_high])
         spectrum = self.spectrum.reshape(-1, len(self.frequency))
-        spectrum = np.concatenate([np.zeros((spectrum.shape[0], len(f_low))), spectrum, np.zeros((spectrum.shape[0], len(f_high)))], axis=1)
+        spectrum = np.concatenate([
+            np.zeros((spectrum.shape[0], len(f_low))),
+            spectrum,
+            np.zeros((spectrum.shape[0], len(f_high)))],
+            axis=1)
+
         if len(f_low) > 0:
             print('Zero padding applied in the missing low-frequency range')
+
         if len(f_high) > 0:
             print('Zero padding applied in the high-frequency range')
+
         temp = np.diff(frequency)
-        if np.max(np.abs(temp-df))/df >= 1e-3:
+        if np.max(np.abs(temp - df)) / df >= 1e-3:
             raise ValueError('Frequency steps might be unequally spaced! Please check')
-        
+
         # IFFT of response
-        Np = spectrum.shape[1]  #number of points of the spectrum (positive part of the spectrum)
-        N = 2*(Np-1)  #number of points for the IFFT
-        dt = 1/(N*df)  #sample time
-        self.time = np.arange(0, N)*dt
+
+        # number of points of the spectrum (positive part of the spectrum)
+        Np = spectrum.shape[1]
+
+        # number of points for the IFFT
+        N = 2 * (Np - 1)
+
+        # sample time
+        dt = 1 / (N * df)
+
+        self.time = np.arange(0, N) * dt
         self.waveform = np.fft.irfft(spectrum.conj(), N) * Np
-        self.waveform *= np.exp(self.alpha*self.time[np.newaxis, :]) #for complex Fourier transform
+
+        # for complex Fourier transform
+        self.waveform *= np.exp(self.alpha * self.time[np.newaxis, :])
+
         self.waveform = np.squeeze(self.waveform)
 
     def ricker(self, fs, T, fc):
         """
-        Generate a Ricker wavelet signal of unit amplitude (fs: sampling frequency, T: time duration, fc: Ricker central frequency)
+        Generate a Ricker wavelet signal of unit amplitude
+        (fs: sampling frequency, T: time duration, fc: Ricker central frequency)
         
         Note that for better accuracy:
         
@@ -1484,15 +2029,55 @@ class Signal:
         - T is adjusted so that the number of points is even
         """
         # Time
-        fs = np.ceil(fs/fc)*fc  #redefine fs so that fs/fc is an integer
-        dt = 1/fs  #time step
-        T = np.round(T/2/dt)*2*dt + dt  #redefine T so that the number of points is equal to an even integer
-        self.time = np.arange(0, T+1e-6*dt, dt)  #time vector
-        #N = len(self.time)  # number of points (N=T/dt+1, even)
-        
+
+        # redefine fs so that fs/fc is an integer
+        fs = np.ceil(fs / fc) * fc
+
+        # time step
+        dt = 1 / fs
+
+        # redefine T so that the number of points is equal to an even integer
+        T = np.round(T / 2 / dt) * 2 * dt + dt
+
+        # time vector
+        self.time = np.arange(0, T + 1e-6 * dt, dt)
+        # N = len(self.time)  # number of points (N=T/dt+1, even)
+
         # Ricker waveform
-        t0 = 1/fc
-        self.waveform = (1-2*(self.time-t0)**2*np.pi**2*fc**2)*np.exp(-(self.time-t0)**2*np.pi**2*fc**2)
+        t0 = 1 / fc
+        self.waveform = (1 - 2 * (self.time - t0) ** 2 * np.pi ** 2 * fc ** 2) * np.exp(
+            -(self.time - t0) ** 2 * np.pi ** 2 * fc ** 2)
+        self.fft()
+
+    def ricker1(self, fs: float, T: float, fc: float, t0: float) -> None:
+        """
+        Generate a Ricker wavelet signal of unit amplitude
+        (fs: sampling frequency, T: time duration, fc: Ricker central frequency, t0: pre trigger time)
+        
+        Note that for better accuracy:
+        
+        - fs is rounded so that fs/fc is an integer
+        - T is adjusted so that the number of points is even
+        """
+        # Time
+
+        # redefine fs so that fs/fc is an integer
+        fs = np.ceil(fs / fc) * fc
+
+        # time step
+        dt = 1 / fs
+
+        # redefine T so that the number of points is equal to an even integer
+        T = np.round(T / 2 / dt) * 2 * dt + dt
+
+        # time vector
+        self.time = t0 + np.arange(0, T + 1e-6 * dt, dt)
+
+        # N = len(self.time)  # number of points (N=T/dt+1, even)
+
+        # Ricker waveform
+        self.waveform = (1 - 2 * (self.time) ** 2 * np.pi ** 2 * fc ** 2) * np.exp(
+            -(self.time) ** 2 * np.pi ** 2 * fc ** 2)
         self.fft()
 
     def toneburst(self, fs, T, fc, n):
@@ -1507,36 +2092,57 @@ class Signal:
         - T is adjusted so that the number of points is even
         """
         # Time
-        fs = np.ceil(fs/fc)*fc  #redefine fs so that fs/fc is an integer
-        dt = 1/fs  #time step
-        T = np.round(T/2/dt)*2*dt + dt  #redefine T so that the number of points is equal to an even integer
-        self.time = np.arange(0, T+1e-6*dt, dt)  #time vector
-        #N = len(self.time)  # number of points (N=T/dt+1, even)
-        
+
+        # redefine fs so that fs/fc is an integer
+        fs = np.ceil(fs / fc) * fc
+
+        # time step
+        dt = 1 / fs
+
+        # redefine T so that the number of points is equal to an even integer
+        T = np.round(T / 2 / dt) * 2 * dt + dt
+
+        # time vector
+        self.time = np.arange(0, T + 1e-6 * dt, dt)
+        # N = len(self.time)  # number of points (N=T/dt+1, even)
+
         # Toneburst waveform
-        t = np.arange(0, n/fc+1e-6*dt, dt)  #n/fc yields an integer number of time steps because fs/fc is an integer
-        x = np.sin(2*np.pi*fc*t)
-        x *= np.hanning(len(x))  #hanning window
+
+        # n/fc yields an integer number of time steps because fs/fc is an integer
+        t = np.arange(0, n / fc + 1e-6 * dt, dt)
+        x = np.sin(2 * np.pi * fc * t)
+        x *= np.hanning(len(x))  # hanning window
         self.waveform = np.zeros(len(self.time))
-        self.waveform[:len(x)] = x  #time amplitude vector
+        self.waveform[:len(x)] = x  # time amplitude vector
         self.fft()
 
     def chirp(self, fs, T, f0, f1, chirp_duration):
         """
-        Generate a chirp of unit amplitude (fs: sampling frequency, T: time duration, f0: first frequency, f1: last frequency, chirp_duration: time to sweep from f0 to f1).
+        Generate a chirp of unit amplitude
+        (fs: sampling frequency, T: time duration,
+         f0: first frequency, f1: last frequency,
+         chirp_duration: time to sweep from f0 to f1).
         Note that for better accuracy, T is adjusted so that the number of points is even.
         """
         # Time
-        dt = 1/fs  #time step
-        T = np.floor(T/2/dt)*2*dt + dt  #redefine T so that the number of points is equal to an even integer
-        self.time = np.arange(0, T+1e-6*dt, dt)  #time vector
-        
+
+        # time step
+        dt = 1 / fs
+
+        # redefine T so that the number of points is equal to an even integer
+        T = np.floor(T / 2 / dt) * 2 * dt + dt
+
+        # time vector
+        self.time = np.arange(0, T + 1e-6 * dt, dt)
+
         # Chirp waveform
-        index = np.argmin(np.abs(self.time-chirp_duration))
+        index = np.argmin(np.abs(self.time - chirp_duration))
         t = self.time[:index]
-        x = np.sin(2*np.pi*f0*t + np.pi*(f1-f0)/chirp_duration*t**2)
+        x = np.sin(2 * np.pi * f0 * t + np.pi * (f1 - f0) / chirp_duration * t ** 2)
         self.waveform = np.zeros(len(self.time))
-        self.waveform[:len(x)] = x  #time amplitude vector
+
+        # time amplitude vector
+        self.waveform[:len(x)] = x
         self.fft()
 
     def plot(self, ax=None, color="k", linewidth=1, linestyle="-", **kwargs):
@@ -1552,7 +2158,7 @@ class Signal:
         Returns
         -------
         ll: the matplotlib list of lines
-        """                                                     
+        """
         # Initialization
         if ax is None:
             fig, ax = plt.subplots(1, 1)
@@ -1581,16 +2187,21 @@ class Signal:
         # Initialization
         if ax is None:
             fig, ax = plt.subplots(1, 1)
+
         # Plot spectrum magnitude vs. frequency
         fig, ax = plt.subplots(1, 1)
-        ll_abs = ax.plot(self.frequency.real, np.abs(self.spectrum.T), color=color, linewidth=linewidth, linestyle=linestyle, **kwargs)
+        ll_abs = ax.plot(self.frequency.real, np.abs(self.spectrum.T), color=color, linewidth=linewidth,
+                         linestyle=linestyle, **kwargs)
         ax.set_xlabel('f')
         ax.set_ylabel('|X|')
         fig.tight_layout()
+
         # Plot spectrum phase vs. frequency
         fig, ax = plt.subplots(1, 1)
-        ll_angle = ax.plot(self.frequency.real, np.angle(self.spectrum.T), color=color, linewidth=linewidth, linestyle=linestyle, **kwargs)
+        ll_angle = ax.plot(self.frequency.real, np.angle(self.spectrum.T), color=color, linewidth=linewidth,
+                           linestyle=linestyle, **kwargs)
         ax.set_xlabel('f')
         ax.set_ylabel('arg(X)')
         fig.tight_layout()
+
         return ll_abs, ll_angle

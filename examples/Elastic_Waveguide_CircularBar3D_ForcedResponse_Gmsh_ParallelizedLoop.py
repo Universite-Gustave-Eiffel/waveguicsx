@@ -12,7 +12,7 @@
 # 3D elastic waveguide example\
 # The cross-section is a 2D circle with free boundary conditions on its 1D boundaries, material: elastic steel\
 # The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\
-# $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\
+# $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1-\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{0}$\
 # This eigenproblem is solved with the varying parameter as the frequency (eigenvalues are then wavenumbers).\
 # The forced response is computed for a point force at the center node ot the cross-section.\
 # Results are to be compared with Figs. 5, 6 and 7 of paper: Treyssede, Wave Motion 87 (2019), 75-91.

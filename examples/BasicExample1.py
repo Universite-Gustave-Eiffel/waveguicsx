@@ -60,3 +60,6 @@ sc = wg.plot_energy_velocity(direction=+1) #plot positive-going modes
 sc.axes.set_xlabel('Frequency-thickness (MHz-mm)')
 sc.axes.set_ylabel('Energy velocity (m/ms)')
 plt.show()
+
+""
+

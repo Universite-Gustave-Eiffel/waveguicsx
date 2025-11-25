@@ -134,7 +134,7 @@ class Scattering:
         - the term Ptot is the complex power flow of the sum of ingoing and ougoing modes
         - the term -i*omega*U^H*D*U is related to the kinetic, potential and dissipated energies in the volume
           (the dissipated energy, defined as positive, is equal to the real part of this term divided by -2*omega).
-        - a perfect energy balance is achived if Ptot = -i*omega*U^H*D*U
+        - a perfect energy balance is achieved if Ptot = -i*omega*U^H*D*U
     name.coefficient : list of numpy.ndarray, where name is a Waveguide object associated with a given transparent BC
         this transparent BC attribute stores modal coefficients at each frequency:
         - the coefficients of ingoing modes are considered as inputs, specified by the user (excitation in the scattering problem)
@@ -245,23 +245,17 @@ class Scattering:
         """       
         self.ksp = PETSc.KSP().create(comm=self.comm)
 
-        if solver == 'iterative':
-            # iterative solver setup by default
-
+        if solver == 'iterative': #iterative solver setup by default
             # CGS seems to be faster than: GMRES (ksp default), BCGS, ...
             self.ksp.setType(PETSc.KSP.Type.CGS)
-
             pc = self.ksp.getPC()
             pc.setType('ilu')
-
         elif solver == 'direct': #direct solver setup
             self.ksp.setType('preonly')
             pc = self.ksp.getPC()
             pc.setType('lu')
-
             # mumps seems to be faster than: umfpack, superlu_dist, petsc, superlu, klu...
             pc.setFactorSolverType('mumps')
-
         else:
             raise NotImplementedError('The string solver must be iterative or direct')
 
@@ -324,6 +318,7 @@ class Scattering:
             raise NotImplementedError('The length of spectrum of F must be equal to the length of omega')
         
         print(f'Scattering problem ({len(self.omega)} iterations)')
+        print(f'Number of degrees of freedom: {self.M.size[0]}')
         
         # Loop on frequency
         for i, omega in enumerate(self.omega):
@@ -346,6 +341,31 @@ class Scattering:
 
             ingoing_ncol = ingoing_col_pointer[-1]
             outgoing_ncol = outgoing_col_pointer[-1]
+            
+            # Assemble global excitation vector (internal force and ingoing modal amplitudes)
+            U_in = PETSc.Vec().createSeq(ingoing_ncol, comm=self.comm)
+
+            # Fill with the external force vector at internal dofs
+            U_in.setValues(range(internal_dofs.size), self.F.getValues(internal_dofs)*self.F_spectrum[i])
+            
+            # Fill with ingoing modal coefficients
+            for j, tbc in enumerate(self.tbcs):
+                # outward normal sign along the waveguide axis
+                normal_sign = -1 if any(tbc[1]<0) else +1
+                
+                traveling_direction = getattr(self, tbc[0]).traveling_direction[i]
+                imodes = np.nonzero(traveling_direction==-normal_sign)[0]
+                tbc_coeff = getattr(self, tbc[0]).coefficient[i][imodes]
+                U_in.setValues(range(ingoing_col_pointer[j], ingoing_col_pointer[j+1]), tbc_coeff)
+            
+            # Fill results with zeroes and skip the current iteration if there is no excitation
+            if U_in.norm()==0: #no excitation
+                self.displacement.append(PETSc.Vec().createSeq(self.M.getSize()[0], comm=self.comm))
+                self.energy_balance.append(np.array([0, 0, 0]))
+                for tbc in self.tbcs:
+                    getattr(self, tbc[0]).coefficient[i].fill(0)
+                print(f'Iteration {i} : skipped (no excitation)')
+                continue #skip the current iteration
             
             # Initialization of global projection matrices,
             # filled with ones or zeroes at internal dofs
@@ -372,32 +392,13 @@ class Scattering:
                 Bu_in = Bu_in + Bu_temp
                 Bf_in = Bf_in + Bf_temp
             
-            # Assemble global excitation vector (internal force and ingoing modal amplitudes)
-            U_in = PETSc.Vec().createSeq(ingoing_ncol, comm=self.comm)
-
-            # fill with the external force vector at internal dofs
-            U_in.setValues(range(internal_dofs.size), self.F.getValues(internal_dofs)*self.F_spectrum[i])
-
-            for j, tbc in enumerate(self.tbcs):
-                # outward normal sign along the waveguide axis
-                normal_sign = -1 if any(tbc[1]<0) else +1
-
-                traveling_direction = getattr(self, tbc[0]).traveling_direction[i]
-                imodes = np.nonzero(traveling_direction==-normal_sign)[0]
-                tbc_coeff = getattr(self, tbc[0]).coefficient[i][imodes]
-
-                # fill with ingoing modal coefficients
-                U_in.setValues(range(ingoing_col_pointer[j], ingoing_col_pointer[j+1]), tbc_coeff)
-            
             # Solve scattering system
             D = self.K - omega**2*self.M - 1j*omega*self.C
             Bu_out_transpose = Bu_out.copy().transpose()
             U_out = PETSc.Vec().createSeq(outgoing_ncol, comm=self.comm)
 
             if i>0 and self.ksp.getInitialGuessNonzero() is True:
-                # try to set initial value from previous solution...
-
-                # internal dofs only->inefficient?
+                # try to set initial value from previous solution... but internal dofs only -> inefficient?
                 U_out.setValues(range(internal_dofs.size), self.displacement[-1].getValues(internal_dofs))
 
             # reset is necessary because the size of A and b can change at every iteration
@@ -427,7 +428,7 @@ class Scattering:
             for j, tbc in enumerate(self.tbcs):
                 # outward normal sign along the waveguide axis
                 normal_sign = -1 if any(tbc[1] < 0) else +1
-
+                
                 traveling_direction = getattr(self, tbc[0]).traveling_direction[i]
                 imodes = np.nonzero(traveling_direction == +normal_sign)[0]
                 getattr(self, tbc[0]).coefficient[i][imodes] = U_out.getValues(range(outgoing_col_pointer[j], outgoing_col_pointer[j+1]))
@@ -444,8 +445,8 @@ class Scattering:
         
     def plot_energy_balance(self, ax=None, color="k", linewidth=1, linestyle="-", **kwargs):
         """
-        Plot energy balance at each frequency index for checking modal tbc truncature.
-        The energy balance is defined as the difference between tbc net flux and volume power
+        Plot energy balance ratio at each frequency index for checking modal tbc truncature.
+        The energy balance is defined as the difference between tbc net flux and volume power,
         divided by the input power (values close to zero indicate that enough modes have
         been included in the transparent BCs).
 
@@ -464,10 +465,11 @@ class Scattering:
             fig, ax = plt.subplots(1, 1)
         # Plot energy balance
         energy_balance = np.concatenate(self.energy_balance)
-        energy_balance = (np.abs(energy_balance[1::3])-np.abs(energy_balance[2::3]))/np.abs(energy_balance[::3])
-        ll = ax.plot(np.abs(energy_balance), color=color, linewidth=linewidth, linestyle=linestyle, **kwargs)
-        ax.set_xlabel('frequency index')
-        ax.set_ylabel('energy balance')
+        with np.errstate(divide='ignore', invalid='ignore'):
+            energy_balance = np.abs(energy_balance[1::3]-energy_balance[2::3])/np.abs(energy_balance[::3]) #ignore divide by zero just here
+        ll = ax.plot(np.real(self.omega), np.abs(energy_balance), color=color, linewidth=linewidth, linestyle=linestyle, **kwargs)
+        ax.set_xlabel('normalized angular frequency')
+        ax.set_ylabel('energy balance ratio')
         fig.tight_layout()
         return ll
         

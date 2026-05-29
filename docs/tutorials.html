@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tutorials &mdash; waveguicsx 2.1 documentation</title>
+  <title>Tutorials &mdash; waveguicsx 2.2 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -43,6 +43,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="readme_link.html">Presentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#how-to-cite">How to cite</a></li>
 <li class="toctree-l2"><a class="reference internal" href="readme_link.html#introduction">0. Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="readme_link.html#basic-examples">1. Basic examples</a></li>
 <li class="toctree-l2"><a class="reference internal" href="readme_link.html#prerequisites">2. Prerequisites</a></li>
@@ -51,7 +52,7 @@
 <li class="toctree-l2"><a class="reference internal" href="readme_link.html#tutorials">5. Tutorials</a></li>
 <li class="toctree-l2"><a class="reference internal" href="readme_link.html#scattering-by-local-inhomogeneities">6. Scattering by local inhomogeneities</a></li>
 <li class="toctree-l2"><a class="reference internal" href="readme_link.html#authors-and-contributors">7. Authors and contributors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme_link.html#how-to-cite">8. How to cite</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme_link.html#references">8. References</a></li>
 <li class="toctree-l2"><a class="reference internal" href="readme_link.html#license">9. License</a></li>
 </ul>
 </li>
@@ -124,7 +125,7 @@ Results are compared with Euler-Bernoulli analytical solutions for the lowest wa
 <span class="c1"># The cross-section is a 2D square with free boundary conditions on its boundaries\</span>
 <span class="c1"># Material: viscoelastic steel\</span>
 <span class="c1"># The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\</span>
-<span class="c1"># $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\</span>
+<span class="c1"># $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1-\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{0}$\</span>
 <span class="c1"># This eigenproblem is solved with the varying parameter as the wavenumber (eigenvalues are then frequencies) or as the frequency (eigenvalues are then wavenumbers)\</span>
 <span class="c1"># Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities\</span>
 <span class="c1"># Results are compared with Euler-Bernoulli analytical solutions for the lowest wavenumber or frequency parameter</span>
@@ -313,7 +314,7 @@ In this example:</p>
 <span class="c1"># The cross-section is a 2D square with free boundary conditions on its 1D boundaries\</span>
 <span class="c1"># Material: viscoelastic steel\</span>
 <span class="c1"># The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\</span>
-<span class="c1"># $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\</span>
+<span class="c1"># $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1-\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{0}$\</span>
 <span class="c1"># Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities\</span>
 <span class="c1"># In this example:</span>
 <span class="c1"># - the parameter loop (here, the frequency loop) is distributed on all processes</span>
@@ -467,7 +468,7 @@ Results are to be compared with Fig. 8 of paper: Treyssede, Journal of Computati
 <span class="c1"># The cross-section is a 2D square buried into a PML external elastic medium\</span>
 <span class="c1"># Material: viscoelastic steel into cement grout\</span>
 <span class="c1"># The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\</span>
-<span class="c1"># $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\</span>
+<span class="c1"># $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1-\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{0}$\</span>
 <span class="c1"># Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities\</span>
 <span class="c1"># The PML has a parabolic profile</span>
 <span class="c1"># Results are to be compared with Fig. 8 of paper: Treyssede, Journal of Computational Physics 314 (2016), 341–354</span>
@@ -705,7 +706,7 @@ Results are to be compared with Fig. 8 of paper: Treyssede, Journal of Computati
 <span class="c1"># The cross-section is a 2D square buried into a PML external elastic medium\</span>
 <span class="c1"># Material: viscoelastic steel into cement grout\</span>
 <span class="c1"># The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\</span>
-<span class="c1"># $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\</span>
+<span class="c1"># $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1-\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{0}$\</span>
 <span class="c1"># Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities\</span>
 <span class="c1"># The PML has a parabolic profile\</span>
 <span class="c1"># The FE mesh is built from Gmsh\</span>
@@ -995,7 +996,7 @@ Results are to be compared with Figs. 5, 6 and 7 of paper: Treyssede, Wave Motio
 <span class="c1"># 3D elastic waveguide example\</span>
 <span class="c1"># The cross-section is a 2D circle with free boundary conditions on its 1D boundaries, material: elastic steel\</span>
 <span class="c1"># The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\</span>
-<span class="c1"># $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\</span>
+<span class="c1"># $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1-\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{0}$\</span>
 <span class="c1"># This eigenproblem is solved with the varying parameter as the frequency (eigenvalues are then wavenumbers).\</span>
 <span class="c1"># The forced response is computed for a point force at the center node ot the cross-section.\</span>
 <span class="c1"># Results are to be compared with Figs. 5, 6 and 7 of paper: Treyssede, Wave Motion 87 (2019), 75-91.</span>
@@ -1209,7 +1210,7 @@ In this example:</p>
 <span class="c1"># 3D elastic waveguide example\</span>
 <span class="c1"># The cross-section is a 2D circle with free boundary conditions on its 1D boundaries, material: elastic steel\</span>
 <span class="c1"># The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\</span>
-<span class="c1"># $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\</span>
+<span class="c1"># $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1-\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{0}$\</span>
 <span class="c1"># This eigenproblem is solved with the varying parameter as the frequency (eigenvalues are then wavenumbers).\</span>
 <span class="c1"># The forced response is computed for a point force at the center node ot the cross-section.\</span>
 <span class="c1"># Results are to be compared with Figs. 5, 6 and 7 of paper: Treyssede, Wave Motion 87 (2019), 75-91.</span>
@@ -1432,7 +1433,7 @@ Note: the depth direction is x, the axis of propagation is z.</p>
 <span class="c1"># The cross-section is a 1D line with free boundary conditions on its boundaries\</span>
 <span class="c1"># material: viscoelastic steel\</span>
 <span class="c1"># The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\</span>
-<span class="c1"># $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\</span>
+<span class="c1"># $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1-\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{0}$\</span>
 <span class="c1"># This eigenproblem is solved with the varying parameter as the frequency (eigenvalues are then wavenumbers)\</span>
 <span class="c1"># Viscoelastic loss can be included by introducing imaginary parts (negative) to wave celerities\</span>
 <span class="c1"># Results are to be compared with Figs. 5b, 7a and 8a of paper: Treyssede and Laguerre, JASA 133 (2013), 3827-3837\</span>
@@ -1537,6 +1538,9 @@ Note: the depth direction is x, the axis of propagation is z.</p>
 <span class="n">wg</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span> <span class="c1">#blocking</span>
 
+<span class="s2">&quot;&quot;</span>
+<span class="n">wg</span><span class="o">.</span><span class="n">plot_energy_velocity</span><span class="p">()</span>
+
 <span class="c1">###############################################################################</span>
 <span class="c1"># Excitation force: point force at x=0 oriented in the x-direction</span>
 <span class="n">dof_coords</span> <span class="o">=</span> <span class="n">V</span><span class="o">.</span><span class="n">tabulate_dof_coordinates</span><span class="p">()</span>
@@ -1633,7 +1637,7 @@ The FE mesh is built from gmsh with a .geo file.</p>
 # 3D elastic waveguide example\
 # The cross-section is a 2D rail profile (60E1, 60.21kg/m) with free boundary conditions on its 1D boundaries, material: elastic steel\
 # The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\
-# $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\
+# $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1-\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{0}$\
 # This eigenproblem is solved with the varying parameter as the frequency (eigenvalues are then wavenumbers).\
 # The FE mesh is built from gmsh with a .geo file.
 
@@ -2146,7 +2150,7 @@ The tbc eigenproblem is solved using SAFE as a function of frequency (eigenvalue
 <span class="n">cs</span><span class="p">,</span> <span class="n">cl</span> <span class="o">=</span> <span class="n">cs</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">kappas</span><span class="o">/</span><span class="mi">2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">),</span> <span class="n">cl</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">kappal</span><span class="o">/</span><span class="mi">2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="c1">#complex celerities (core)</span>
 
 <span class="c1">##################################</span>
-<span class="c1"># Create FE mesh (2D)</span>
+<span class="c1"># Create FE mesh (3D)</span>
 <span class="n">gmsh</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
 <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">occ</span><span class="o">.</span><span class="n">addCylinder</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">notch_depth</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span> <span class="c1">#notch case</span>
@@ -2206,7 +2210,7 @@ The tbc eigenproblem is solved using SAFE as a function of frequency (eigenvalue
 <span class="n">bcs</span> <span class="o">=</span> <span class="p">[]</span>
 
 <span class="c1">###############################################################################</span>
-<span class="c1"># Define the 2D variational formulation</span>
+<span class="c1"># Define the 3D variational formulation</span>
 <span class="n">dx</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Measure</span><span class="p">(</span><span class="s2">&quot;dx&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">mesh</span><span class="p">)</span>
 <span class="n">u</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">TrialFunction</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
 <span class="n">v</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">TestFunction</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
@@ -2344,9 +2348,6 @@ The tbc eigenproblem is solved using SAFE as a function of frequency (eigenvalue
 <span class="n">plotter</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
 <span class="n">plotter</span><span class="o">.</span><span class="n">show_axes</span><span class="p">()</span>
 <span class="n">plotter</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-
-<span class="s2">&quot;&quot;</span>
-
 </pre></div>
 </div>
 </section>

@@ -1,4 +1,4 @@
-[![Generic badge](https://github.com/Universite-Gustave-Eiffel/waveguicsx/actions/workflows/pages/pages-build-deployment/badge.svg)](https://universite-gustave-eiffel.github.io/waveguicsx/)	
+<img src="https://universite-gustave-eiffel.github.io/waveguicsx/_static/logo_doc.png" alt="WaveGuiCSX logo" width="300">
 
 **Waveguicsx, a python library for solving complex waveguide problems**
 
@@ -14,6 +14,11 @@ You should have received a copy of the GNU General Public License along with wav
 
 Contact: fabien.treyssede@univ-eiffel.fr
 
+## How to cite
+
+Please cite the software project as follows if used for your own projects or academic publications:
+
+F. Treyssède, waveguicsx (a python library for solving complex waveguides problems), 2023; software available at https://github.com/Universite-Gustave-Eiffel/waveguicsx.
 
 ## 0. Introduction
 
@@ -363,11 +368,7 @@ Feel free to contact me by email for further information or questions about wave
 contact: fabien.treyssede@univ-eiffel.fr
 
 
-## 8. How to cite
-
-Please cite the software project as follows if used for your own projects or academic publications:
-
-F. Treyssède, waveguicsx (a python library for solving complex waveguides problems), 2023; software available at https://github.com/Universite-Gustave-Eiffel/waveguicsx.
+## 8. References
 
 For theoretical details about finite element modeling of waveguide problems, here are also a few references by the author about the SAFE modeling of elastic waveguides:
 

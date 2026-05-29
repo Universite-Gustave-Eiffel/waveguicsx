@@ -1,4 +1,10 @@
-<img src="https://universite-gustave-eiffel.github.io/waveguicsx/_static/logo_doc.png" alt="WaveGuiCSX logo" width="300">
+<p align="center">
+  <a href="https://universite-gustave-eiffel.github.io/waveguicsx/">
+    <img src="https://universite-gustave-eiffel.github.io/waveguicsx/_static/logo_doc.png"
+         alt="WaveGuiCSX logo"
+         width="300">
+  </a>
+</p>
 
 **Waveguicsx, a python library for solving complex waveguide problems**
 

@@ -13,7 +13,7 @@
 # The cross-section is a 1D line with free boundary conditions on its boundaries\
 # material: viscoelastic steel\
 # The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\
-# $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\
+# $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1-\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{0}$\
 # This eigenproblem is solved with the varying parameter as the frequency (eigenvalues are then wavenumbers)\
 # Viscoelastic loss can be included by introducing imaginary parts (negative) to wave celerities\
 # Results are to be compared with Figs. 5b, 7a and 8a of paper: Treyssede and Laguerre, JASA 133 (2013), 3827-3837\
@@ -117,6 +117,9 @@ wg.set_parameters(omega=omega)
 wg.solve(nev) #access to components with: wg.eigenvalues[ik][imode], wg.eigenvectors[ik][idof,imode]
 wg.plot()
 plt.show() #blocking
+
+""
+wg.plot_energy_velocity()
 
 ###############################################################################
 # Excitation force: point force at x=0 oriented in the x-direction

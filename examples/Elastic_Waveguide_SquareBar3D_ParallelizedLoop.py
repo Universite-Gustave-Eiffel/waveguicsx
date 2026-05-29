@@ -13,7 +13,7 @@
 # The cross-section is a 2D square with free boundary conditions on its 1D boundaries\
 # Material: viscoelastic steel\
 # The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\
-# $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\
+# $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1-\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{0}$\
 # Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities\
 # In this example:
 # - the parameter loop (here, the frequency loop) is distributed on all processes

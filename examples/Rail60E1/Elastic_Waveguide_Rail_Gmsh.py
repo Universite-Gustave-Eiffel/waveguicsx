@@ -12,7 +12,7 @@
 # 3D elastic waveguide example\
 # The cross-section is a 2D rail profile (60E1, 60.21kg/m) with free boundary conditions on its 1D boundaries, material: elastic steel\
 # The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\
-# $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\
+# $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1-\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{0}$\
 # This eigenproblem is solved with the varying parameter as the frequency (eigenvalues are then wavenumbers).\
 # The FE mesh is built from gmsh with a .geo file.
 

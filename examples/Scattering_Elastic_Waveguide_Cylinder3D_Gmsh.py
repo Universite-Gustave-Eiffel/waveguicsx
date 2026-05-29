@@ -61,7 +61,7 @@ omega = omega*T0
 cs, cl = cs/(1+1j*kappas/2/np.pi), cl/(1+1j*kappal/2/np.pi) #complex celerities (core)
 
 ##################################
-# Create FE mesh (2D)
+# Create FE mesh (3D)
 gmsh.initialize()
 gmsh.model.occ.addCylinder(0, 0, 0, 0, 0, L, a, 0)
 if notch_depth!=0: #notch case
@@ -121,7 +121,7 @@ C = dolfinx.fem.Constant(mesh, PETSc.ScalarType(C))
 bcs = []
 
 ###############################################################################
-# Define the 2D variational formulation
+# Define the 3D variational formulation
 dx = ufl.Measure("dx", domain=mesh)
 u = ufl.TrialFunction(V)
 v = ufl.TestFunction(V)
@@ -259,6 +259,3 @@ plotter = pyvista.Plotter()
 plotter.add_mesh(grid)
 plotter.show_axes()
 plotter.show()
-
-""
-

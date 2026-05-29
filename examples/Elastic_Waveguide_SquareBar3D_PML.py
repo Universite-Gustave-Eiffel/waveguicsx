@@ -13,7 +13,7 @@
 # The cross-section is a 2D square buried into a PML external elastic medium\
 # Material: viscoelastic steel into cement grout\
 # The waveguide FE formulation (SAFE) leads to the following eigenvalue problem:\
-# $(\textbf{K}_1-\omega^2\textbf{M}+\text{i}k(\textbf{K}_2+\textbf{K}_2^\text{T})+k^2\textbf{K}_3)\textbf{U}=\textbf{0}$\
+# $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1-\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{0}$\
 # Viscoelastic loss is included by introducing imaginary parts (negative) to wave celerities\
 # The PML has a parabolic profile
 # Results are to be compared with Fig. 8 of paper: Treyssede, Journal of Computational Physics 314 (2016), 341–354

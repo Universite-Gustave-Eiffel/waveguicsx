@@ -34,3 +34,5 @@ waveguicsx/__pycache__/
 /.config/
 /.ipython/
 /.jupyter/
+/waveguicsx/.ipynb_checkpoints/
+/.ipynb_checkpoints/

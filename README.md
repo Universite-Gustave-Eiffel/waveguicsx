@@ -1,4 +1,10 @@
-[![Generic badge](https://github.com/Universite-Gustave-Eiffel/waveguicsx/actions/workflows/pages/pages-build-deployment/badge.svg)](https://universite-gustave-eiffel.github.io/waveguicsx/)	
+<p align="center">
+  <a href="https://universite-gustave-eiffel.github.io/waveguicsx/">
+    <img src="https://universite-gustave-eiffel.github.io/waveguicsx/_static/logo_doc.png"
+         alt="WaveGuiCSX logo"
+         width="300">
+  </a>
+</p>
 
 **Waveguicsx, a python library for solving complex waveguide problems**
 
@@ -14,6 +20,11 @@ You should have received a copy of the GNU General Public License along with wav
 
 Contact: fabien.treyssede@univ-eiffel.fr
 
+## How to cite
+
+Please cite the software project as follows if used for your own projects or academic publications:
+
+F. Treyssède, waveguicsx (a python library for solving complex waveguides problems), 2023; software available at https://github.com/Universite-Gustave-Eiffel/waveguicsx.
 
 ## 0. Introduction
 
@@ -25,7 +36,7 @@ The full documentation is entirely defined in the `waveguide.py' module. See als
 
 Waveguicsx can deal with complex elastic waveguides, two-dimensional (e.g. plates) or three-dimensional (arbitrarily shaped cross-section), inhomogeneous in the transverse directions, anisotropic. Complex-valued problems can be handled including the effects of non-propagating modes (evanescent, inhomogeneous), viscoelastic loss (complex material properties) or perfectly matched layers (PML) to simulate buried waveguides.
 
-More precisely, waveguicsx solves the following matrix problem: $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1+\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{F}$. This kind of problem typically stems from the so-called semi-analytical finite element (FE) method. See references below for theoretical details.
+More precisely, waveguicsx solves the following matrix problem: $(\textbf{K}_0-\omega^2\textbf{M}+\text{i}k(\textbf{K}_1-\textbf{K}_1^\text{T})+k^2\textbf{K}_2)\textbf{U}=\textbf{F}$. This kind of problem typically stems from the so-called semi-analytical finite element (FE) method. See references below for theoretical details.
 
 The inputs of waveguicsx are: the matrices $\textbf{K}_0$, $\textbf{K}_1$, $\textbf{K}_2$, $\textbf{M}$ (PETSc matrix format) to compute the free response of waveguide (dispersion curves), as well as the excitation vector $\textbf{F}$ if computing forced response is required. These matrices can be built from your own favorite code. In this case, you just need to import these matrices to Python and converted them to PETSc format (see basic examples below). In case you do not have any code to generate these matrices, you can use the open finite element software FEniCSX (installation required) as shown in the tutorials.
 
@@ -363,11 +374,7 @@ Feel free to contact me by email for further information or questions about wave
 contact: fabien.treyssede@univ-eiffel.fr
 
 
-## 8. How to cite
-
-Please cite the software project as follows if used for your own projects or academic publications:
-
-F. Treyssède, waveguicsx (a python library for solving complex waveguides problems), 2023; software available at https://github.com/Universite-Gustave-Eiffel/waveguicsx.
+## 8. References
 
 For theoretical details about finite element modeling of waveguide problems, here are also a few references by the author about the SAFE modeling of elastic waveguides:
 

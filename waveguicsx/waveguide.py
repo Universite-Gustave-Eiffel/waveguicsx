@@ -636,6 +636,7 @@ class Waveguide:
                     # candidates found
 
                     # If only one candidate found: add a second candidate to allow the test of second criterion
+                    # nb this assumes that more than 2 eigenvalues are available in the lower half space
                     if len(candidates) == 1:
                         temp = eigenvalues[candidates]  # store initial value
                         eigenvalues[candidates] = np.inf  # trick to discard the first candidate
@@ -663,11 +664,13 @@ class Waveguide:
                     order = np.argsort(criterion2)  # sort by ascending order
 
                     if criterion2[order[-1]] < tol2_rel * criterion2[order[-2]]:
-                        # relative criterion
-                        raise ValueError(
-                            f'Iteration {i}: Lack of biorthogonality between mode {mode} and modes'
-                            f' [{candidates[order[-2:]]}], '
-                            f'with respective biorthogonality factor [{criterion2[order[-2:]]}]!')
+                        if len(lower_half) >= 2:
+                            # TODO: this case (only one possible candidate at all in the lower space) should be handled earlier
+                            # relative criterion
+                            raise ValueError(
+                                f'Iteration {i}: Lack of biorthogonality between mode {mode} and modes'
+                                f' [{candidates[order[-2:]]}], '
+                                f'with respective biorthogonality factor [{criterion2[order[-2:]]}]!')
 
                     if criterion2[order[-1]] > tol2_abs:  # absolute value criterion
                         opposite = candidates[order[-1]]
